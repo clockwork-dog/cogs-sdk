@@ -1,4 +1,5 @@
 import BackgroundOptions from './BackgroundOptions';
+import MediaObjectFit from './MediaObjectFit';
 
 // Subscriptions
 
@@ -31,7 +32,7 @@ type MediaClientMessage =
   | { type: 'audio_pause'; file: string }
   | { type: 'audio_stop'; file?: string; fade?: number }
   | { type: 'audio_set_clip_volume'; file: string; volume: number; fade?: number }
-  | { type: 'video_play'; file: string; loop?: true; volume: number }
+  | { type: 'video_play'; file: string; loop?: true; volume: number; fit: MediaObjectFit }
   | { type: 'video_pause'; file: string }
   | { type: 'video_stop'; file?: string }
   | { type: 'video_set_volume'; file: string; volume: number };
