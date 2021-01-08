@@ -19,13 +19,13 @@ yarn add @clockwork-dog/cogs-client
 Import the library
 
 ```ts
-import { createCogsClient } from '@clockwork-dog/cogs-client';
+import { createCogsClient } from '@clockworkdog/cogs-client';
 ```
 
 or
 
 ```js
-const { createCogsClient } = require('@clockwork-dog/cogs-client');
+const { createCogsClient } = require('@clockworkdog/cogs-client');
 ```
 
 then
