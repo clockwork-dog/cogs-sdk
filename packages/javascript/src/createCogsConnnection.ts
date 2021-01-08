@@ -16,7 +16,7 @@ function websocketParamtersFromUrl(url: string): { path: string; pathParams: URL
   if (localClientId) {
     const type = pathParams.get('t') ?? '';
     pathParams.delete('local_id');
-    return { path: `/client/local/${localClientId}`, pathParams: new URLSearchParams({ t: type }) };
+    return { path: `/client/local/${localClientId}`, pathParams: new URLSearchParams({ t: type }), useReconnectingWebsocket: true };
   } else if (isSimulator) {
     const name = pathParams.get('name');
     pathParams.delete('simulator');
@@ -25,7 +25,7 @@ function websocketParamtersFromUrl(url: string): { path: string; pathParams: URL
   } else {
     const serial = pathParams.get('serial');
     pathParams.delete('serial');
-    return { path: `/client/${serial}`, pathParams, useReconnectingWebsocket: true };
+    return { path: `/client/${serial}`, pathParams };
   }
 }
 
