@@ -22,7 +22,9 @@
     "prettier": "^2.2.1",
     "typescript": "^4.1.3"
   },
-  "dependencies": {},
+  "dependencies": {
+    "reconnecting-websocket": "^4.4.0"
+  },
   "description": "Connect to COGS to build a custom Media Master",
   "repository": {
     "type": "git",

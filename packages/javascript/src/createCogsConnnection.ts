@@ -1,4 +1,5 @@
 import Callbacks, { EventValue, UpdateValue } from './types/Callbacks';
+import ReconnectingWebSocket from 'reconnecting-websocket';
 
 export interface CogsConnection {
   sendEvent: (eventKey: string, eventValue?: EventValue) => void;
@@ -19,9 +20,9 @@ export default function createCogsWebsocket(callbacks: Callbacks): CogsConnectio
   parsedURL.searchParams.delete('simulator');
   parsedURL.searchParams.delete('name');
 
-  const socketURL = `ws://${parsedURL.host}${pathname}${parsedURL.search}`;
+  const socketUrl = `ws://${parsedURL.host}${pathname}${parsedURL.search}`;
 
-  const websocket = new WebSocket(socketURL);
+  const websocket = isSimulator ? new ReconnectingWebSocket(socketUrl) : new WebSocket(socketUrl);
 
   websocket.onopen = () => {
     callbacks.onSocketOpen && callbacks.onSocketOpen();
