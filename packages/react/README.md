@@ -19,13 +19,13 @@ yarn add @clockwork-dog/cogs-client
 Import the library
 
 ```ts
-import { useCogsConnection, Video, Timer, AudioPlayer, TextHint } from '@clockworkdog/cogs-client-react';
+import { useCogsConnection, Video, useTimer, useAudioPlayer, useTextHint } from '@clockworkdog/cogs-client-react';
 ```
 
 or
 
 ```js
-const { useCogsConnection, Video, Timer, AudioPlayer, TextHint } = require('@clockworkdog/cogs-client-react');
+const { useCogsConnection, Video, useTimer, useAudioPlayer, useTextHint } = require('@clockworkdog/cogs-client-react');
 ```
 
 then
@@ -41,11 +41,11 @@ function MyComponent() {
   const timer = useTimer(cogsConnection);
 
   // The latest text hint as a string
-  const textHint = useTextHint(cogsConnection);
+  const hint = useTextHint(cogsConnection);
 
   return (
     <div>
-      <div>Audio playing: {audioPlayer.isPlaying}</div>
+      <div>Audio playing: {audioPlayer.isPlaying.toString()}</div>
       <div style={{ fontSize: 100 }}>{timer}</div>
       {hint && <div>Hint: {hint}</div>}
       {/* Video overlay with the "fit" specified */}

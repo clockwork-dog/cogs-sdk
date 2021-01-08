@@ -2,7 +2,7 @@ import { CogsClientMessage } from '@clockworkdog/cogs-client';
 import { useCallback, useEffect, useState } from 'react';
 import CogsConnectionHandler from '../types/CogsConnectionHandler';
 
-export default function useTextHint({ connection }: { connection: CogsConnectionHandler }): string | null {
+export default function useTextHint(connection: CogsConnectionHandler): string | null {
   const [hint, setHint] = useState('');
 
   const onMessage = useCallback((message: CogsClientMessage) => {

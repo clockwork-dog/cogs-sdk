@@ -19,7 +19,7 @@ function formatTime(time: number, countingUp: boolean, separator = ':') {
   return `${negative && time >= 1000 ? '-' : ''}${minutes}${separator}${seconds}`;
 }
 
-export default function useTimer({ connection, separator }: { connection: CogsConnectionHandler; separator?: string }): string {
+export default function useTimer(connection: CogsConnectionHandler, { separator }: { separator?: string } = {}): string {
   const tickerRef = useRef<number>();
 
   const [timerElapsed, setTimerElapsed] = useState(0);
