@@ -56,3 +56,10 @@ websocket = createCogsWebsocket({
   };
 });
 ```
+
+## Release process
+
+1. Create a new commit with a bumped version number in `package.json`.
+2. [Click here to create a new release on GitHub](https://github.com/clockwork-dog/cogs-client-lib/releases/new) where the Tag Version is the version from `package.json` prefixed with a `v`.
+
+The release will be automatically built and released on npm.
