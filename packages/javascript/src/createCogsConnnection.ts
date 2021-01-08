@@ -7,22 +7,32 @@ export interface CogsConnection {
   close: () => void;
 }
 
-export default function createCogsWebsocket(callbacks: Callbacks): CogsConnection {
-  const parsedURL = new URL(document.location.href);
+function websocketParamtersFromUrl(url: string): { path: string; pathParams: URLSearchParams; useReconnectingWebsocket?: boolean } {
+  const parsedUrl = new URL(url);
+  const pathParams = new URLSearchParams(parsedUrl.searchParams);
+  const localClientId = pathParams.get('local_id');
+  const isSimulator = pathParams.get('simulator') === 'true';
 
-  const isSimulator = parsedURL.searchParams.get('simulator') === 'true';
-  const serial = parsedURL.searchParams.get('serial');
-  const name = parsedURL.searchParams.get('name');
-  const pathname = isSimulator ? `/simulator/${name}` : `/client/${serial}`;
+  if (localClientId) {
+    const type = pathParams.get('t') ?? '';
+    pathParams.delete('local_id');
+    return { path: `/client/local/${localClientId}`, pathParams: new URLSearchParams({ t: type }) };
+  } else if (isSimulator) {
+    const name = pathParams.get('name');
+    pathParams.delete('simulator');
+    pathParams.delete('name');
+    return { path: `/simulator/${name}`, pathParams, useReconnectingWebsocket: true };
+  } else {
+    const serial = pathParams.get('serial');
+    pathParams.delete('serial');
+    return { path: `/client/${serial}`, pathParams, useReconnectingWebsocket: true };
+  }
+}
 
-  // Remove extra info from params which is now part of path
-  parsedURL.searchParams.delete('serial');
-  parsedURL.searchParams.delete('simulator');
-  parsedURL.searchParams.delete('name');
-
-  const socketUrl = `ws://${parsedURL.host}${pathname}${parsedURL.search}`;
-
-  const websocket = isSimulator ? new ReconnectingWebSocket(socketUrl) : new WebSocket(socketUrl);
+export default function createCogsWebsocket(callbacks: Callbacks, { host = document.location.host }: { host?: string } = {}): CogsConnection {
+  const { useReconnectingWebsocket, path, pathParams } = websocketParamtersFromUrl(document.location.href);
+  const socketUrl = `ws://${host}${path}?${pathParams}`;
+  const websocket = useReconnectingWebsocket ? new ReconnectingWebSocket(socketUrl) : new WebSocket(socketUrl);
 
   websocket.onopen = () => {
     callbacks.onSocketOpen && callbacks.onSocketOpen();
