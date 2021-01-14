@@ -35,7 +35,7 @@ export default function createCogsWebsocket(callbacks: Callbacks, { host = docum
   const websocket = useReconnectingWebsocket ? new ReconnectingWebSocket(socketUrl) : new WebSocket(socketUrl);
 
   websocket.onopen = () => {
-    callbacks.onSocketOpen && callbacks.onSocketOpen();
+    callbacks.onSocketOpen?.();
   };
 
   websocket.onclose = () => {
