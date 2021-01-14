@@ -49,7 +49,7 @@ function MyComponent() {
         <Hint connection={cogsConnection} />
       </div>
       {/* Video overlay with the "fit" specified */}
-      <Video style={{ zIndex: 1 }} connection={cogsConnection} fullscreen />
+      <Video connection={cogsConnection} fullscreen />
     </div>
   );
 }

@@ -17,11 +17,13 @@ export default function Video({
   style,
   connection,
   fullscreen,
+  onStopped,
 }: {
   className?: string;
   style?: React.CSSProperties;
   connection: CogsConnectionHandler;
-  fullscreen?: boolean | { background: string };
+  fullscreen?: boolean | { style: React.CSSProperties };
+  onStopped?: () => void;
 }): JSX.Element | null {
   const [globalVolume, setGlobalVolume] = useState(1);
 
@@ -83,9 +85,12 @@ export default function Video({
     }
   }, [videoClip]);
 
-  const notifyVideoEnded = useCallback(() => {
-    !videoClip?.loop && setVideoClip(null);
-  }, [videoClip]);
+  const notifyVideoStopped = useCallback(() => {
+    if (!videoClip?.loop) {
+      setVideoClip(null);
+      onStopped?.();
+    }
+  }, [videoClip, onStopped]);
 
   useEffect(() => {
     const handler = { onMessage };
@@ -109,10 +114,14 @@ export default function Video({
         ...style,
       }}
       src={videoClip.src}
-      onEnded={notifyVideoEnded}
+      onEnded={notifyVideoStopped}
     />
   );
 
-  const background = typeof fullscreen === 'object' ? fullscreen.background : undefined;
-  return fullscreen ? <div style={{ position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh', background }}>{video}</div> : video;
+  const fullscreenCustomStyle = typeof fullscreen === 'object' ? fullscreen.style : undefined;
+  return fullscreen ? (
+    <div style={{ position: 'absolute', zIndex: 1, top: 0, left: 0, width: '100vw', height: '100vh', ...fullscreenCustomStyle }}>{video}</div>
+  ) : (
+    video
+  );
 }
