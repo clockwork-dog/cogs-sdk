@@ -1,6 +1,7 @@
-import { CogsClientMessage, MediaObjectFit } from '@clockworkdog/cogs-client';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Callbacks, CogsClientMessage, MediaObjectFit } from '@clockworkdog/cogs-client';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { assetSrc } from '../helpers/urls';
+import useCogsCallbacks from '../hooks/useCogsCallbacks';
 import ClipState from '../types/ClipState';
 import CogsConnectionHandler from '../types/CogsConnectionHandler';
 
@@ -92,13 +93,8 @@ export default function Video({
     }
   }, [videoClip, onStopped]);
 
-  useEffect(() => {
-    const handler = { onMessage };
-    connection.addHandler(handler);
-    return () => {
-      connection.removeHandler(handler);
-    };
-  }, [connection, onMessage]);
+  const callbacks = useMemo((): Callbacks => ({ onMessage }), [onMessage]);
+  useCogsCallbacks(connection, callbacks);
 
   if (!videoClip) {
     return null;

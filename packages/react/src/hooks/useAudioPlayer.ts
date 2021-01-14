@@ -1,9 +1,10 @@
-import { CogsClientMessage } from '@clockworkdog/cogs-client';
+import { Callbacks, CogsClientMessage } from '@clockworkdog/cogs-client';
 import { Howl, Howler } from 'howler';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { assetSrc } from '../helpers/urls';
 import ClipState from '../types/ClipState';
 import CogsConnectionHandler from '../types/CogsConnectionHandler';
+import useCogsCallbacks from './useCogsCallbacks';
 
 type MediaClientConfigMessage = Extract<CogsClientMessage, { type: 'media_config_update' }>;
 
@@ -269,13 +270,8 @@ export default function useAudioPlayer(
     [updateConfig, playAudioClip, stopAudioClip, pauseAudioClip, stopAllAudioClips, setAudioClipVolume, setGlobalVolume]
   );
 
-  useEffect(() => {
-    const handler = { onMessage };
-    connection.addHandler(handler);
-    return () => {
-      connection.removeHandler(handler);
-    };
-  }, [connection, onMessage]);
+  const callbacks = useMemo((): Callbacks => ({ onMessage }), [onMessage]);
+  useCogsCallbacks(connection, callbacks);
 
   return { isPlaying };
 }

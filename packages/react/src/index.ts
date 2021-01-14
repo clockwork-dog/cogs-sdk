@@ -1,4 +1,5 @@
 export { default as useCogsConnection } from './hooks/useCogsConnection';
+export { default as useCogsCallbacks } from './hooks/useCogsCallbacks';
 export { default as useAudioPlayer } from './hooks/useAudioPlayer';
 export { default as useHint } from './hooks/useHint';
 export { default as Hint } from './components/Hint';
