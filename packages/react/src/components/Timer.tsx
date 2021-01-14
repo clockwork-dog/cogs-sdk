@@ -1,6 +1,6 @@
 import React from 'react';
 import { CogsClientMessage } from '@clockworkdog/cogs-client';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import CogsConnectionHandler from '../types/CogsConnectionHandler';
 
 function formatTime(time: number, countingUp: boolean, separator = ':') {
@@ -21,8 +21,6 @@ function formatTime(time: number, countingUp: boolean, separator = ':') {
 }
 
 export default function Timer({ connection, separator = ':' }: { connection: CogsConnectionHandler; separator?: string }): JSX.Element {
-  const tickerRef = useRef<number>();
-
   const [timerElapsed, setTimerElapsed] = useState(0);
   const [timerStartedAt, setTimerStartedAt] = useState(0);
   const [timerTotalMillis, setTimerTotalMillis] = useState(0);
@@ -33,15 +31,17 @@ export default function Timer({ connection, separator = ':' }: { connection: Cog
     setTimerElapsed(timerElapsed);
   }, [timerTicking, timerStartedAt]);
 
-  const startTimer = useCallback(
-    (durationMillis: number) => {
-      setTimerStartedAt(Date.now());
-      setTimerTotalMillis(durationMillis);
+  const startTimer = useCallback((durationMillis: number) => {
+    setTimerStartedAt(Date.now());
+    setTimerTotalMillis(durationMillis);
+    setTimerTicking(true);
+  }, []);
+
+  useEffect(() => {
+    if (timerTicking) {
       updateTimer();
-      setTimerTicking(true);
-    },
-    [updateTimer]
-  );
+    }
+  }, [timerTicking, updateTimer]);
 
   const stopTimer = useCallback((durationMillis: number) => {
     setTimerTotalMillis(durationMillis);
@@ -56,16 +56,15 @@ export default function Timer({ connection, separator = ':' }: { connection: Cog
   }, []);
 
   useEffect(() => {
-    tickerRef.current && clearInterval(tickerRef.current);
-
     if (timerTicking) {
-      tickerRef.current = setInterval(updateTimer, 100);
+      const ticker = setInterval(updateTimer, 100);
+      return () => {
+        clearInterval(ticker);
+      };
     }
 
-    return () => {
-      tickerRef.current && clearInterval(tickerRef.current);
-    };
-  }, [timerTicking, timerStartedAt, timerTotalMillis, updateTimer]);
+    return;
+  }, [timerTicking, updateTimer]);
 
   const onMessage = useCallback(
     (message: CogsClientMessage) => {

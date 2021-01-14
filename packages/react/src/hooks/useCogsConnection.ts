@@ -9,8 +9,8 @@ export default function useCogsConnection(
   const [connected, setConnected] = useState(false);
   const handlers = useRef(new Set<Callbacks>());
 
-  const addHandler = useCallback((handler: Callbacks) => handlers.current.add(handler), [handlers]);
-  const removeHandler = useCallback((handler: Callbacks) => handlers.current.delete(handler), [handlers]);
+  const addHandler = useCallback((handler: Callbacks) => handlers.current.add(handler), []);
+  const removeHandler = useCallback((handler: Callbacks) => handlers.current.delete(handler), []);
 
   const optionsRef = useRef(options); // Initial value
   const [connection, setConnection] = useState<ReturnType<typeof createCogsConnnection>>({
