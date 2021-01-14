@@ -21,40 +21,37 @@ export default function Video({
   className?: string;
   style?: React.CSSProperties;
   connection: CogsConnectionHandler;
-  fullscreen?: boolean;
+  fullscreen?: boolean | { background: string };
 }): JSX.Element | null {
   const [globalVolume, setGlobalVolume] = useState(1);
 
   const [videoClip, setVideoClip] = useState<VideoClip | null>(null);
 
-  const onMessage = useCallback(
-    (message: CogsClientMessage) => {
-      switch (message.type) {
-        case 'media_config_update':
-          setGlobalVolume(message.globalVolume);
-          break;
-        case 'video_play':
-          setVideoClip({
-            src: assetSrc(message.file),
-            volume: message.volume,
-            fit: message.fit,
-            loop: message.loop ?? false,
-            state: ClipState.Playing,
-          });
-          break;
-        case 'video_pause':
-          setVideoClip((video) => (video ? { ...video, state: ClipState.Paused } : null));
-          break;
-        case 'video_stop':
-          setVideoClip(null);
-          break;
-        case 'video_set_volume':
-          setVideoClip((video) => (video ? { ...video, volume: message.volume } : null));
-          break;
-      }
-    },
-    [setVideoClip, setGlobalVolume]
-  );
+  const onMessage = useCallback((message: CogsClientMessage) => {
+    switch (message.type) {
+      case 'media_config_update':
+        setGlobalVolume(message.globalVolume);
+        break;
+      case 'video_play':
+        setVideoClip({
+          src: assetSrc(message.file),
+          volume: message.volume,
+          fit: message.fit,
+          loop: message.loop ?? false,
+          state: ClipState.Playing,
+        });
+        break;
+      case 'video_pause':
+        setVideoClip((video) => (video ? { ...video, state: ClipState.Paused } : null));
+        break;
+      case 'video_stop':
+        setVideoClip(null);
+        break;
+      case 'video_set_volume':
+        setVideoClip((video) => (video ? { ...video, volume: message.volume } : null));
+        break;
+    }
+  }, []);
 
   const ref = useRef<HTMLVideoElement>(null);
 
@@ -72,23 +69,23 @@ export default function Video({
           break;
       }
     }
-  }, [ref, videoClip]);
+  }, [videoClip]);
 
   useEffect(() => {
     if (ref.current) {
       ref.current.volume = videoClip?.volume ?? 1 * globalVolume;
     }
-  }, [ref, videoClip, globalVolume]);
+  }, [videoClip, globalVolume]);
 
   useEffect(() => {
     if (ref.current) {
       ref.current.loop = videoClip?.loop ?? false;
     }
-  }, [ref, videoClip]);
+  }, [videoClip]);
 
   const notifyVideoEnded = useCallback(() => {
     !videoClip?.loop && setVideoClip(null);
-  }, [videoClip, setVideoClip]);
+  }, [videoClip]);
 
   useEffect(() => {
     const handler = { onMessage };
@@ -108,7 +105,7 @@ export default function Video({
       ref={ref}
       style={{
         objectFit: videoClip.fit,
-        ...(fullscreen ? { position: 'absolute', width: '100%', height: '100%' } : {}),
+        ...(fullscreen ? { width: '100%', height: '100%' } : {}),
         ...style,
       }}
       src={videoClip.src}
@@ -116,11 +113,8 @@ export default function Video({
     />
   );
 
-  return fullscreen ? (
-    <div style={{ position: 'absolute', top: 0, left: 0 }}>
-      <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>{video}</div>
-    </div>
-  ) : (
-    video
-  );
+  console.log('render Video');
+
+  const background = typeof fullscreen === 'object' ? fullscreen.background : undefined;
+  return fullscreen ? <div style={{ position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh', background }}>{video}</div> : video;
 }

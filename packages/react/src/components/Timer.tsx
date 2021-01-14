@@ -1,3 +1,4 @@
+import React from 'react';
 import { CogsClientMessage } from '@clockworkdog/cogs-client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import CogsConnectionHandler from '../types/CogsConnectionHandler';
@@ -19,7 +20,7 @@ function formatTime(time: number, countingUp: boolean, separator = ':') {
   return `${negative && time >= 1000 ? '-' : ''}${minutes}${separator}${seconds}`;
 }
 
-export default function useTimer(connection: CogsConnectionHandler, { separator }: { separator?: string } = {}): string {
+export default function Timer({ connection, separator = ':' }: { connection: CogsConnectionHandler; separator?: string }): JSX.Element {
   const tickerRef = useRef<number>();
 
   const [timerElapsed, setTimerElapsed] = useState(0);
@@ -92,5 +93,5 @@ export default function useTimer(connection: CogsConnectionHandler, { separator 
   }, [connection, onMessage]);
 
   const time = timerTicking ? timerTotalMillis - timerElapsed : timerTotalMillis;
-  return formatTime(time, false, separator);
+  return <>{formatTime(time, false, separator)}</>;
 }

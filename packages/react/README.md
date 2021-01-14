@@ -25,7 +25,7 @@ import { useCogsConnection, Video, useTimer, useAudioPlayer, useTextHint } from 
 or
 
 ```js
-const { useCogsConnection, Video, useTimer, useAudioPlayer, useTextHint } = require('@clockworkdog/cogs-client-react');
+const { useCogsConnection, useAudioPlayer, Video, Hint, Timer } = require('@clockworkdog/cogs-client-react');
 ```
 
 then
@@ -37,17 +37,17 @@ function MyComponent() {
   // Add audio playing capability (Renders nothing)
   const audioPlayer = useAudioPlayer(cogsConnection);
 
-  // The time from the adjustable timer plugin as a string in the format 'MM:SS'
-  const timer = useTimer(cogsConnection);
-
-  // The latest text hint as a string
-  const hint = useTextHint(cogsConnection);
-
   return (
     <div>
       <div>Audio playing: {audioPlayer.isPlaying.toString()}</div>
-      <div style={{ fontSize: 100 }}>{timer}</div>
-      {hint && <div>Hint: {hint}</div>}
+      <div style={{ fontSize: 100 }}>
+        {/* The time from the adjustable timer plugin as a string in the format 'MM:SS' */}
+        <Timer connection={cogsConnection} />
+      </div>
+      <div style={{ fontSize: 20 }}>
+        {/* The latest text hint as a string */}
+        <Hint connection={cogsConnection} />
+      </div>
       {/* Video overlay with the "fit" specified */}
       <Video style={{ zIndex: 1 }} connection={cogsConnection} fullscreen />
     </div>
