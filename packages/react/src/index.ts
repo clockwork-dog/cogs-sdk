@@ -4,3 +4,4 @@ export { default as useHint } from './hooks/useHint';
 export { default as Hint } from './components/Hint';
 export { default as Timer } from './components/Timer';
 export { default as Video } from './components/Video';
+export { assetSrc } from './helpers/urls';
