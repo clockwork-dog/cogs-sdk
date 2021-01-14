@@ -41,8 +41,8 @@ function MyComponent() {
     <div>
       <div>Audio playing: {audioPlayer.isPlaying.toString()}</div>
       <div style={{ fontSize: 100 }}>
-        {/* The time from the adjustable timer plugin as a string in the format 'MM:SS' */}
-        <Timer connection={cogsConnection} />
+        {/* The time from the adjustable timer plugin in the format 'MM:SS' */}
+        <Timer connection={cogsConnection} center />
       </div>
       <div style={{ fontSize: 20 }}>
         {/* The latest text hint as a string */}

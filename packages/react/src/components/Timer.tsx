@@ -3,7 +3,7 @@ import { CogsClientMessage } from '@clockworkdog/cogs-client';
 import { useCallback, useEffect, useState } from 'react';
 import CogsConnectionHandler from '../types/CogsConnectionHandler';
 
-function formatTime(time: number, countingUp: boolean, separator = ':') {
+function formatTime(time: number, countingUp: boolean) {
   const negative = time < 0;
 
   // Flip things for negative times
@@ -13,14 +13,26 @@ function formatTime(time: number, countingUp: boolean, separator = ':') {
   }
 
   const roundedTime = countingUp ? Math.floor(time / 1000) * 1000 : Math.ceil(time / 1000) * 1000;
-  const minutes = String(Math.floor(roundedTime / 1000 / 60)).padStart(2, '0');
+  // No negative sign for 00:00
+  const minutes = (negative && time >= 1000 ? '-' : '') + String(Math.floor(roundedTime / 1000 / 60)).padStart(2, '0');
   const seconds = String((roundedTime / 1000) % 60).padStart(2, '0');
 
-  // No negative sign for 00:00
-  return `${negative && time >= 1000 ? '-' : ''}${minutes}${separator}${seconds}`;
+  return { minutes, seconds };
 }
 
-export default function Timer({ connection, separator = ':' }: { connection: CogsConnectionHandler; separator?: string }): JSX.Element {
+export default function Timer({
+  className,
+  style,
+  connection,
+  separator = ':',
+  center,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+  connection: CogsConnectionHandler;
+  separator?: string;
+  center?: boolean;
+}): JSX.Element {
   const [timerElapsed, setTimerElapsed] = useState(0);
   const [timerStartedAt, setTimerStartedAt] = useState(0);
   const [timerTotalMillis, setTimerTotalMillis] = useState(0);
@@ -92,5 +104,13 @@ export default function Timer({ connection, separator = ':' }: { connection: Cog
   }, [connection, onMessage]);
 
   const time = timerTicking ? timerTotalMillis - timerElapsed : timerTotalMillis;
-  return <>{formatTime(time, false, separator)}</>;
+  const { minutes, seconds } = formatTime(time, false);
+
+  return (
+    <div className={className} style={center ? { display: 'flex', justifyContent: 'center', ...style } : style}>
+      <span style={center ? { flexBasis: 0, flexGrow: 1, textAlign: 'right' } : undefined}>{minutes}</span>
+      <span>{separator}</span>
+      <span style={center ? { flexBasis: 0, flexGrow: 1, textAlign: 'left' } : undefined}>{seconds}</span>
+    </div>
+  );
 }
