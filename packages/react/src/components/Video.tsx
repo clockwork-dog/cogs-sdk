@@ -113,8 +113,6 @@ export default function Video({
     />
   );
 
-  console.log('render Video');
-
   const background = typeof fullscreen === 'object' ? fullscreen.background : undefined;
   return fullscreen ? <div style={{ position: 'absolute', top: 0, left: 0, width: '100vw', height: '100vh', background }}>{video}</div> : video;
 }
