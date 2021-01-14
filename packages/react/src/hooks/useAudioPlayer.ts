@@ -10,15 +10,39 @@ type MediaClientConfigMessage = Extract<CogsClientMessage, { type: 'media_config
 export interface AudioClip {
   config: { preload: boolean; ephemeral: boolean };
   state: ClipState;
+  loop: boolean;
+  volume: number;
+}
+
+interface InternalAudioClip extends Omit<AudioClip, 'loop' | 'volume'> {
   player: Howl;
 }
 
-export default function useAudioPlayer(connection: CogsConnectionHandler): { isPlaying: boolean } {
+export default function useAudioPlayer(
+  connection: CogsConnectionHandler,
+  { onChanged }: { onChanged?: (clips: { [id: string]: AudioClip }) => void } = {}
+): { isPlaying: boolean } {
   const [globalVolume, setGlobalVolume] = useState(1);
 
   const [audioClips, setAudioClips] = useState<{
-    [id: string]: AudioClip;
+    [id: string]: InternalAudioClip;
   }>({});
+
+  useEffect(() => {
+    if (onChanged) {
+      onChanged(
+        Object.entries(audioClips).reduce((clips, [id, clip]) => {
+          clips[id] = {
+            config: { ...clip.config },
+            state: clip.state,
+            loop: clip.player.loop(),
+            volume: clip.player.volume(),
+          };
+          return clips;
+        }, {} as { [id: string]: AudioClip })
+      );
+    }
+  }, [audioClips, onChanged]);
 
   const isPlaying = useMemo(() => Object.values(audioClips).some(({ state }) => state === ClipState.Playing), [audioClips]);
 
@@ -36,7 +60,7 @@ export default function useAudioPlayer(connection: CogsConnectionHandler): { isP
   );
 
   const stopOrUnloadClip = useCallback(
-    (file: string, shouldUnloadClip: (clip: AudioClip) => boolean) =>
+    (file: string, shouldUnloadClip: (clip: InternalAudioClip) => boolean) =>
       setAudioClips((previousClips) => {
         const clips = { ...previousClips };
         const clip = clips[file];
@@ -77,7 +101,7 @@ export default function useAudioPlayer(connection: CogsConnectionHandler): { isP
   );
 
   const createClip = useCallback(
-    (file: string, config: AudioClip['config']): AudioClip => ({
+    (file: string, config: InternalAudioClip['config']): InternalAudioClip => ({
       config,
       state: ClipState.Stopped,
       player: createPlayer(file, config),
@@ -171,7 +195,7 @@ export default function useAudioPlayer(connection: CogsConnectionHandler): { isP
   );
 
   const updatedClip = useCallback(
-    (clipId: string, previousClip: AudioClip, newConfig: AudioClip['config']): AudioClip => {
+    (clipId: string, previousClip: InternalAudioClip, newConfig: InternalAudioClip['config']): InternalAudioClip => {
       const clip = { ...previousClip, config: newConfig };
       if (previousClip.config.preload !== newConfig.preload) {
         clip.player.stop();
