@@ -49,10 +49,10 @@ export default function useCogsConnection(
     };
   }, [addHandler, removeHandler, setConnected]);
 
-  return {
-    ...connection.current,
-    addHandler,
-    removeHandler,
-    connected,
-  };
+  const cogsConnection = useRef<CogsConnection & CogsConnectionHandler & { connected: boolean }>();
+  if (!cogsConnection.current) {
+    cogsConnection.current = { ...connection.current, addHandler, removeHandler, connected };
+  }
+
+  return cogsConnection.current;
 }
