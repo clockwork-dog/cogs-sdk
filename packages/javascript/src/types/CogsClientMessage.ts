@@ -9,12 +9,11 @@ type ShowLifecycleSubscriptionMessage =
   | { type: 'subscription_show_finished' }
   | { type: 'subscription_show_cancelled' };
 
-type AdjustableTimerDuration = { durationMillis: number };
-
-type AdjustableTimerSubscriptionMessage =
-  | ({ type: 'subscription_timer_started' } & AdjustableTimerDuration)
-  | ({ type: 'subscription_timer_stopped' } & AdjustableTimerDuration)
-  | ({ type: 'subscription_timer_set'; startedAtOffset?: number } & AdjustableTimerDuration);
+interface AdjustableTimerSubscriptionUpdateMessage {
+  type: 'subscription_timer_update';
+  ticking: boolean;
+  durationMillis: number;
+}
 
 type TextHintsSubscription = { type: 'subscription_text_hints_hint_sent'; hint: string };
 
@@ -39,7 +38,7 @@ type MediaClientMessage =
 
 export type CogsClientMessage =
   | ShowLifecycleSubscriptionMessage
-  | AdjustableTimerSubscriptionMessage
+  | AdjustableTimerSubscriptionUpdateMessage
   | TextHintsSubscription
   | MediaClientConfigMessage
   | MediaClientMessage;
