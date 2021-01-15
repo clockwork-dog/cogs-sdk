@@ -48,6 +48,7 @@ export default function Timer({
     setTimerStartedAt(Date.now());
     setTimerTotalMillis(durationMillis);
     setTimerTicking(true);
+    setTimerElapsed(0);
   }, []);
 
   useEffect(() => {
@@ -59,13 +60,6 @@ export default function Timer({
   const stopTimer = useCallback((durationMillis: number) => {
     setTimerTotalMillis(durationMillis);
     setTimerTicking(false);
-  }, []);
-
-  const setTimer = useCallback((durationMillis: number, startedAtOffset?: number) => {
-    if (startedAtOffset) {
-      setTimerStartedAt((startedAt) => startedAt + startedAtOffset);
-    }
-    setTimerTotalMillis(durationMillis);
   }, []);
 
   useEffect(() => {
@@ -81,19 +75,15 @@ export default function Timer({
 
   const onMessage = useCallback(
     (message: CogsClientMessage) => {
-      switch (message.type) {
-        case 'subscription_timer_started':
+      if (message.type === 'subscription_timer_update') {
+        if (message.ticking) {
           startTimer(message.durationMillis);
-          break;
-        case 'subscription_timer_stopped':
+        } else {
           stopTimer(message.durationMillis);
-          break;
-        case 'subscription_timer_set':
-          setTimer(message.durationMillis, message.startedAtOffset);
-          break;
+        }
       }
     },
-    [startTimer, stopTimer, setTimer]
+    [startTimer, stopTimer]
   );
 
   const callbacks = useMemo((): Callbacks => ({ onMessage }), [onMessage]);
