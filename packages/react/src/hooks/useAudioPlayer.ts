@@ -119,15 +119,30 @@ export default function useAudioPlayer(
           clip = createClip(clipId, { preload: false, ephemeral: true });
           clips[clipId] = clip;
         }
-        clip.player.loop(loop);
-        clip.player.play();
+
+        // Play the clip first to get a new ID for use with subsequent options
+        const id = clip.player.play();
+        clip.player.loop(loop, id);
+
+        // Start fade when clip starts
         if (typeof fade === 'number' && !isNaN(fade) && fade > 0) {
-          clip.player.once('fade', () => {
-            clip.player.volume(volume);
-          });
-          clip.player.fade(0, volume, fade * 1000);
+          clip.player.volume(0, id);
+          clip.player.once(
+            'play',
+            () => {
+              clip.player.once(
+                'fade',
+                () => {
+                  clip.player.volume(volume, id);
+                },
+                id
+              );
+              clip.player.fade(0, volume, fade * 1000, id);
+            },
+            id
+          );
         } else {
-          clip.player.volume(volume);
+          clip.player.volume(volume, id);
         }
         return clips;
       }),
