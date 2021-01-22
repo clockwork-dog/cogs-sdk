@@ -75,7 +75,7 @@ export default function Timer({
 
   const onMessage = useCallback(
     (message: CogsClientMessage) => {
-      if (message.type === 'subscription_timer_update') {
+      if (message.type === 'adjustable_timer_update') {
         if (message.ticking) {
           startTimer(message.durationMillis);
         } else {

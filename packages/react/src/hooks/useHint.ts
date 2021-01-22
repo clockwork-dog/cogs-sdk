@@ -8,8 +8,8 @@ export default function useHint(connection: CogsConnectionHandler): string | nul
 
   const onMessage = useCallback((message: CogsClientMessage) => {
     switch (message.type) {
-      case 'subscription_text_hints_hint_sent':
-        setHint(message.hint);
+      case 'text_hints_update':
+        setHint(message.currentHint);
         break;
     }
   }, []);
