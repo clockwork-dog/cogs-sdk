@@ -1,21 +1,18 @@
 import BackgroundOptions from './BackgroundOptions';
 import MediaObjectFit from './MediaObjectFit';
 
-// Subscriptions
+// COGS updates/events
 
-type ShowLifecycleSubscriptionMessage =
-  | { type: 'subscription_show_reset' }
-  | { type: 'subscription_show_started' }
-  | { type: 'subscription_show_finished' }
-  | { type: 'subscription_show_cancelled' };
-
-interface AdjustableTimerSubscriptionUpdateMessage {
-  type: 'subscription_timer_update';
+interface AdjustableTimerUpdateMessage {
+  type: 'adjustable_timer_update';
   ticking: boolean;
   durationMillis: number;
 }
 
-type TextHintsSubscription = { type: 'subscription_text_hints_hint_sent'; hint: string };
+interface TextHintsUpdateMessage {
+  type: 'text_hints_update';
+  currentHint: string;
+}
 
 // Media
 
@@ -36,11 +33,6 @@ type MediaClientMessage =
   | { type: 'video_stop'; file?: string }
   | { type: 'video_set_volume'; file: string; volume: number };
 
-export type CogsClientMessage =
-  | ShowLifecycleSubscriptionMessage
-  | AdjustableTimerSubscriptionUpdateMessage
-  | TextHintsSubscription
-  | MediaClientConfigMessage
-  | MediaClientMessage;
+export type CogsClientMessage = AdjustableTimerUpdateMessage | TextHintsUpdateMessage | MediaClientConfigMessage | MediaClientMessage;
 
 export default CogsClientMessage;
