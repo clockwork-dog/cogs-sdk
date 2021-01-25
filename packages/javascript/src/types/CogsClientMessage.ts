@@ -11,7 +11,7 @@ interface AdjustableTimerUpdateMessage {
 
 interface TextHintsUpdateMessage {
   type: 'text_hints_update';
-  currentHint: string;
+  lastSentHint: string;
 }
 
 // Media
