@@ -23,10 +23,10 @@
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
-"@clockworkdog/cogs-client@^0.9.16":
-  version "0.9.16"
-  resolved "https://registry.yarnpkg.com/@clockworkdog/cogs-client/-/cogs-client-0.9.16.tgz#5d05032462cc34759922737bbccae28370133142"
-  integrity sha512-M3MHlI7aq80d/G6YfKR8v0kOKploRRNZjpTINHVryZRJ2rOdbKb6mJRPcUAKkY5vT99CqnPHG9WaJV1i/mNjuQ==
+"@clockworkdog/cogs-client@^0.9.17":
+  version "0.9.17"
+  resolved "https://registry.yarnpkg.com/@clockworkdog/cogs-client/-/cogs-client-0.9.17.tgz#01889d7536e09564536755f974ab28a22432e84b"
+  integrity sha512-tQVVaiMfgj5USt8w8MSF8RDR/MUmDntG6I6WD1JBWTT+I2T42x2uR+pAYoO4iFq1yzgooqnfRT7pL9qrVxLbQw==
   dependencies:
     reconnecting-websocket "^4.4.0"
 
