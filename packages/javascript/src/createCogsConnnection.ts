@@ -65,18 +65,22 @@ export default function createCogsWebsocket(callbacks: Callbacks, { host = docum
   };
 
   function sendEvent(eventKey: string, eventValue?: EventValue) {
-    websocket.send(
-      JSON.stringify({
-        event: {
-          key: eventKey,
-          value: eventValue,
-        },
-      })
-    );
+    if (websocket.readyState === WebSocket.OPEN) {
+      websocket.send(
+        JSON.stringify({
+          event: {
+            key: eventKey,
+            value: eventValue,
+          },
+        })
+      );
+    }
   }
 
   function sendUpdates(updates: { [port: string]: UpdateValue }) {
-    websocket.send(JSON.stringify({ updates }));
+    if (websocket.readyState === WebSocket.OPEN) {
+      websocket.send(JSON.stringify({ updates }));
+    }
   }
 
   function close() {
