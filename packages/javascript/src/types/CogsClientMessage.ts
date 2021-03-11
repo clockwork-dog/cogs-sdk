@@ -25,7 +25,7 @@ interface MediaClientConfigMessage {
 
 type MediaClientMessage =
   | { type: 'audio_play'; file: string; fade?: number; loop?: true; volume: number }
-  | { type: 'audio_pause'; file: string }
+  | { type: 'audio_pause'; file: string; fade?: number }
   | { type: 'audio_stop'; file?: string; fade?: number }
   | { type: 'audio_set_clip_volume'; file: string; volume: number; fade?: number }
   | { type: 'video_play'; file: string; loop?: true; volume: number; fit: MediaObjectFit }
