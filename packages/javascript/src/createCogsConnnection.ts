@@ -7,7 +7,7 @@ export interface CogsConnection {
   close: () => void;
 }
 
-function websocketParamtersFromUrl(url: string): { path: string; pathParams: URLSearchParams; useReconnectingWebsocket?: boolean } {
+function websocketParametersFromUrl(url: string): { path: string; pathParams: URLSearchParams; useReconnectingWebsocket?: boolean } {
   const parsedUrl = new URL(url);
   const pathParams = new URLSearchParams(parsedUrl.searchParams);
   const localClientId = pathParams.get('local_id');
@@ -16,21 +16,25 @@ function websocketParamtersFromUrl(url: string): { path: string; pathParams: URL
   if (localClientId) {
     const type = pathParams.get('t') ?? '';
     pathParams.delete('local_id');
-    return { path: `/client/local/${localClientId}`, pathParams: new URLSearchParams({ t: type }), useReconnectingWebsocket: true };
+    return {
+      path: `/client/local/${encodeURIComponent(localClientId)}`,
+      pathParams: new URLSearchParams({ t: type }),
+      useReconnectingWebsocket: true,
+    };
   } else if (isSimulator) {
-    const name = pathParams.get('name');
+    const name = pathParams.get('name') ?? '';
     pathParams.delete('simulator');
     pathParams.delete('name');
-    return { path: `/simulator/${name}`, pathParams, useReconnectingWebsocket: true };
+    return { path: `/simulator/${encodeURIComponent(name)}`, pathParams, useReconnectingWebsocket: true };
   } else {
-    const serial = pathParams.get('serial');
+    const serial = pathParams.get('serial') ?? '';
     pathParams.delete('serial');
-    return { path: `/client/${serial}`, pathParams };
+    return { path: `/client/${encodeURIComponent(serial)}`, pathParams };
   }
 }
 
 export default function createCogsWebsocket(callbacks: Callbacks, { host = document.location.host }: { host?: string } = {}): CogsConnection {
-  const { useReconnectingWebsocket, path, pathParams } = websocketParamtersFromUrl(document.location.href);
+  const { useReconnectingWebsocket, path, pathParams } = websocketParametersFromUrl(document.location.href);
   const socketUrl = `ws://${host}${path}?${pathParams}`;
   const websocket = useReconnectingWebsocket ? new ReconnectingWebSocket(socketUrl) : new WebSocket(socketUrl);
 
