@@ -2,12 +2,12 @@ import { Callbacks, CogsClientMessage, MediaObjectFit } from '@clockworkdog/cogs
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { assetSrc } from '../helpers/urls';
 import useCogsCallbacks from '../hooks/useCogsCallbacks';
-import ClipState from '../types/ClipState';
+import VideoClipState from '../types/VideoClipState';
 import CogsConnectionHandler from '../types/CogsConnectionHandler';
 
 export interface VideoClip {
   src: string;
-  state: ClipState;
+  state: VideoClipState;
   volume: number;
   loop: boolean;
   fit: MediaObjectFit;
@@ -41,11 +41,11 @@ export default function Video({
           volume: message.volume,
           fit: message.fit,
           loop: message.loop ?? false,
-          state: ClipState.Playing,
+          state: VideoClipState.Playing,
         });
         break;
       case 'video_pause':
-        setVideoClip((video) => (video ? { ...video, state: ClipState.Paused } : null));
+        setVideoClip((video) => (video ? { ...video, state: VideoClipState.Paused } : null));
         break;
       case 'video_stop':
         setVideoClip(null);
@@ -61,13 +61,13 @@ export default function Video({
   useEffect(() => {
     if (ref.current) {
       switch (videoClip?.state) {
-        case ClipState.Playing:
+        case VideoClipState.Playing:
           ref.current.play();
           break;
-        case ClipState.Paused:
+        case VideoClipState.Paused:
           ref.current.pause();
           break;
-        case ClipState.Stopped:
+        case VideoClipState.Stopped:
           ref.current.currentTime = 0;
           break;
       }

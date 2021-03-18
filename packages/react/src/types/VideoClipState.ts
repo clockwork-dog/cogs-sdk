@@ -1,7 +1,7 @@
-enum ClipState {
+enum VideoClipState {
   Playing = 'playing',
   Paused = 'paused',
   Stopped = 'stopped',
 }
 
-export default ClipState;
+export default VideoClipState;

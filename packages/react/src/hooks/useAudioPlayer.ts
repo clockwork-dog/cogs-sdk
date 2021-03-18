@@ -2,7 +2,8 @@ import { Callbacks, CogsClientMessage } from '@clockworkdog/cogs-client';
 import { Howl, Howler } from 'howler';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { assetSrc } from '../helpers/urls';
-import ClipState from '../types/ClipState';
+import ActiveAudioClipState from '../types/ActiveAudioClipState';
+
 import CogsConnectionHandler from '../types/CogsConnectionHandler';
 import useCogsCallbacks from './useCogsCallbacks';
 
@@ -10,213 +11,299 @@ type MediaClientConfigMessage = Extract<CogsClientMessage, { type: 'media_config
 
 export interface AudioClip {
   config: { preload: boolean; ephemeral: boolean };
-  state: ClipState;
+  activeClips: { [soundId: number]: ActiveClip };
+}
+
+interface InternalClipPlayer extends AudioClip {
+  player: Howl;
+}
+
+export interface ActiveClip {
+  state: ActiveAudioClipState;
   loop: boolean;
   volume: number;
 }
 
-interface InternalAudioClip extends Omit<AudioClip, 'loop' | 'volume'> {
-  player: Howl;
-}
-
 export default function useAudioPlayer(
   connection: CogsConnectionHandler,
-  { onChanged }: { onChanged?: (clips: { [id: string]: AudioClip }) => void } = {}
+  { onChanged }: { onChanged?: (config: { [path: string]: AudioClip }) => void } = {}
 ): { isPlaying: boolean } {
   const [globalVolume, setGlobalVolume] = useState(1);
 
-  const [audioClips, setAudioClips] = useState<{
-    [id: string]: InternalAudioClip;
-  }>({});
+  const [audioClipPlayers, setAudioClipPlayers] = useState<{ [path: string]: InternalClipPlayer }>({});
+
+  const updateAudioClipPlayer = useCallback((path: string, update: (player: InternalClipPlayer) => InternalClipPlayer) => {
+    setAudioClipPlayers((previousClipPlayers) =>
+      path in previousClipPlayers ? { ...previousClipPlayers, [path]: update(previousClipPlayers[path]) } : previousClipPlayers
+    );
+  }, []);
+
+  const updateActiveAudioClip = useCallback(
+    (path: string, soundId: number, update: (clip: ActiveClip) => ActiveClip) =>
+      updateAudioClipPlayer(path, (player) =>
+        soundId in player.activeClips ? { ...player, activeClips: { ...player.activeClips, [soundId]: update(player.activeClips[soundId]) } } : player
+      ),
+    [updateAudioClipPlayer]
+  );
+
+  const handleStoppedClip = useCallback((path: string, soundId: number) => {
+    setAudioClipPlayers((players) => {
+      if (!(path in players)) {
+        return players;
+      }
+      players = { ...players };
+      const clipPlayer = players[path];
+      const activeClips = { ...clipPlayer.activeClips };
+      delete activeClips[soundId];
+
+      clipPlayer.activeClips = activeClips;
+      players[path] = clipPlayer;
+
+      // Once last instance of an ephemeral clip has stopped, cleanup and remove the player
+      if (Object.keys(clipPlayer.activeClips).length === 0 && clipPlayer.config.ephemeral) {
+        clipPlayer.player.unload();
+        delete players[path];
+      }
+      return players;
+    });
+  }, []);
 
   useEffect(() => {
     if (onChanged) {
       onChanged(
-        Object.entries(audioClips).reduce((clips, [id, clip]) => {
-          clips[id] = {
-            config: { ...clip.config },
-            state: clip.state,
-            loop: clip.player.loop(),
-            volume: clip.player.volume(),
+        Object.entries(audioClipPlayers).reduce((clips, [path, clipPlayer]) => {
+          clips[path] = {
+            config: { preload: clipPlayer.config.preload, ephemeral: clipPlayer.config.ephemeral },
+            activeClips: clipPlayer.activeClips,
           };
           return clips;
-        }, {} as { [id: string]: AudioClip })
+        }, {} as { [path: string]: AudioClip })
       );
     }
-  }, [audioClips, onChanged]);
+  }, [audioClipPlayers, onChanged]);
 
-  const isPlaying = useMemo(() => Object.values(audioClips).some(({ state }) => state === ClipState.Playing), [audioClips]);
+  const isPlaying = useMemo(
+    () =>
+      Object.values(audioClipPlayers).some(({ activeClips }) =>
+        Object.values(activeClips).some((clip) => clip.state === ActiveAudioClipState.Playing)
+      ),
+    [audioClipPlayers]
+  );
 
   useEffect(() => {
     Howler.volume(globalVolume);
   }, [globalVolume]);
 
-  const setClipState = useCallback(
-    (clipId: string, state: ClipState) =>
-      setAudioClips((clips) => {
-        const clip = clips[clipId];
-        return clip ? { ...clips, [clipId]: { ...clip, state } } : clips;
-      }),
-    [setAudioClips]
-  );
-
-  const stopOrUnloadClip = useCallback(
-    (file: string, shouldUnloadClip: (clip: InternalAudioClip) => boolean) =>
-      setAudioClips((previousClips) => {
-        const clips = { ...previousClips };
-        const clip = clips[file];
-        if (!clip) {
-          return clips;
-        }
-        if (shouldUnloadClip(clip)) {
-          clips[file].player.unload();
-          delete clips[file];
-        } else {
-          clips[file] = { ...clip, state: ClipState.Stopped };
-        }
-        return clips;
-      }),
-    [setAudioClips]
-  );
-
-  const createPlayer = useCallback(
-    (file: string, config: { preload: boolean }) => {
-      return new Howl({
-        src: assetSrc(file),
-        autoplay: false,
-        loop: false,
-        volume: 1,
-        html5: !config.preload,
-        preload: config.preload,
-        onplay: () => setClipState(file, ClipState.Playing),
-        onpause: () => setClipState(file, ClipState.Paused),
-        onstop: () => {
-          stopOrUnloadClip(file, (clip) => clip.config.ephemeral);
-        },
-        onend: () => {
-          stopOrUnloadClip(file, (clip) => clip.config.ephemeral && !clip.player.loop());
-        },
-      });
-    },
-    [setClipState, stopOrUnloadClip]
-  );
+  const createPlayer = useCallback((path: string, config: { preload: boolean }) => {
+    return new Howl({
+      src: assetSrc(path),
+      autoplay: false,
+      loop: false,
+      volume: 1,
+      html5: !config.preload,
+      preload: config.preload,
+    });
+  }, []);
 
   const createClip = useCallback(
-    (file: string, config: InternalAudioClip['config']): InternalAudioClip => ({
+    (file: string, config: InternalClipPlayer['config']): InternalClipPlayer => ({
       config,
-      state: ClipState.Stopped,
       player: createPlayer(file, config),
+      activeClips: {},
     }),
     [createPlayer]
   );
 
+  function isFadeValid(fade: number | undefined): fade is number {
+    return typeof fade === 'number' && !isNaN(fade) && fade > 0;
+  }
+
   const playAudioClip = useCallback(
-    (clipId: string, { fade, loop, volume }: { fade?: number; loop: boolean; volume: number }) =>
-      setAudioClips((previousClips) => {
-        const clips = { ...previousClips };
-        let clip = clips[clipId];
+    (clipPath: string, { volume, fade, loop }: { volume: number; fade?: number; loop: boolean }) =>
+      setAudioClipPlayers((previousClipPlayers) => {
+        const clips = { ...previousClipPlayers };
+        let clip = clips[clipPath];
         if (!clip) {
-          clip = createClip(clipId, { preload: false, ephemeral: true });
-          clips[clipId] = clip;
-        }
-
-        // Play the clip first to get a new ID for use with subsequent options
-        const id = clip.player.play();
-        clip.player.loop(loop, id);
-
-        // Start fade when clip starts
-        if (typeof fade === 'number' && !isNaN(fade) && fade > 0) {
-          clip.player.volume(0, id);
-          clip.player.once(
-            'play',
-            () => {
-              clip.player.once(
-                'fade',
-                () => {
-                  clip.player.volume(volume, id);
-                },
-                id
-              );
-              clip.player.fade(0, volume, fade * 1000, id);
-            },
-            id
-          );
+          clip = createClip(clipPath, { preload: false, ephemeral: true });
+          clips[clipPath] = clip;
         } else {
-          clip.player.volume(volume, id);
+          clip = { ...clip };
+          clips[clipPath] = clip;
         }
+
+        const pausedSoundIds = Object.entries(clip.activeClips)
+          .filter(([, { state }]) => state === ActiveAudioClipState.Paused || state === ActiveAudioClipState.Pausing)
+          .map(([id]) => parseInt(id));
+
+        // Paused clips need to be played again
+        pausedSoundIds.forEach((soundId) => {
+          clip.player.play(soundId);
+        });
+
+        // If no currently paused/pausing clips, play a new clip
+        const newSoundIds =
+          pausedSoundIds.length > 0
+            ? []
+            : [
+                (() => {
+                  const soundId = clip.player.play();
+                  return soundId;
+                })(),
+              ];
+
+        [...pausedSoundIds, ...newSoundIds].forEach((soundId) => {
+          // Cleanup any old callbacks first
+          clip.player.off('fade', undefined, soundId);
+          clip.player.off('end', undefined, soundId);
+          clip.player.off('stop', undefined, soundId);
+          clip.player.loop(loop, soundId);
+
+          clip.player.once('stop', () => handleStoppedClip(clipPath, soundId), soundId);
+
+          // Looping clips fire the 'end' callback on every loop
+          if (!loop) {
+            clip.player.once('end', () => handleStoppedClip(clipPath, soundId), soundId);
+          }
+
+          const activeClip: ActiveClip = {
+            state: ActiveAudioClipState.Playing,
+            loop,
+            volume,
+          };
+
+          // Start fade when clip starts
+          if (isFadeValid(fade)) {
+            clip.player.volume(0, soundId);
+            clip.player.once(
+              'play',
+              () => {
+                clip.player.fade(0, volume, fade * 1000, soundId);
+              },
+              soundId
+            );
+          } else {
+            clip.player.volume(volume, soundId);
+          }
+
+          // Track new active clip
+          clip.activeClips = { ...clip.activeClips, [soundId]: activeClip };
+        });
+
         return clips;
       }),
-    [setAudioClips, createClip]
+    [createClip, handleStoppedClip]
   );
 
   const stopAudioClip = useCallback(
-    (file: string, { fade }: { fade?: number }) =>
-      setAudioClips((clips) => {
-        const clip = clips[file];
-        if (clip) {
-          if (typeof fade === 'number' && !isNaN(fade) && fade > 0) {
-            clip.player.once('fade', () => {
-              clip.player.stop();
-            });
-            clip.player.fade(clip.player.volume(), 0, fade * 1000);
+    (path: string, { fade }: { fade?: number }) => {
+      const clipPlayer = audioClipPlayers[path];
+      if (!clipPlayer) {
+        return;
+      }
+      const { player, activeClips } = clipPlayer;
+
+      // Cleanup any old fade callbacks first
+      player.off('fade');
+
+      if (isFadeValid(fade)) {
+        // Start fade out for each non-paused active clip
+        Object.entries(activeClips).forEach(([soundIdStr, clip]) => {
+          const soundId = parseInt(soundIdStr);
+          if (clip.state === ActiveAudioClipState.Playing || clip.state === ActiveAudioClipState.Pausing) {
+            player.fade(player.volume(soundId) as number, 0, fade * 1000, soundId);
+            // Set callback after starting new fade, otherwise it will fire straight away as the previous fade is cancelled
+            player.once('fade', (soundId) => player.stop(soundId), soundId);
+
+            updateActiveAudioClip(path, soundId, (clip) => ({ ...clip, state: ActiveAudioClipState.Stopping }));
           } else {
-            clip.player.stop();
+            player.stop(soundId);
           }
-        }
-        return clips;
-      }),
-    [setAudioClips]
+        });
+      } else {
+        player.stop();
+      }
+    },
+    [audioClipPlayers, updateActiveAudioClip]
   );
 
   const pauseAudioClip = useCallback(
-    (clipId: string) =>
-      setAudioClips((clips) => {
-        clips[clipId]?.player.pause();
-        return clips;
+    (path: string, fade?: number) =>
+      updateAudioClipPlayer(path, (clipPlayer) => {
+        return {
+          ...clipPlayer,
+          activeClips: Object.fromEntries(
+            Object.entries(clipPlayer.activeClips)
+              .filter(([, clip]) => clip.state === ActiveAudioClipState.Playing)
+              .map(([soundIdStr, clip]) => {
+                const soundId = parseInt(soundIdStr);
+
+                if (isFadeValid(fade)) {
+                  // Fade then pause
+                  clipPlayer.player.once(
+                    'fade',
+                    (soundId) => {
+                      clipPlayer.player.pause(soundId);
+                      updateActiveAudioClip(path, soundId, (clip) => ({ ...clip, state: ActiveAudioClipState.Paused }));
+                    },
+                    soundId
+                  );
+                  clipPlayer.player.fade(clipPlayer.player.volume(soundId) as number, 0, fade * 1000, soundId);
+                  return [soundIdStr, { ...clip, state: ActiveAudioClipState.Pausing }] as const;
+                } else {
+                  // Pause now
+                  clipPlayer.player.pause(soundId);
+                  return [soundId, { ...clip, state: ActiveAudioClipState.Paused }] as const;
+                }
+              })
+          ),
+        };
       }),
-    [setAudioClips]
+    [updateAudioClipPlayer, updateActiveAudioClip]
   );
 
-  const stopAllAudioClips = useCallback(
-    () =>
-      setAudioClips((clips) => {
-        Object.values(clips).forEach((clip) => {
-          clip.player.stop();
-          clip.player.volume(1);
-        });
-        return clips;
-      }),
-    [setAudioClips]
-  );
+  const stopAllAudioClips = useCallback(() => Object.values(audioClipPlayers).forEach((clipPlayer) => clipPlayer.player.stop()), [audioClipPlayers]);
 
   const setAudioClipVolume = useCallback(
-    (clipId: string, { volume, fade }: { volume: number; fade?: number }) =>
-      setAudioClips((previousClips) => {
-        const clips = { ...previousClips };
-        const clip = clips[clipId];
-        if (clip) {
-          if (volume >= 0 && volume <= 1) {
-            if (typeof fade === 'number' && !isNaN(fade) && fade > 0) {
-              clip.player.fade(clip.player.volume(), volume, fade * 1000);
-            } else {
-              clip.player.volume(volume);
-            }
-          } else {
-            console.warn('Invalid volume', volume);
-          }
-        }
-        return clips;
-      }),
-    [setAudioClips]
+    (path: string, { volume, fade }: { volume: number; fade?: number }) => {
+      if (!(volume >= 0 && volume <= 1)) {
+        console.warn('Invalid volume', volume);
+        return;
+      }
+
+      updateAudioClipPlayer(path, (clipPlayer) => {
+        return {
+          ...clipPlayer,
+          activeClips: Object.fromEntries(
+            Object.entries(clipPlayer.activeClips).map(([soundIdStr, clip]) => {
+              // Ignored for pausing/stopping instances
+              if (clip.state === ActiveAudioClipState.Playing || clip.state === ActiveAudioClipState.Paused) {
+                const soundId = parseInt(soundIdStr);
+
+                if (isFadeValid(fade)) {
+                  clipPlayer.player.fade(clipPlayer.player.volume(soundId) as number, volume, fade * 1000);
+                } else {
+                  clipPlayer.player.volume(volume);
+                }
+
+                return [soundIdStr, { ...clip, volume }] as const;
+              } else {
+                return [soundIdStr, clip] as const;
+              }
+            })
+          ),
+        };
+      });
+    },
+    [updateAudioClipPlayer]
   );
 
   const updatedClip = useCallback(
-    (clipId: string, previousClip: InternalAudioClip, newConfig: InternalAudioClip['config']): InternalAudioClip => {
+    (clipPath: string, previousClip: InternalClipPlayer, newConfig: InternalClipPlayer['config']): InternalClipPlayer => {
       const clip = { ...previousClip, config: newConfig };
       if (previousClip.config.preload !== newConfig.preload) {
         clip.player.stop();
         clip.player.unload();
-        clip.player = createPlayer(clipId, newConfig);
+        clip.player = createPlayer(clipPath, newConfig);
       }
       return clip;
     },
@@ -225,32 +312,32 @@ export default function useAudioPlayer(
 
   const updateConfig = useCallback(
     (newFiles: MediaClientConfigMessage['files']) =>
-      setAudioClips((previousClips) => {
-        const clips = { ...previousClips };
+      setAudioClipPlayers((previousClipPlayers) => {
+        const clipPlayers = { ...previousClipPlayers };
 
-        const removedClips = Object.keys(previousClips).filter(
-          (previousFile) => !(previousFile in newFiles) && !previousClips[previousFile].config.ephemeral
+        const removedClips = Object.keys(previousClipPlayers).filter(
+          (previousFile) => !(previousFile in newFiles) && !previousClipPlayers[previousFile].config.ephemeral
         );
         removedClips.forEach((file) => {
-          const player = previousClips[file].player;
+          const player = previousClipPlayers[file].player;
           player.stop();
           player.unload();
-          delete clips[file];
+          delete clipPlayers[file];
         });
 
-        const addedClips = Object.entries(newFiles).filter(([newfile]) => !previousClips[newfile]);
-        addedClips.forEach(([file, config]) => {
-          clips[file] = createClip(file, { ...config, ephemeral: false });
+        const addedClips = Object.entries(newFiles).filter(([newfile]) => !previousClipPlayers[newfile]);
+        addedClips.forEach(([path, config]) => {
+          clipPlayers[path] = createClip(path, { ...config, ephemeral: false });
         });
 
-        const updatedClips = Object.keys(previousClips).filter((previousFile) => previousFile in newFiles);
-        updatedClips.forEach((file) => {
-          clips[file] = updatedClip(file, clips[file], { ...newFiles[file], ephemeral: false });
+        const updatedClips = Object.keys(previousClipPlayers).filter((previousFile) => previousFile in newFiles);
+        updatedClips.forEach((path) => {
+          clipPlayers[path] = updatedClip(path, clipPlayers[path], { ...newFiles[path], ephemeral: false });
         });
 
-        return clips;
+        return clipPlayers;
       }),
-    [setAudioClips, createClip, updatedClip]
+    [createClip, updatedClip]
   );
 
   const onMessage = useCallback(
@@ -268,7 +355,7 @@ export default function useAudioPlayer(
           });
           break;
         case 'audio_pause':
-          pauseAudioClip(message.file);
+          pauseAudioClip(message.file, message.fade);
           break;
         case 'audio_stop':
           if (message.file) {
