@@ -1,6 +1,6 @@
 {
   "name": "@clockworkdog/cogs-client-react",
-  "version": "0.9.14",
+  "version": "0.10.0",
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
