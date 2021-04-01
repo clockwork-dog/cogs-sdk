@@ -48,15 +48,13 @@ import { createCogsConnnection } from '@clockworkdog/cogs-client';
 
 ```ts
 let connected = false;
-let websocket = null;
 
-websocket = createCogsConnnection({
+const websocket = createCogsWebsocket({
   onSocketOpen: () => {
     connected = true;
   },
   onSocketClose: () => {
     connected = false;
-    websocket = null;
   },
   onUpdates: (updates) => {
     // Handle updates. See 'types/Callback.ts`
