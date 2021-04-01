@@ -4,11 +4,19 @@ Create content for your COGS Media Master
 
 ## Add to your project
 
+## Browser
+
+```html
+<script src="https://unpkg.com/@clockworkdog/cogs-client@0.9"></script>
+```
+
+### NPM
+
 ```shell
 npm install --save @clockwork-dog/cogs-client
 ```
 
-or
+### Yarn
 
 ```shell
 yarn add @clockwork-dog/cogs-client
@@ -16,7 +24,7 @@ yarn add @clockwork-dog/cogs-client
 
 ## Usage
 
-Import the library
+If using `npm` or `yarn`, import the library
 
 ```ts
 import { createCogsClient } from '@clockworkdog/cogs-client';
