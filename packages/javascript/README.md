@@ -60,16 +60,16 @@ websocket = createCogsConnnection({
   },
   onUpdates: (updates) => {
     // Handle updates. See 'types/Callback.ts`
-  };
+  },
   onEvent: (eventKey, eventValue) => {
     // Handle event. See 'types/Callback.ts`
-  };
+  },
   onConfig: (config) => {
     // Handle new config. See 'types/Callback.ts`
-  };
+  },
   onMessage: (message) => {
     // Handle message. See `types/CogsClientMessage.ts`
-  };
+  }
 });
 ```
 
