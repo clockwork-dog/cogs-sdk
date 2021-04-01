@@ -8,7 +8,7 @@
     "lint": "yarn lint:json && yarn lint:ts",
     "lint:json": "prettier --list-different .eslintrc *.json",
     "lint:ts": "eslint --ext .js,.ts --ignore-path .gitignore .",
-    "build": "tsc && browserify --debug dist/index.js -o dist/browser/index.js",
+    "build": "tsc && browserify --debug --standalone COGS dist/index.js -o dist/browser/index.js",
     "release": "yarn publish --access public"
   },
   "keywords": [],
