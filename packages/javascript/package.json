@@ -1,6 +1,6 @@
 {
   "name": "@clockworkdog/cogs-client",
-  "version": "0.9.20",
+  "version": "0.9.21",
   "main": "dist/index.js",
   "unpkg": "dist/browser/index.js",
   "scripts": {
