@@ -24,25 +24,33 @@ yarn add @clockwork-dog/cogs-client
 
 ## Usage
 
-If using `npm` or `yarn`, import the library
+### Import the library
 
-```ts
-import { createCogsClient } from '@clockworkdog/cogs-client';
-```
-
-or
+#### Browser
 
 ```js
-const { createCogsClient } = require('@clockworkdog/cogs-client');
+const { createCogsConnection } = COGS;
 ```
 
-then
+#### Javascript
+
+```js
+const { createCogsConnnection } = require('@clockworkdog/cogs-client');
+```
+
+#### Typesript / ES6
+
+```ts
+import { createCogsConnnection } from '@clockworkdog/cogs-client';
+```
+
+### Connect to COGS
 
 ```ts
 let connected = false;
 let websocket = null;
 
-websocket = createCogsWebsocket({
+websocket = createCogsConnnection({
   onSocketOpen: () => {
     connected = true;
   },
