@@ -1,10 +1,10 @@
-import { Callbacks, createCogsConnnection } from '@clockworkdog/cogs-client';
-import { CogsConnection } from '@clockworkdog/cogs-client/dist/createCogsConnnection';
+import { Callbacks, createCogsConnection } from '@clockworkdog/cogs-client';
+import { CogsConnection } from '@clockworkdog/cogs-client/dist/createCogsConnection';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CogsConnectionHandler from '../types/CogsConnectionHandler';
 
 export default function useCogsConnection(
-  options?: Parameters<typeof createCogsConnnection>[1]
+  options?: Parameters<typeof createCogsConnection>[1]
 ): CogsConnection & CogsConnectionHandler & { connected: boolean } {
   const [connected, setConnected] = useState(false);
   const handlers = useRef(new Set<Callbacks>());
@@ -13,7 +13,7 @@ export default function useCogsConnection(
   const removeHandler = useCallback((handler: Callbacks) => handlers.current.delete(handler), []);
 
   const optionsRef = useRef(options); // Initial value
-  const [connection, setConnection] = useState<ReturnType<typeof createCogsConnnection>>({
+  const [connection, setConnection] = useState<ReturnType<typeof createCogsConnection>>({
     // Dummy value before the `useEffect` below has run
     /* eslint @typescript-eslint/no-empty-function: "off" */
     sendUpdates() {},
@@ -23,7 +23,7 @@ export default function useCogsConnection(
 
   useEffect(() => {
     setConnection(
-      createCogsConnnection(
+      createCogsConnection(
         {
           onSocketOpen: () => handlers.current.forEach((handler) => handler.onSocketOpen?.()),
           onSocketClose: () => handlers.current.forEach((handler) => handler.onSocketClose?.()),
