@@ -220,7 +220,10 @@ export default function useAudioPlayer(
           }
         });
       } else {
-        player.stop();
+        Object.keys(activeClips).forEach((soundIdStr) => {
+          const soundId = parseInt(soundIdStr);
+          player.stop(soundId);
+        });
       }
     },
     [audioClipPlayers, updateActiveAudioClip]
@@ -261,7 +264,15 @@ export default function useAudioPlayer(
     [updateAudioClipPlayer, updateActiveAudioClip]
   );
 
-  const stopAllAudioClips = useCallback(() => Object.values(audioClipPlayers).forEach((clipPlayer) => clipPlayer.player.stop()), [audioClipPlayers]);
+  const stopAllAudioClips = useCallback(
+    () =>
+      Object.values(audioClipPlayers).forEach((clipPlayer) => {
+        if (Object.keys(clipPlayer.activeClips).length) {
+          clipPlayer.player.stop();
+        }
+      }),
+    [audioClipPlayers]
+  );
 
   const setAudioClipVolume = useCallback(
     (path: string, { volume, fade }: { volume: number; fade?: number }) => {
@@ -301,7 +312,6 @@ export default function useAudioPlayer(
     (clipPath: string, previousClip: InternalClipPlayer, newConfig: InternalClipPlayer['config']): InternalClipPlayer => {
       const clip = { ...previousClip, config: newConfig };
       if (previousClip.config.preload !== newConfig.preload) {
-        clip.player.stop();
         clip.player.unload();
         clip.player = createPlayer(clipPath, newConfig);
       }
@@ -320,7 +330,6 @@ export default function useAudioPlayer(
         );
         removedClips.forEach((file) => {
           const player = previousClipPlayers[file].player;
-          player.stop();
           player.unload();
           delete clipPlayers[file];
         });
