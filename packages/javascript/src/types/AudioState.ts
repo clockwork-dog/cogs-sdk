@@ -16,4 +16,8 @@ export interface ActiveClip {
   volume: number;
 }
 
-export type AudioState = { [path: string]: AudioClip };
+export interface AudioState {
+  isPlaying: boolean;
+  globalVolume: number;
+  clips: { [path: string]: AudioClip };
+}

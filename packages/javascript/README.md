@@ -82,7 +82,7 @@ function sendPortUpdateToCogs() {
 }
 
 const audioPlayer = new CogsAudioPlayer(cogsConnection);
-audioPlayer.addEventListener('update', (audioState) => {
+audioPlayer.addEventListener('state', (audioState) => {
   // Handle audio state. See `types/AudioState.ts`
 });
 ```
