@@ -19,27 +19,32 @@ yarn add @clockwork-dog/cogs-client-react
 Import the library
 
 ```ts
-import { useCogsConnection, Video, useTimer, useAudioPlayer, useTextHint } from '@clockworkdog/cogs-client-react';
+import { CogsConnection, AudioPlayer } from '@clockworkdog/cogs-client';
+import { Video, Timer, Hint, useIsConnected, useIsAudioPlaying } from '@clockworkdog/cogs-client-react';
 ```
 
 or
 
 ```js
-const { useCogsConnection, useAudioPlayer, Video, Hint, Timer } = require('@clockworkdog/cogs-client-react');
+const { CogsConnection, AudioPlayer } = require('@clockworkdog/cogs-client');
+const { Video, Hint, Timer, useIsConnected, useIsAudioPlaying } = require('@clockworkdog/cogs-client-react');
 ```
 
 then
 
 ```tsx
-function MyComponent() {
-  const cogsConnection = useCogsConnection();
+const cogsConnection = new CogsConnection();
+// Add audio playing capability
+const audioPlayer = new AudioPlayer(cogsConnection);
 
-  // Add audio playing capability (Renders nothing)
-  const audioPlayer = useAudioPlayer(cogsConnection);
+function MyComponent() {
+  const isConnected = useIsConnected(cogsConnection);
+  const isAudioPlaying = useIsAudioPlaying(audioPlayer);
 
   return (
     <div>
-      <div>Audio playing: {audioPlayer.isPlaying.toString()}</div>
+      <div>Connected: {isConnected}</div>
+      <div>Audio playing: {isAudioPlaying}</div>
       <div style={{ fontSize: 100 }}>
         {/* The time from the adjustable timer plugin in the format 'MM:SS' */}
         <Timer connection={cogsConnection} center />
