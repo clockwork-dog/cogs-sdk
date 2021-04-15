@@ -1,4 +1,4 @@
-import { EventValue, UpdateValue } from './types/Callbacks';
+import { EventValue, UpdateValue } from './types/valueTypes';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 
 export default class CogsConnection extends EventTarget {
