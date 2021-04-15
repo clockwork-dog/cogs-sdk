@@ -1,9 +1,7 @@
-import { Callbacks, CogsClientMessage, MediaObjectFit } from '@clockworkdog/cogs-client';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { CogsClientMessage, CogsConnection, MediaObjectFit } from '@clockworkdog/cogs-client';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { assetSrc } from '../helpers/urls';
-import useCogsCallbacks from '../hooks/useCogsCallbacks';
 import VideoClipState from '../types/VideoClipState';
-import CogsConnectionHandler from '../types/CogsConnectionHandler';
 
 export interface VideoClip {
   src: string;
@@ -22,7 +20,7 @@ export default function Video({
 }: {
   className?: string;
   style?: React.CSSProperties;
-  connection: CogsConnectionHandler;
+  connection: CogsConnection;
   fullscreen?: boolean | { style: React.CSSProperties };
   onStopped?: () => void;
 }): JSX.Element | null {
@@ -30,31 +28,37 @@ export default function Video({
 
   const [videoClip, setVideoClip] = useState<VideoClip | null>(null);
 
-  const onMessage = useCallback((message: CogsClientMessage) => {
-    switch (message.type) {
-      case 'media_config_update':
-        setGlobalVolume(message.globalVolume);
-        break;
-      case 'video_play':
-        setVideoClip({
-          src: assetSrc(message.file),
-          volume: message.volume,
-          fit: message.fit,
-          loop: message.loop ?? false,
-          state: VideoClipState.Playing,
-        });
-        break;
-      case 'video_pause':
-        setVideoClip((video) => (video ? { ...video, state: VideoClipState.Paused } : null));
-        break;
-      case 'video_stop':
-        setVideoClip(null);
-        break;
-      case 'video_set_volume':
-        setVideoClip((video) => (video ? { ...video, volume: message.volume } : null));
-        break;
-    }
-  }, []);
+  useEffect(() => {
+    const listener = (event: CustomEvent<CogsClientMessage>) => {
+      const message = event.detail;
+      switch (message.type) {
+        case 'media_config_update':
+          setGlobalVolume(message.globalVolume);
+          break;
+        case 'video_play':
+          setVideoClip({
+            src: assetSrc(message.file),
+            volume: message.volume,
+            fit: message.fit,
+            loop: message.loop ?? false,
+            state: VideoClipState.Playing,
+          });
+          break;
+        case 'video_pause':
+          setVideoClip((video) => (video ? { ...video, state: VideoClipState.Paused } : null));
+          break;
+        case 'video_stop':
+          setVideoClip(null);
+          break;
+        case 'video_set_volume':
+          setVideoClip((video) => (video ? { ...video, volume: message.volume } : null));
+          break;
+      }
+    };
+
+    connection.addEventListener('message', listener);
+    return () => connection.removeEventListener('message', listener);
+  }, [connection]);
 
   const ref = useRef<HTMLVideoElement>(null);
 
@@ -92,9 +96,6 @@ export default function Video({
       onStopped?.();
     }
   }, [videoClip, onStopped]);
-
-  const callbacks = useMemo((): Callbacks => ({ onMessage }), [onMessage]);
-  useCogsCallbacks(connection, callbacks);
 
   if (!videoClip) {
     return null;

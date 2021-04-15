@@ -1,8 +1,6 @@
-import React, { useMemo } from 'react';
-import { Callbacks, CogsClientMessage } from '@clockworkdog/cogs-client';
-import { useCallback, useEffect, useState } from 'react';
-import CogsConnectionHandler from '../types/CogsConnectionHandler';
-import useCogsCallbacks from '../hooks/useCogsCallbacks';
+import { CogsClientMessage, CogsConnection } from '@clockworkdog/cogs-client';
+import React, { useCallback, useEffect, useState } from 'react';
+import useCogsMessage from '../hooks/useCogsMessage';
 
 function formatTime(time: number, countingUp: boolean) {
   const negative = time < 0;
@@ -30,7 +28,7 @@ export default function Timer({
 }: {
   className?: string;
   style?: React.CSSProperties;
-  connection: CogsConnectionHandler;
+  connection: CogsConnection;
   separator?: string;
   center?: boolean;
 }): JSX.Element {
@@ -73,21 +71,21 @@ export default function Timer({
     return;
   }, [timerTicking, updateTimer]);
 
-  const onMessage = useCallback(
-    (message: CogsClientMessage) => {
-      if (message.type === 'adjustable_timer_update') {
-        if (message.ticking) {
-          startTimer(message.durationMillis);
-        } else {
-          stopTimer(message.durationMillis);
+  useCogsMessage(
+    connection,
+    useCallback(
+      (message: CogsClientMessage) => {
+        if (message.type === 'adjustable_timer_update') {
+          if (message.ticking) {
+            startTimer(message.durationMillis);
+          } else {
+            stopTimer(message.durationMillis);
+          }
         }
-      }
-    },
-    [startTimer, stopTimer]
+      },
+      [startTimer, stopTimer]
+    )
   );
-
-  const callbacks = useMemo((): Callbacks => ({ onMessage }), [onMessage]);
-  useCogsCallbacks(connection, callbacks);
 
   const time = timerTicking ? timerTotalMillis - timerElapsed : timerTotalMillis;
   const { minutes, seconds } = formatTime(time, false);

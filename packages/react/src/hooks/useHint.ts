@@ -1,21 +1,17 @@
-import { Callbacks, CogsClientMessage } from '@clockworkdog/cogs-client';
-import { useCallback, useMemo, useState } from 'react';
-import CogsConnectionHandler from '../types/CogsConnectionHandler';
-import useCogsCallbacks from './useCogsCallbacks';
+import { CogsConnection } from '@clockworkdog/cogs-client';
+import { useState } from 'react';
+import useCogsMessage from './useCogsMessage';
 
-export default function useHint(connection: CogsConnectionHandler): string | null {
+export default function useHint(connection: CogsConnection): string | null {
   const [hint, setHint] = useState('');
 
-  const onMessage = useCallback((message: CogsClientMessage) => {
+  useCogsMessage(connection, (message) => {
     switch (message.type) {
       case 'text_hints_update':
         setHint(message.lastSentHint);
         break;
     }
-  }, []);
-
-  const callbacks = useMemo((): Callbacks => ({ onMessage }), [onMessage]);
-  useCogsCallbacks(connection, callbacks);
+  });
 
   return hint || null;
 }
