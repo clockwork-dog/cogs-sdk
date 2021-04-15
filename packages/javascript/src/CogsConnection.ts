@@ -1,21 +1,31 @@
-import { EventValue, UpdateValue } from './types/valueTypes';
+import { ConfigValue, EventValue, UpdateValue } from './types/valueTypes';
 import ReconnectingWebSocket from 'reconnecting-websocket';
+import CogsClientMessage from './types/CogsClientMessage';
 
-export default class CogsConnection extends EventTarget {
+type EventTypes = {
+  message: CogsClientMessage;
+  config: { [configKey: string]: ConfigValue };
+  updates: { [port: string]: UpdateValue };
+  event: { key: string; value?: EventValue };
+  open: undefined;
+  close: undefined;
+};
+
+export default class CogsConnection {
   private websocket: WebSocket | ReconnectingWebSocket;
+  private eventTarget = new EventTarget();
 
   constructor({ host = document.location.host }: { host?: string } = {}) {
-    super();
     const { useReconnectingWebsocket, path, pathParams } = websocketParametersFromUrl(document.location.href);
     const socketUrl = `ws://${host}${path}?${pathParams}`;
     this.websocket = useReconnectingWebsocket ? new ReconnectingWebSocket(socketUrl) : new WebSocket(socketUrl);
 
     this.websocket.onopen = () => {
-      this.dispatchEvent(new Event('open'));
+      this.dispatchEvent('open', undefined);
     };
 
     this.websocket.onclose = () => {
-      this.dispatchEvent(new Event('close'));
+      this.dispatchEvent('close', undefined);
     };
 
     this.websocket.onmessage = ({ data }) => {
@@ -24,13 +34,13 @@ export default class CogsConnection extends EventTarget {
 
         try {
           if (parsed.config) {
-            this.dispatchEvent(new CustomEvent('config', { detail: parsed.config }));
+            this.dispatchEvent('config', parsed.config);
           } else if (parsed.updates) {
-            this.dispatchEvent(new CustomEvent('updates', { detail: parsed.updates }));
+            this.dispatchEvent('updates', parsed.updates);
           } else if (parsed.event && parsed.event.key) {
-            this.dispatchEvent(new CustomEvent('event', { detail: parsed.event }));
+            this.dispatchEvent('event', parsed.event);
           } else if (typeof parsed.message === 'object') {
-            this.dispatchEvent(new CustomEvent('message', { detail: parsed.message }));
+            this.dispatchEvent('message', parsed.message);
           }
         } catch (e) {
           console.warn('Error handling data', data, e);
@@ -58,6 +68,25 @@ export default class CogsConnection extends EventTarget {
     if (this.websocket.readyState === WebSocket.OPEN) {
       this.websocket.send(JSON.stringify({ updates }));
     }
+  }
+
+  // Type-safe wrapper around EventTarget
+  public addEventListener<EventName extends keyof EventTypes>(
+    type: EventName,
+    listener: (ev: CustomEvent<EventTypes[EventName]>) => void,
+    options?: boolean | AddEventListenerOptions
+  ): void {
+    this.eventTarget.addEventListener(type, listener as EventListener, options);
+  }
+  public removeEventListener<EventName extends keyof EventTypes>(
+    type: EventName,
+    listener: (ev: CustomEvent<EventTypes[EventName]>) => void,
+    options?: boolean | EventListenerOptions
+  ): void {
+    this.eventTarget.removeEventListener(type, listener as EventListener, options);
+  }
+  private dispatchEvent<EventName extends keyof EventTypes>(type: EventName, detail: EventTypes[EventName]): void {
+    this.eventTarget.dispatchEvent(new CustomEvent(type, { detail }));
   }
 }
 

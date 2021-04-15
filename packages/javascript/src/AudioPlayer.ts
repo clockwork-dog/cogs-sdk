@@ -10,14 +10,18 @@ interface InternalClipPlayer extends AudioClip {
 
 type MediaClientConfigMessage = Extract<CogsClientMessage, { type: 'media_config_update' }>;
 
-export default class AudioPlayer extends EventTarget {
+type EventTypes = {
+  state: AudioState;
+};
+
+export default class AudioPlayer {
+  private eventTarget = new EventTarget();
   private globalVolume = 1;
   private audioClipPlayers: { [path: string]: InternalClipPlayer } = {};
 
   constructor(connection: CogsConnection) {
-    super();
-    connection.addEventListener('message', ((event: CustomEvent) => {
-      const message = event.detail as CogsClientMessage;
+    connection.addEventListener('message', (event) => {
+      const message = event.detail;
       switch (message.type) {
         case 'media_config_update':
           this.setGlobalVolume(message.globalVolume);
@@ -44,7 +48,7 @@ export default class AudioPlayer extends EventTarget {
           this.setAudioClipVolume(message.file, { volume: message.volume, fade: message.fade });
           break;
       }
-    }) as EventListener);
+    });
   }
 
   setGlobalVolume(volume: number): void {
@@ -295,12 +299,31 @@ export default class AudioPlayer extends EventTarget {
     const isPlaying = Object.values(this.audioClipPlayers).some(({ activeClips }) =>
       Object.values(activeClips).some((clip) => clip.state === ActiveAudioClipState.Playing)
     );
-    const eventPayload: AudioState = {
+    const audioState: AudioState = {
       globalVolume: this.globalVolume,
       isPlaying,
       clips,
     };
-    this.dispatchEvent(new CustomEvent('state', { detail: eventPayload }));
+    this.dispatchEvent('state', audioState);
+  }
+
+  // Type-safe wrapper around EventTarget
+  public addEventListener<EventName extends keyof EventTypes>(
+    type: EventName,
+    listener: (ev: CustomEvent<EventTypes[EventName]>) => void,
+    options?: boolean | AddEventListenerOptions
+  ): void {
+    this.eventTarget.addEventListener(type, listener as EventListener, options);
+  }
+  public removeEventListener<EventName extends keyof EventTypes>(
+    type: EventName,
+    listener: (ev: CustomEvent<EventTypes[EventName]>) => void,
+    options?: boolean | EventListenerOptions
+  ): void {
+    this.eventTarget.removeEventListener(type, listener as EventListener, options);
+  }
+  private dispatchEvent<EventName extends keyof EventTypes>(type: EventName, detail: EventTypes[EventName]): void {
+    this.eventTarget.dispatchEvent(new CustomEvent(type, { detail }));
   }
 }
 
