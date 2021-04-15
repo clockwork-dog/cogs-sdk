@@ -60,6 +60,11 @@
     "@nodelib/fs.scandir" "2.1.4"
     fastq "^1.6.0"
 
+"@types/howler@^2.2.2":
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/@types/howler/-/howler-2.2.2.tgz#54f621983c3635e2e071a95644ba28eea84814c2"
+  integrity sha512-/znab/CjipQ25epk7YcsoEsR96rB77Y/fCLMaNtIzV5oPeUeilc7dYGyMjYi+OQklkllADLM+jGZRSt3d6lhiA==
+
 "@types/json-schema@^7.0.3":
   version "7.0.6"
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.6.tgz#f4c7ec43e81b319a9815115031709f26987891f0"
@@ -1107,6 +1112,11 @@ hmac-drbg@^1.0.1:
     hash.js "^1.0.3"
     minimalistic-assert "^1.0.0"
     minimalistic-crypto-utils "^1.0.1"
+
+howler@^2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/howler/-/howler-2.2.1.tgz#a521a9b495841e8bb9aa12e651bebba0affc179e"
+  integrity sha512-0iIXvuBO/81CcrQ/HSSweYmbT50fT2mIc9XMFb+kxIfk2pW/iKzDbX1n3fZmDXMEIpYvyyfrB+gXwPYSDqUxIQ==
 
 htmlescape@^1.1.0:
   version "1.1.1"

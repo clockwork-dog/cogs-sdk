@@ -29,19 +29,19 @@ yarn add @clockwork-dog/cogs-client
 #### Browser
 
 ```js
-const { createCogsConnection } = COGS;
+const { CogsConnection } = COGS;
 ```
 
 #### Javascript
 
 ```js
-const { createCogsConnnection } = require('@clockworkdog/cogs-client');
+const { CogsConnnection } = require('@clockworkdog/cogs-client');
 ```
 
 #### Typesript / ES6
 
 ```ts
-import { createCogsConnnection } from '@clockworkdog/cogs-client';
+import { CogsConnnection } from '@clockworkdog/cogs-client';
 ```
 
 ### Connect to COGS
@@ -49,25 +49,41 @@ import { createCogsConnnection } from '@clockworkdog/cogs-client';
 ```ts
 let connected = false;
 
-const websocket = createCogsWebsocket({
-  onSocketOpen: () => {
-    connected = true;
-  },
-  onSocketClose: () => {
-    connected = false;
-  },
-  onUpdates: (updates) => {
-    // Handle updates. See 'types/Callback.ts`
-  },
-  onEvent: (eventKey, eventValue) => {
-    // Handle event. See 'types/Callback.ts`
-  },
-  onConfig: (config) => {
-    // Handle new config. See 'types/Callback.ts`
-  },
-  onMessage: (message) => {
-    // Handle message. See `types/CogsClientMessage.ts`
-  }
+const cogsConnection = new CogsConnection();
+cogsConnection.addEventListener('open', () => {
+  connected = true;
+});
+cogsConnection.addEventListener('close', () => {
+  connected = false;
+});
+cogsConnection.addEventListener('config', (event) => {
+  const config = event.detail;
+  // Handle new config. See 'types/Callback.ts`
+});
+cogsConnection.addEventListener('updates', (event) => {
+  const updates = event.detail;
+  // Handle port updates. See 'types/Callback.ts`
+});
+cogsConnection.addEventListener('event', (event) => {
+  const event = event.detail;
+  // Handle event. See 'types/Callback.ts`
+});
+cogsConnection.addEventListener('message', (event) => {
+  const message = event.detail;
+  // Handle message. See `types/CogsClientMessage.ts`
+});
+
+function sendEventToCogs() {
+  cogsConnection.sendEvent('Hello');
+}
+
+function sendPortUpdateToCogs() {
+  cogsConnection.sendUpdate({ port1: 100 });
+}
+
+const audioPlayer = new CogsAudioPlayer(cogsConnection);
+audioPlayer.addEventListener('update', (audioState) => {
+  // Handle audio state. See `types/AudioState.ts`
 });
 ```
 
