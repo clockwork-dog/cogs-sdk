@@ -8,11 +8,7 @@ export default function useHint(connection: CogsConnection): string | null {
   useCogsMessage(
     connection,
     useCallback((message) => {
-      switch (message.type) {
-        case 'text_hints_update':
-          setHint(message.lastSentHint);
-          break;
-      }
+      message.type === 'text_hints_update' && setHint(message.lastSentHint);
     }, [])
   );
 

@@ -8,11 +8,7 @@ export default function useBackground(connection: CogsConnection): BackgroundOpt
   useCogsMessage(
     connection,
     useCallback((message) => {
-      switch (message.type) {
-        case 'media_config_update':
-          setBackground(message.background ?? null);
-          break;
-      }
+      message.type === 'media_config_update' && setBackground(message.background ?? null);
     }, [])
   );
 
