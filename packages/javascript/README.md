@@ -29,19 +29,19 @@ yarn add @clockwork-dog/cogs-client
 #### Browser
 
 ```js
-const { CogsConnection } = COGS;
+const { CogsConnection, CogsAudioPlayer } = COGS;
 ```
 
 #### Javascript
 
 ```js
-const { CogsConnnection } = require('@clockworkdog/cogs-client');
+const { CogsConnection, CogsAudioPlayer } = require('@clockworkdog/cogs-client');
 ```
 
 #### Typesript / ES6
 
 ```ts
-import { CogsConnnection } from '@clockworkdog/cogs-client';
+import { CogsConnection, CogsAudioPlayer } from '@clockworkdog/cogs-client';
 ```
 
 ### Connect to COGS
