@@ -1,6 +1,7 @@
 export { default as useIsConnected } from './hooks/useIsConnected';
 export { default as useAudioClips } from './hooks/useAudioClips';
 export { default as useIsAudioPlaying } from './hooks/useIsAudioPlaying';
+export { default as useBackground } from './hooks/useBackground';
 export { default as useCogsConfig } from './hooks/useCogsEvent';
 export { default as useCogsEvent } from './hooks/useCogsConfig';
 export { default as useCogsPortUpdate } from './hooks/useCogsPortUpdate';
