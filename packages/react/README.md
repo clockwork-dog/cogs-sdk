@@ -20,14 +20,14 @@ Import the library
 
 ```ts
 import { CogsConnection, AudioPlayer } from '@clockworkdog/cogs-client';
-import { Video, Timer, Hint, useIsConnected, useIsAudioPlaying } from '@clockworkdog/cogs-client-react';
+import { Background, Video, Timer, Hint, useIsConnected, useIsAudioPlaying } from '@clockworkdog/cogs-client-react';
 ```
 
 or
 
 ```js
 const { CogsConnection, AudioPlayer } = require('@clockworkdog/cogs-client');
-const { Video, Hint, Timer, useIsConnected, useIsAudioPlaying } = require('@clockworkdog/cogs-client-react');
+const { Background, Video, Hint, Timer, useIsConnected, useIsAudioPlaying } = require('@clockworkdog/cogs-client-react');
 ```
 
 then
@@ -43,6 +43,7 @@ function MyComponent() {
 
   return (
     <div>
+      <Backgound connection={cogsConnection} />
       <div>Connected: {isConnected}</div>
       <div>Audio playing: {isAudioPlaying}</div>
       <div style={{ fontSize: 100 }}>
