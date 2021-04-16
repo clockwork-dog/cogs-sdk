@@ -28,7 +28,6 @@ export default function Background({
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',
         backgroundSize: background?.image?.fit ?? 'auto',
-        transition: 'filter 200ms',
         ...style,
       }}
     />
