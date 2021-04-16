@@ -1,5 +1,4 @@
-import { CogsConnection } from '@clockworkdog/cogs-client';
-import { UpdateValue } from '@clockworkdog/cogs-client/dist/types/Callbacks';
+import { CogsConnection, UpdateValue } from '@clockworkdog/cogs-client';
 import { useEffect } from 'react';
 
 export default function useCogsPortUpdate(connection: CogsConnection, handleUpdate: (update: { [port: string]: UpdateValue }) => void): void {

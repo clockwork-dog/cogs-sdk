@@ -1,5 +1,4 @@
-import { CogsConnection } from '@clockworkdog/cogs-client';
-import { EventValue } from '@clockworkdog/cogs-client/dist/types/Callbacks';
+import { CogsConnection, EventValue } from '@clockworkdog/cogs-client';
 import { useEffect } from 'react';
 
 export default function useCogsEvent(connection: CogsConnection, handleEvent: (event: { key: string; value?: EventValue }) => void): void {

@@ -1,5 +1,4 @@
-import { CogsConnection } from '@clockworkdog/cogs-client';
-import { ConfigValue } from '@clockworkdog/cogs-client/dist/types/Callbacks';
+import { CogsConnection, ConfigValue } from '@clockworkdog/cogs-client';
 import { useEffect } from 'react';
 
 export default function useCogsConfig(connection: CogsConnection, handleConfig: (config: { [configKey: string]: ConfigValue }) => void): void {
