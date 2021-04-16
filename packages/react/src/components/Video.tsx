@@ -1,6 +1,7 @@
 import { CogsClientMessage, CogsConnection, MediaObjectFit } from '@clockworkdog/cogs-client';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { assetSrc } from '../helpers/urls';
+import useCogsMessage from '../hooks/useCogsMessage';
 import VideoClipState from '../types/VideoClipState';
 
 export interface VideoClip {
@@ -28,9 +29,9 @@ export default function Video({
 
   const [videoClip, setVideoClip] = useState<VideoClip | null>(null);
 
-  useEffect(() => {
-    const listener = (event: CustomEvent<CogsClientMessage>) => {
-      const message = event.detail;
+  useCogsMessage(
+    connection,
+    useCallback((message: CogsClientMessage) => {
       switch (message.type) {
         case 'media_config_update':
           setGlobalVolume(message.globalVolume);
@@ -54,11 +55,8 @@ export default function Video({
           setVideoClip((video) => (video ? { ...video, volume: message.volume } : null));
           break;
       }
-    };
-
-    connection.addEventListener('message', listener);
-    return () => connection.removeEventListener('message', listener);
-  }, [connection]);
+    }, [])
+  );
 
   const ref = useRef<HTMLVideoElement>(null);
 
