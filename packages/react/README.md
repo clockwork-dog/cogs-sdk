@@ -5,13 +5,13 @@ Create content for your COGS Media Master
 ## Add to your project
 
 ```shell
-npm install --save @clockwork-dog/cogs-client-react
+npm install --save @clockworkdog/cogs-client-react
 ```
 
 or
 
 ```shell
-yarn add @clockwork-dog/cogs-client-react
+yarn add @clockworkdog/cogs-client-react
 ```
 
 ## Usage
