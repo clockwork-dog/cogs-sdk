@@ -13,13 +13,13 @@ Create content for your COGS Media Master
 ### NPM
 
 ```shell
-npm install --save @clockwork-dog/cogs-client
+npm install --save @clockworkdog/cogs-client
 ```
 
 ### Yarn
 
 ```shell
-yarn add @clockwork-dog/cogs-client
+yarn add @clockworkdog/cogs-client
 ```
 
 ## Usage
