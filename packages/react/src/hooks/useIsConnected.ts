@@ -2,7 +2,7 @@ import { CogsConnection } from '@clockworkdog/cogs-client';
 import { useEffect, useState } from 'react';
 
 export default function useIsConnected(connection: CogsConnection): boolean {
-  const [isConnected, setConnected] = useState(false);
+  const [isConnected, setConnected] = useState(connection.isConnected);
 
   useEffect(() => {
     const handleConnected = () => setConnected(true);
