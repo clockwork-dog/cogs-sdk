@@ -56,7 +56,7 @@ export default class CogsConnection {
   }
 
   public sendEvent(eventKey: string, eventValue?: EventValue): void {
-    if (this.websocket.readyState === WebSocket.OPEN) {
+    if (this.isConnected) {
       this.websocket.send(
         JSON.stringify({
           event: {
@@ -69,7 +69,7 @@ export default class CogsConnection {
   }
 
   public sendUpdate(updates: { [port: string]: UpdateValue }): void {
-    if (this.websocket.readyState === WebSocket.OPEN) {
+    if (this.isConnected) {
       this.websocket.send(JSON.stringify({ updates }));
     }
   }
