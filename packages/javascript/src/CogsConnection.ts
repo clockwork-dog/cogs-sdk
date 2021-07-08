@@ -15,9 +15,9 @@ export default class CogsConnection {
   private websocket: WebSocket | ReconnectingWebSocket;
   private eventTarget = new EventTarget();
 
-  constructor({ host = document.location.host }: { host?: string } = {}) {
+  constructor({ hostname = document.location.hostname, port = 12095 }: { hostname?: string; port?: number } = {}) {
     const { useReconnectingWebsocket, path, pathParams } = websocketParametersFromUrl(document.location.href);
-    const socketUrl = `ws://${host}${path}?${pathParams}`;
+    const socketUrl = `ws://${hostname}:${port}${path}?${pathParams}`;
     this.websocket = useReconnectingWebsocket ? new ReconnectingWebSocket(socketUrl) : new WebSocket(socketUrl);
 
     this.websocket.onopen = () => {
