@@ -51,6 +51,10 @@ export default class CogsConnection {
     };
   }
 
+  public get isConnected(): boolean {
+    return this.websocket.readyState === WebSocket.OPEN;
+  }
+
   public sendEvent(eventKey: string, eventValue?: EventValue): void {
     if (this.websocket.readyState === WebSocket.OPEN) {
       this.websocket.send(
