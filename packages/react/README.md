@@ -61,6 +61,12 @@ function MyComponent() {
 }
 ```
 
+### Local development
+
+When developing locally you should connect to COGS in "simulator" mode by appending `?simulator=true&t=media_master&name=MEDIA_MASTER_NAME` to the URL. Replace `MEDIA_MASTER_NAME` with the name of the Media Master you set in COGS.
+
+For example, with your custom content hosted on port 3000, http://localhost:3000?simulator=true&t=media_master&name=Timer+screen will connect as the simulator for `Timer screen`.
+
 ## Release process
 
 1. Create a new commit with a bumped version number in `package.json`.
