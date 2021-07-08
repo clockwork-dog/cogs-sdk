@@ -1,7 +1,7 @@
 // Utilities
 export { default as useIsConnected } from './hooks/useIsConnected';
-export { default as useCogsConfig } from './hooks/useCogsEvent';
-export { default as useCogsEvent } from './hooks/useCogsConfig';
+export { default as useCogsConfig } from './hooks/useCogsConfig';
+export { default as useCogsEvent } from './hooks/useCogsEvent';
 export { default as useCogsPortUpdate } from './hooks/useCogsPortUpdate';
 export { default as useCogsMessage } from './hooks/useCogsMessage';
 
