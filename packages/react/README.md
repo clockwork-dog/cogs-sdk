@@ -68,6 +68,14 @@ When developing locally you should connect to COGS in "simulator" mode by append
 
 For example, with your custom content hosted on port 3000, http://localhost:3000?simulator=true&t=media_master&name=Timer+screen will connect as the simulator for `Timer screen`.
 
+## Using create-react-app
+
+If you're using `create-react-app` for your project, you'll need to configure the build to work with a relative path, as when accessed by a Media Master your project will not be served from the root path. This can be achieved by adding the following to your `package.json`:
+
+```
+"homepage": ".",
+```
+
 ## Release process
 
 1. Create a new commit with a bumped version number in `package.json`.
