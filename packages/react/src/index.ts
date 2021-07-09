@@ -4,6 +4,7 @@ export { default as useCogsConfig } from './hooks/useCogsConfig';
 export { default as useCogsEvent } from './hooks/useCogsEvent';
 export { default as useCogsPortUpdate } from './hooks/useCogsPortUpdate';
 export { default as useCogsMessage } from './hooks/useCogsMessage';
+export { default as usePreloadedUrl } from './hooks/usePreloadedUrl';
 
 // Audio
 export { default as useAudioClips } from './hooks/useAudioClips';
