@@ -6,3 +6,4 @@ export { default as BackgroundOptions } from './types/BackgroundOptions';
 export { default as CogsAudioPlayer } from './AudioPlayer';
 export * from './types/AudioState';
 export { assetSrc } from './helpers/urls';
+export { preloadUrl } from './helpers/urls';
