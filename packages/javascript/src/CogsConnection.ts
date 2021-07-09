@@ -1,6 +1,7 @@
 import { ConfigValue, EventValue, UpdateValue } from './types/valueTypes';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import CogsClientMessage from './types/CogsClientMessage';
+import { COGS_SERVER_PORT } from './helpers/urls';
 
 type EventTypes = {
   message: CogsClientMessage;
@@ -15,7 +16,7 @@ export default class CogsConnection {
   private websocket: WebSocket | ReconnectingWebSocket;
   private eventTarget = new EventTarget();
 
-  constructor({ hostname = document.location.hostname, port = 12095 }: { hostname?: string; port?: number } = {}) {
+  constructor({ hostname = document.location.hostname, port = COGS_SERVER_PORT }: { hostname?: string; port?: number } = {}) {
     const { useReconnectingWebsocket, path, pathParams } = websocketParametersFromUrl(document.location.href);
     const socketUrl = `ws://${hostname}:${port}${path}?${pathParams}`;
     this.websocket = useReconnectingWebsocket ? new ReconnectingWebSocket(socketUrl) : new WebSocket(socketUrl);
