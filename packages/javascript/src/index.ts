@@ -5,5 +5,5 @@ export { default as MediaObjectFit } from './types/MediaObjectFit';
 export { default as BackgroundOptions } from './types/BackgroundOptions';
 export { default as CogsAudioPlayer } from './AudioPlayer';
 export * from './types/AudioState';
-export { assetSrc } from './helpers/urls';
+export { assetUrl } from './helpers/urls';
 export { preloadUrl } from './helpers/urls';

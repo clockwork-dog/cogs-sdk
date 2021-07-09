@@ -1,6 +1,6 @@
 import { Howl, Howler } from 'howler';
 import CogsConnection from './CogsConnection';
-import { assetSrc } from './helpers/urls';
+import { assetUrl } from './helpers/urls';
 import { ActiveAudioClipState, ActiveClip, AudioClip, AudioState } from './types/AudioState';
 import CogsClientMessage from './types/CogsClientMessage';
 
@@ -329,7 +329,7 @@ export default class AudioPlayer {
 
 function createPlayer(path: string, config: { preload: boolean }) {
   return new Howl({
-    src: assetSrc(path),
+    src: assetUrl(path),
     autoplay: false,
     loop: false,
     volume: 1,
