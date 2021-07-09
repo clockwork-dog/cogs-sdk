@@ -1,6 +1,5 @@
-import { CogsClientMessage, CogsConnection, MediaObjectFit } from '@clockworkdog/cogs-client';
+import { assetUrl, CogsClientMessage, CogsConnection, MediaObjectFit } from '@clockworkdog/cogs-client';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { assetSrc } from '../helpers/urls';
 import useCogsMessage from '../hooks/useCogsMessage';
 import VideoClipState from '../types/VideoClipState';
 
@@ -38,7 +37,7 @@ export default function Video({
           break;
         case 'video_play':
           setVideoClip({
-            src: assetSrc(message.file),
+            src: assetUrl(message.file),
             volume: message.volume,
             fit: message.fit,
             loop: message.loop ?? false,

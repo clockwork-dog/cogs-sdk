@@ -21,4 +21,3 @@ export { default as Hint } from './components/Hint';
 // Timer
 export { default as Timer } from './components/Timer';
 export { default as Video } from './components/Video';
-export { assetSrc } from './helpers/urls';
