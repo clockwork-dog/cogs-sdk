@@ -1,4 +1,4 @@
-import { ConfigValue, EventValue, PortValue } from './types/valueTypes';
+import { ConfigValue, EventKeyValue, EventValue, PortValue } from './types/valueTypes';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import CogsClientMessage from './types/CogsClientMessage';
 import { COGS_SERVER_PORT } from './helpers/urls';
@@ -7,7 +7,7 @@ interface ConnectionEventListeners<
   CustomTypes extends {
     config?: { [configKey: string]: ConfigValue };
     inputPorts?: { [port: string]: PortValue };
-    inputEvent?: { key: string; value?: EventValue };
+    inputEvents?: { [key: string]: EventValue | null };
   }
 > {
   open: undefined;
@@ -15,7 +15,7 @@ interface ConnectionEventListeners<
   message: CogsClientMessage;
   config: CustomTypes['config'];
   updates: Partial<CustomTypes['inputPorts']>;
-  event: CustomTypes['inputEvent'];
+  event: CustomTypes['inputEvents'] extends { [key: string]: EventValue | null } ? EventKeyValue<CustomTypes['inputEvents']> : Record<string, never>;
 }
 
 export default class CogsConnection<
@@ -23,8 +23,8 @@ export default class CogsConnection<
     config?: { [configKey: string]: ConfigValue };
     inputPorts?: { [port: string]: PortValue };
     outputPorts?: { [port: string]: PortValue };
-    inputEvent?: { key: string; value?: EventValue };
-    outputEvent?: { key: string; value?: EventValue };
+    inputEvents?: { [key: string]: EventValue | null };
+    outputEvents?: { [key: string]: EventValue | null };
   } = Record<never, never>
 > {
   private websocket: WebSocket | ReconnectingWebSocket;
@@ -99,9 +99,9 @@ export default class CogsConnection<
     this.websocket.close();
   }
 
-  public sendEvent<EventName extends keyof CustomTypes['outputEvent']>(
+  public sendEvent<EventName extends keyof CustomTypes['outputEvents']>(
     eventName: EventName,
-    ...[eventValue]: CustomTypes['outputEvent'][EventName] extends undefined ? [] : [CustomTypes['outputEvent'][EventName]]
+    ...[eventValue]: CustomTypes['outputEvents'][EventName] extends null ? [] : [CustomTypes['outputEvents'][EventName]]
   ): void {
     if (this.isConnected) {
       this.websocket.send(
