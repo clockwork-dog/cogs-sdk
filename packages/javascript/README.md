@@ -60,15 +60,19 @@ cogsConnection.addEventListener('close', () => {
 });
 cogsConnection.addEventListener('config', (event) => {
   const config = event.detail;
-  // Handle new config. See 'types/Callback.ts`
+  // Handle new config.
+  // `config` is of type `{ [configKey: string]: number | string | boolean }`
 });
 cogsConnection.addEventListener('updates', (event) => {
   const updates = event.detail;
-  // Handle port updates. See 'types/Callback.ts`
+  // Handle input port updates.
+  // `updates` is of type `{ [portName: string]: number | string | boolean }`
 });
 cogsConnection.addEventListener('event', (event) => {
-  const event = event.detail;
+  const { key, value } = event.detail;
   // Handle event. See 'types/Callback.ts`
+  // `key` is the event name.
+  // `value` is the type defined in COGS, one of `number | string | boolean | undefined`
 });
 cogsConnection.addEventListener('message', (event) => {
   const message = event.detail;
