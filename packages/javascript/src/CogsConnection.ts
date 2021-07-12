@@ -76,9 +76,9 @@ export default class CogsConnection {
   }
 
   // Type-safe wrapper around EventTarget
-  public addEventListener<EventName extends keyof EventTypes>(
+  public addEventListener<EventName extends keyof EventTypes, EventValue extends EventTypes[EventName]>(
     type: EventName,
-    listener: (ev: CustomEvent<EventTypes[EventName]>) => void,
+    listener: (value: CustomEvent<EventValue>) => void,
     options?: boolean | AddEventListenerOptions
   ): void {
     this.eventTarget.addEventListener(type, listener as EventListener, options);
