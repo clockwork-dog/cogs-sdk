@@ -1,13 +1,17 @@
-import { CogsConnection, ConfigValue } from '@clockworkdog/cogs-client';
-import { useEffect } from 'react';
+import { CogsConnection } from '@clockworkdog/cogs-client';
+import { useEffect, useState } from 'react';
 
-export default function useCogsConfig(connection: CogsConnection, handleConfig: (config: { [configKey: string]: ConfigValue }) => void): void {
+type ConfigType<Connection> = Connection extends CogsConnection<infer Types> ? Types['config'] : never;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default function useCogsConfig<Connection extends CogsConnection<any>>(connection: Connection): ConfigType<Connection> {
+  const [config, setConfig] = useState<ConfigType<Connection>>(connection.config);
+
   useEffect(() => {
-    const listener = (event: CustomEvent<{ [configKey: string]: ConfigValue }>) => {
-      handleConfig(event.detail);
-    };
-
+    const listener = () => setConfig(connection.config);
     connection.addEventListener('config', listener);
     return () => connection.removeEventListener('config', listener);
-  }, [connection, handleConfig]);
+  }, [connection]);
+
+  return config;
 }
