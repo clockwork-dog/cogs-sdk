@@ -2,9 +2,11 @@
 
 Create content for your COGS Media Master
 
+## [Documentation](https://clockwork-dog.github.io/cogs-client-lib/)
+
 ## Add to your project
 
-## Browser
+### Browser
 
 ```html
 <script src="https://unpkg.com/@clockworkdog/cogs-client@0"></script>
