@@ -27,7 +27,12 @@ jobs:
       - if: ${{ env.ACT }}
         run: apt-get update && apt-get install -y git rsync
       - uses: actions/checkout@v2
-      - uses: zakodium/typedoc-action@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+          registry-url: https://registry.npmjs.org/
+      - run: yarn
+      - run: yarn build-docs
       - uses: JamesIves/github-pages-deploy-action@4.1.4
         with:
           branch: docs

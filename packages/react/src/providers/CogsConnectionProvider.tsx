@@ -16,7 +16,7 @@ const CogsConnectionContext = React.createContext<CogsConnectionContextValue>({
 /**
  * Create a persistent connection to COGS which can be accessed with `useCogsConnection()`
  *
- * ```javscript
+ * ```jsx
  * function MyComponent() {
  *   const cogsConnection = useCogsConnection();
  *   const numberOfPlayers = useCogsConfig(cogsConnection)['Number of players'];
@@ -33,7 +33,7 @@ const CogsConnectionContext = React.createContext<CogsConnectionContextValue>({
  *
  * or with Typescript:
  *
- * ```typescript
+ * ```tsx
  * type CogsProjectDataTypes = {
  *   config: { 'Number of players': number }
  * };
