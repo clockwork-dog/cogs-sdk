@@ -21,3 +21,15 @@ jobs:
       - run: yarn release
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+  publish-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - if: ${{ env.ACT }}
+        run: apt-get update && apt-get install -y git rsync
+      - uses: actions/checkout@v2
+      - uses: zakodium/typedoc-action@v2
+      - uses: JamesIves/github-pages-deploy-action@4.1.4
+        with:
+          branch: docs
+          folder: docs
+          token: ${{ secrets.GITHUB_TOKEN }}

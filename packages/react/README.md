@@ -2,6 +2,8 @@
 
 Create content for your COGS Media Master
 
+## [Documentation](https://clockwork-dog.github.io/cogs-client-react-lib/)
+
 ## Add to your project
 
 ```shell
