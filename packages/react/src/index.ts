@@ -1,4 +1,5 @@
 // Utilities
+export { default as CogsConnectionProvider, useCogsConnection } from './providers/CogsConnectionProvider';
 export { default as useIsConnected } from './hooks/useIsConnected';
 export { default as useCogsConfig } from './hooks/useCogsConfig';
 export { default as useCogsEvent } from './hooks/useCogsEvent';
