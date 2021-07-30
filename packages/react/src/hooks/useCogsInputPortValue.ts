@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 type InputPortsType<Connection> = Connection extends CogsConnection<infer Types> ? Types['inputPorts'] : never;
 
-export default function useCogsOutputPortValue<
+export default function useCogsInputPortValue<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Connection extends CogsConnection<any>,
   PortName extends keyof NonNullable<InputPortsType<Connection>>
