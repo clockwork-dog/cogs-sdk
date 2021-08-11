@@ -24,4 +24,10 @@ export { default as Hint } from './components/Hint';
 
 // Timer
 export { default as Timer } from './components/Timer';
+
+// Video
 export { default as Video } from './components/Video';
+
+// Images
+export { default as useImages } from './hooks/useImages';
+export { default as Images } from './components/Images';
