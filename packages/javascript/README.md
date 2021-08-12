@@ -84,7 +84,7 @@ function sendEventToCogs() {
 }
 
 function sendPortUpdateToCogs() {
-  cogsConnection.sendUpdate({ port1: 100 });
+  cogsConnection.setOutputPortValues({ port1: 100 });
 }
 
 const audioPlayer = new CogsAudioPlayer(cogsConnection);
