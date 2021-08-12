@@ -33,8 +33,7 @@ type MediaClientMessage =
   | { type: 'video_stop'; file?: string }
   | { type: 'video_set_volume'; file: string; volume: number }
   | { type: 'image_show'; file: string; fit: MediaObjectFit }
-  | { type: 'image_hide'; file: string }
-  | { type: 'image_hide_all' };
+  | { type: 'image_hide'; file?: string };
 
 export type CogsClientMessage = AdjustableTimerUpdateMessage | TextHintsUpdateMessage | MediaClientConfigMessage | MediaClientMessage;
 
