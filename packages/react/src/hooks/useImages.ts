@@ -15,10 +15,11 @@ export default function useImages(connection: CogsConnection): Image[] {
           setImages((images) => [...images, { file: message.file, fit: message.fit }]);
           break;
         case 'image_hide':
-          setImages((images) => images.filter(({ file }) => file !== message.file));
-          break;
-        case 'image_hide_all':
-          setImages([]);
+          if (message.file) {
+            setImages((images) => images.filter(({ file }) => file !== message.file));
+          } else {
+            setImages([]);
+          }
           break;
       }
     }, [])
