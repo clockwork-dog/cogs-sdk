@@ -7,6 +7,7 @@ export { default as useCogsInputPortValue } from './hooks/useCogsInputPortValue'
 export { default as useCogsInputPortValues } from './hooks/useCogsInputPortValues';
 export { default as useCogsMessage } from './hooks/useCogsMessage';
 export { default as usePreloadedUrl } from './hooks/usePreloadedUrl';
+export { default as useShowPhase } from './hooks/useShowPhase';
 
 // Audio
 export { default as useAudioClips } from './hooks/useAudioClips';
