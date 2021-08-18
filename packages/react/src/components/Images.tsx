@@ -1,16 +1,6 @@
-import { assetUrl, CogsClientMessage, CogsConnection, MediaObjectFit } from '@clockworkdog/cogs-client';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import useCogsMessage from '../hooks/useCogsMessage';
+import { assetUrl, CogsConnection } from '@clockworkdog/cogs-client';
+import React from 'react';
 import useImages from '../hooks/useImages';
-import VideoClipState from '../types/VideoClipState';
-
-export interface VideoClip {
-  src: string;
-  state: VideoClipState;
-  volume: number;
-  loop: boolean;
-  fit: MediaObjectFit;
-}
 
 export default function Images({
   className,
