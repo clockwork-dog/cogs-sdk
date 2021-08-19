@@ -39,9 +39,9 @@ type MediaClientMessage =
   | { type: 'audio_stop'; file?: string; fade?: number }
   | { type: 'audio_set_clip_volume'; file: string; volume: number; fade?: number }
   | { type: 'video_play'; file: string; loop?: true; volume: number; fit: MediaObjectFit }
-  | { type: 'video_pause'; file: string }
-  | { type: 'video_stop'; file?: string }
-  | { type: 'video_set_volume'; file: string; volume: number }
+  | { type: 'video_pause' }
+  | { type: 'video_stop' }
+  | { type: 'video_set_volume'; volume: number }
   | { type: 'image_show'; file: string; fit: MediaObjectFit }
   | { type: 'image_hide'; file?: string };
 
