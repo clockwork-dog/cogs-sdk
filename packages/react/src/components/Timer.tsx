@@ -42,10 +42,10 @@ export default function Timer({
     setTimerElapsed(timerElapsed);
   }, [timerTicking, timerStartedAt]);
 
-  const startTimer = useCallback((durationMillis: number) => {
-    setTimerStartedAt(Date.now());
+  const startTimer = useCallback((durationMillis: number, startTime = Date.now(), isTicking = true) => {
+    setTimerStartedAt(startTime);
     setTimerTotalMillis(durationMillis);
-    setTimerTicking(true);
+    setTimerTicking(isTicking);
     setTimerElapsed(0);
   }, []);
 
@@ -70,6 +70,13 @@ export default function Timer({
 
     return;
   }, [timerTicking, updateTimer]);
+
+  useEffect(() => {
+    const timerState = connection.timerState;
+    if (timerState) {
+      startTimer(timerState.durationMillis, timerState.startedAt, timerState.ticking);
+    }
+  }, [connection, startTimer]);
 
   useCogsMessage(
     connection,
