@@ -18,6 +18,8 @@ interface ConnectionEventListeners<
   event: CustomTypes['inputEvents'] extends { [key: string]: EventValue | null } ? EventKeyValue<CustomTypes['inputEvents']> : Record<string, never>;
 }
 
+export type TimerState = Omit<Extract<CogsClientMessage, { type: 'adjustable_timer_update' }>, 'type'> & { startedAt: number };
+
 export default class CogsConnection<
   CustomTypes extends {
     config?: { [configKey: string]: ConfigValue };
@@ -50,6 +52,11 @@ export default class CogsConnection<
     return this._showPhase;
   }
 
+  private _timerState: TimerState | null = null;
+  public get timerState(): TimerState | null {
+    return this._timerState ? { ...this._timerState } : null;
+  }
+
   constructor(
     { hostname = document.location.hostname, port = COGS_SERVER_PORT }: { hostname?: string; port?: number } = {},
     outputPortValues: CustomTypes['outputPorts'] = undefined
@@ -63,13 +70,25 @@ export default class CogsConnection<
       this.currentConfig = {} as CustomTypes['config']; // Received on open connection
       this.currentInputPortValues = {} as CustomTypes['inputPorts']; // Received on open connection
 
-      this.addEventListener('message', ({ detail: message }) => {
-        if (message.type === 'show_phase') {
-          this._showPhase = message.phase;
-        }
-      });
       this.dispatchEvent('open', undefined);
       this.setOutputPortValues(this.currentOutputPortValues as NonNullable<CustomTypes['outputPorts']>);
+      this.addEventListener('updates', ({ detail: updates }) => {
+        this.currentInputPortValues = { ...this.currentInputPortValues, ...updates };
+      });
+      this.addEventListener('message', ({ detail: message }) => {
+        switch (message.type) {
+          case 'adjustable_timer_update':
+            this._timerState = {
+              startedAt: Date.now(),
+              durationMillis: message.durationMillis,
+              ticking: message.ticking,
+            };
+            break;
+          case 'show_phase':
+            this._showPhase = message.phase;
+            break;
+        }
+      });
     };
 
     this.websocket.onclose = () => {
@@ -85,7 +104,6 @@ export default class CogsConnection<
             this.currentConfig = parsed.config;
             this.dispatchEvent('config', this.currentConfig);
           } else if (parsed.updates) {
-            this.currentInputPortValues = { ...this.currentInputPortValues, ...parsed.updates };
             this.dispatchEvent('updates', parsed.updates);
           } else if (parsed.event && parsed.event.key) {
             this.dispatchEvent('event', parsed.event);
