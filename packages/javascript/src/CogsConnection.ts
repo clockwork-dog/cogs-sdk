@@ -1,4 +1,4 @@
-import { ConfigValue, EventKeyValue, EventValue, PortValue } from './types/valueTypes';
+import { ConfigValue, EventKeyValue, EventValue, PortValue, ShowPhase } from './types/valueTypes';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import CogsClientMessage from './types/CogsClientMessage';
 import { COGS_SERVER_PORT } from './helpers/urls';
@@ -45,6 +45,11 @@ export default class CogsConnection<
     return { ...this.currentOutputPortValues };
   }
 
+  private _showPhase: ShowPhase = ShowPhase.Setup;
+  public get showPhase(): ShowPhase {
+    return this._showPhase;
+  }
+
   constructor(
     { hostname = document.location.hostname, port = COGS_SERVER_PORT }: { hostname?: string; port?: number } = {},
     outputPortValues: CustomTypes['outputPorts'] = undefined
@@ -58,6 +63,11 @@ export default class CogsConnection<
       this.currentConfig = {} as CustomTypes['config']; // Received on open connection
       this.currentInputPortValues = {} as CustomTypes['inputPorts']; // Received on open connection
 
+      this.addEventListener('message', ({ detail: message }) => {
+        if (message.type === 'show_phase') {
+          this._showPhase = message.phase;
+        }
+      });
       this.dispatchEvent('open', undefined);
       this.setOutputPortValues(this.currentOutputPortValues as NonNullable<CustomTypes['outputPorts']>);
     };
