@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react';
 import useCogsMessage from './useCogsMessage';
 
 export default function useShowPhase(connection: CogsConnection): ShowPhase {
-  const [status, setStatus] = useState<ShowPhase>(ShowPhase.Setup);
+  const [status, setStatus] = useState(connection.showPhase);
 
   useCogsMessage(
     connection,
