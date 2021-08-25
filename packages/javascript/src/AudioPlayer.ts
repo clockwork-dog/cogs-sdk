@@ -41,7 +41,7 @@ export default class AudioPlayer {
           if (message.file) {
             this.stopAudioClip(message.file, { fade: message.fade });
           } else {
-            this.stopAllAudioClips();
+            this.stopAllAudioClips({ fade: message.fade });
           }
           break;
         case 'audio_set_clip_volume':
@@ -190,11 +190,9 @@ export default class AudioPlayer {
     }
   }
 
-  stopAllAudioClips(): void {
-    Object.values(this.audioClipPlayers).forEach((clipPlayer) => {
-      if (Object.keys(clipPlayer.activeClips).length) {
-        clipPlayer.player.stop();
-      }
+  stopAllAudioClips(options: { fade?: number }): void {
+    Object.keys(this.audioClipPlayers).forEach((path) => {
+      this.stopAudioClip(path, options);
     });
   }
 
