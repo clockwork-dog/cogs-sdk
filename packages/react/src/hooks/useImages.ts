@@ -12,7 +12,10 @@ export default function useImages(connection: CogsConnection): Image[] {
     useCallback((message: CogsClientMessage) => {
       switch (message.type) {
         case 'image_show':
-          setImages((images) => [...images, { file: message.file, fit: message.fit }]);
+          {
+            const newImage = { file: message.file, fit: message.fit };
+            setImages((images) => (message.hideOthers ? [newImage] : [...images, newImage]));
+          }
           break;
         case 'image_hide':
           if (message.file) {
