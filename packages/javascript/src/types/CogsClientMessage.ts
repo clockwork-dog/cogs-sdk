@@ -42,7 +42,7 @@ type MediaClientMessage =
   | { type: 'video_pause' }
   | { type: 'video_stop' }
   | { type: 'video_set_volume'; volume: number }
-  | { type: 'image_show'; file: string; fit: MediaObjectFit }
+  | { type: 'image_show'; file: string; fit: MediaObjectFit; hideOthers?: boolean }
   | { type: 'image_hide'; file?: string };
 
 export type CogsClientMessage =
