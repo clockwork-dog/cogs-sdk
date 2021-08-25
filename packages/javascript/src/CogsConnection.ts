@@ -72,6 +72,9 @@ export default class CogsConnection<
 
       this.dispatchEvent('open', undefined);
       this.setOutputPortValues(this.currentOutputPortValues as NonNullable<CustomTypes['outputPorts']>);
+      this.addEventListener('config', ({ detail: config }) => {
+        this.currentConfig = config;
+      });
       this.addEventListener('updates', ({ detail: updates }) => {
         this.currentInputPortValues = { ...this.currentInputPortValues, ...updates };
       });
@@ -101,8 +104,7 @@ export default class CogsConnection<
 
         try {
           if (parsed.config) {
-            this.currentConfig = parsed.config;
-            this.dispatchEvent('config', this.currentConfig);
+            this.dispatchEvent('config', parsed.config);
           } else if (parsed.updates) {
             this.dispatchEvent('updates', parsed.updates);
           } else if (parsed.event && parsed.event.key) {
