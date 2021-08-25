@@ -1,4 +1,5 @@
 import { CogsClientMessage, CogsConnection } from '@clockworkdog/cogs-client';
+import { TimerState } from '@clockworkdog/cogs-client/dist/CogsConnection';
 import React, { useCallback, useEffect, useState } from 'react';
 import useCogsMessage from '../hooks/useCogsMessage';
 
@@ -33,64 +34,48 @@ export default function Timer({
   center?: boolean;
 }): JSX.Element {
   const [timerElapsed, setTimerElapsed] = useState(0);
-  const [timerStartedAt, setTimerStartedAt] = useState(0);
-  const [timerTotalMillis, setTimerTotalMillis] = useState(0);
-  const [timerTicking, setTimerTicking] = useState(false);
+  const [timerStartedAt, setTimerStartedAt] = useState(connection.timerState?.startedAt ?? 0);
+  const [timerTotalMillis, setTimerTotalMillis] = useState(connection.timerState?.durationMillis ?? 0);
+  const [timerTicking, setTimerTicking] = useState(connection.timerState?.ticking ?? false);
 
-  const updateTimer = useCallback(() => {
+  const updateTimerElapsed = useCallback(() => {
     const timerElapsed = timerTicking ? Date.now() - timerStartedAt : 0;
     setTimerElapsed(timerElapsed);
   }, [timerTicking, timerStartedAt]);
 
-  const startTimer = useCallback((durationMillis: number, startTime = Date.now(), isTicking = true) => {
-    setTimerStartedAt(startTime);
-    setTimerTotalMillis(durationMillis);
-    setTimerTicking(isTicking);
-    setTimerElapsed(0);
-  }, []);
+  const updateTimerState = useCallback((timerState: TimerState) => {
+    setTimerTotalMillis(timerState.durationMillis);
+    setTimerTicking(timerState.ticking);
 
-  useEffect(() => {
-    if (timerTicking) {
-      updateTimer();
+    if (timerState.ticking) {
+      setTimerStartedAt(timerState.startedAt);
+      setTimerElapsed(0);
     }
-  }, [timerTicking, updateTimer]);
-
-  const stopTimer = useCallback((durationMillis: number) => {
-    setTimerTotalMillis(durationMillis);
-    setTimerTicking(false);
   }, []);
 
+  // Deal with starting/stopping the visual ticking of the timer
   useEffect(() => {
     if (timerTicking) {
-      const ticker = setInterval(updateTimer, 100);
+      updateTimerElapsed();
+
+      const ticker = setInterval(updateTimerElapsed, 100);
       return () => {
         clearInterval(ticker);
       };
     }
 
     return;
-  }, [timerTicking, updateTimer]);
-
-  useEffect(() => {
-    const timerState = connection.timerState;
-    if (timerState) {
-      startTimer(timerState.durationMillis, timerState.startedAt, timerState.ticking);
-    }
-  }, [connection, startTimer]);
+  }, [timerTicking, updateTimerElapsed]);
 
   useCogsMessage(
     connection,
     useCallback(
       (message: CogsClientMessage) => {
         if (message.type === 'adjustable_timer_update') {
-          if (message.ticking) {
-            startTimer(message.durationMillis);
-          } else {
-            stopTimer(message.durationMillis);
-          }
+          updateTimerState({ startedAt: Date.now(), ticking: message.ticking, durationMillis: message.durationMillis });
         }
       },
-      [startTimer, stopTimer]
+      [updateTimerState]
     )
   );
 
