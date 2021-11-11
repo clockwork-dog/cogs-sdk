@@ -1,4 +1,3 @@
-import BackgroundOptions from './BackgroundOptions';
 import MediaObjectFit from './MediaObjectFit';
 import { ShowPhase } from './valueTypes';
 
