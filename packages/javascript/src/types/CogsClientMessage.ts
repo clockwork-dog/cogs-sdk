@@ -43,12 +43,12 @@ type MediaClientMessage =
   | { type: 'image_show'; file: string; fit: MediaObjectFit; hideOthers?: boolean }
   | { type: 'image_hide'; file?: string };
 
-export type CogsClientMessage =
+export type CogsClientMessage<CustomConfig = Record<never, never>> =
   | ShowResetMessage
   | ShowPhaseMessage
   | AdjustableTimerUpdateMessage
   | TextHintsUpdateMessage
-  | MediaClientConfigMessage
+  | (MediaClientConfigMessage & CustomConfig)
   | MediaClientMessage;
 
 export default CogsClientMessage;
