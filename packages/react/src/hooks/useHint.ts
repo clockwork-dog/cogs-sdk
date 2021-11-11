@@ -1,4 +1,4 @@
-import { CogsConnection } from '@clockworkdog/cogs-client';
+import { CogsClientMessage, CogsConnection } from '@clockworkdog/cogs-client';
 import { useCallback, useState } from 'react';
 import useCogsMessage from './useCogsMessage';
 
@@ -7,7 +7,7 @@ export default function useHint(connection: CogsConnection): string | null {
 
   useCogsMessage(
     connection,
-    useCallback((message) => {
+    useCallback((message: CogsClientMessage) => {
       message.type === 'text_hints_update' && setHint(message.lastSentHint);
     }, [])
   );

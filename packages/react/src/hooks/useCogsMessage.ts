@@ -1,9 +1,12 @@
 import { CogsClientMessage, CogsConnection } from '@clockworkdog/cogs-client';
 import { useEffect } from 'react';
 
-export default function useCogsMessage(connection: CogsConnection, handleMessage: (message: CogsClientMessage) => void): void {
+export default function useCogsMessage<T extends CogsClientMessage = CogsClientMessage>(
+  connection: CogsConnection,
+  handleMessage: (message: T) => void
+): void {
   useEffect(() => {
-    const listener = (event: CustomEvent<CogsClientMessage>) => {
+    const listener = (event: CustomEvent<T>) => {
       handleMessage(event.detail);
     };
 
