@@ -28,9 +28,8 @@ interface TextHintsUpdateMessage {
 
 interface MediaClientConfigMessage {
   type: 'media_config_update';
-  globalVolume: number; // Question: Are all these appropriate for custom content??
+  globalVolume: number;
   files: { [path: string]: { preload: boolean } };
-  background?: BackgroundOptions;
 }
 
 type MediaClientMessage =
