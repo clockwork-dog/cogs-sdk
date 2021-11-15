@@ -14,10 +14,6 @@ export { default as useWhenShowReset } from './hooks/useWhenShowReset';
 export { default as useAudioClips } from './hooks/useAudioClips';
 export { default as useIsAudioPlaying } from './hooks/useIsAudioPlaying';
 
-// Background
-export { default as useBackground } from './hooks/useBackground';
-export { default as Background } from './components/Background';
-
 // Hints
 export { default as useHint } from './hooks/useHint';
 export { default as Hint } from './components/Hint';

@@ -22,14 +22,14 @@ Import the library
 
 ```ts
 import { CogsConnection, AudioPlayer } from '@clockworkdog/cogs-client';
-import { Background, Video, Timer, Hint, useIsConnected, useIsAudioPlaying } from '@clockworkdog/cogs-client-react';
+import { Video, Timer, Hint, useIsConnected, useIsAudioPlaying } from '@clockworkdog/cogs-client-react';
 ```
 
 or
 
 ```js
 const { CogsConnection, AudioPlayer } = require('@clockworkdog/cogs-client');
-const { Background, Video, Hint, Timer, useIsConnected, useIsAudioPlaying } = require('@clockworkdog/cogs-client-react');
+const { Video, Hint, Timer, useIsConnected, useIsAudioPlaying } = require('@clockworkdog/cogs-client-react');
 ```
 
 then
