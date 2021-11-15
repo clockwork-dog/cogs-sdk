@@ -1,4 +1,3 @@
-import BackgroundOptions from './BackgroundOptions';
 import MediaObjectFit from './MediaObjectFit';
 import { ShowPhase } from './valueTypes';
 
@@ -28,9 +27,8 @@ interface TextHintsUpdateMessage {
 
 interface MediaClientConfigMessage {
   type: 'media_config_update';
-  globalVolume: number; // Question: Are all these appropriate for custom content??
+  globalVolume: number;
   files: { [path: string]: { preload: boolean } };
-  background?: BackgroundOptions;
 }
 
 type MediaClientMessage =
@@ -45,12 +43,13 @@ type MediaClientMessage =
   | { type: 'image_show'; file: string; fit: MediaObjectFit; hideOthers?: boolean }
   | { type: 'image_hide'; file?: string };
 
-export type CogsClientMessage =
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type CogsClientMessage<CustomConfig = {}> =
   | ShowResetMessage
   | ShowPhaseMessage
   | AdjustableTimerUpdateMessage
   | TextHintsUpdateMessage
-  | MediaClientConfigMessage
+  | (MediaClientConfigMessage & CustomConfig)
   | MediaClientMessage;
 
 export default CogsClientMessage;
