@@ -72,9 +72,11 @@ For example, with your custom content hosted on port 3000, http://localhost:3000
 
 Chrome's autoplay security settings mean that you will need to interact with the page before audio or video will play. You can disable this warning when developing by pressing `ℹ️` in Chrome's URL bar, opening `Site settings`, and setting `Sound` to `Allow`.
 
-## Using create-react-app
+## Using `create-react-app`
 
-If you're using `create-react-app` for your project, you'll need to configure the build to work with a relative path, as when accessed by a Media Master your project will not be served from the root path. This can be achieved by adding the following to your `package.json`:
+We suggest you use [our `create-react-app` template](https://www.npmjs.com/package/@clockworkdog/cra-template-cogs-client).
+
+Or, if you're using `create-react-app` for your project, you'll need to configure the build to work with a relative path, as when accessed by a Media Master your project will not be served from the root path. This can be achieved by adding the following to your `package.json`:
 
 ```
 "homepage": ".",
