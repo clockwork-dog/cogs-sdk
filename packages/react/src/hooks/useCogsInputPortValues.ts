@@ -8,7 +8,7 @@ export default function useCogsInputPortValues<Connection extends CogsConnection
   const [value, setValue] = useState(connection.inputPortValues);
 
   useEffect(() => {
-    const listener = () => setValue(connection.inputPortValues);
+    const listener = (event: CustomEvent<InputPortsType<Connection>>) => setValue(event.detail);
     connection.addEventListener('updates', listener);
     return () => connection.removeEventListener('updates', listener);
   }, [connection]);
