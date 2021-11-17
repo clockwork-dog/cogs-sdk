@@ -45,7 +45,6 @@ function MyComponent() {
 
   return (
     <div>
-      <Backgound connection={cogsConnection} />
       <div>Connected: {isConnected}</div>
       <div>Audio playing: {isAudioPlaying}</div>
       <div style={{ fontSize: 100 }}>
