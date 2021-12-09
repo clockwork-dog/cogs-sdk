@@ -17,12 +17,14 @@ export default function Video({
   connection,
   fullscreen,
   onStopped,
+  getCachedAsset
 }: {
   className?: string;
   style?: React.CSSProperties;
   connection: CogsConnection;
   fullscreen?: boolean | { style: React.CSSProperties };
   onStopped?: () => void;
+  getCachedAsset?: (assetUrl: string) => string | undefined
 }): JSX.Element | null {
   const [globalVolume, setGlobalVolume] = useState(1);
 
@@ -107,7 +109,7 @@ export default function Video({
         ...(fullscreen ? { width: '100%', height: '100%' } : {}),
         ...style,
       }}
-      src={videoClip.src}
+      src={(getCachedAsset && getCachedAsset(videoClip.src)) ?? videoClip.src}
       onEnded={notifyVideoStopped}
     />
   );
