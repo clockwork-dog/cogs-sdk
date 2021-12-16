@@ -72,26 +72,6 @@ export default class CogsConnection<
 
       this.dispatchEvent('open', undefined);
       this.setOutputPortValues(this.currentOutputPortValues as NonNullable<CustomTypes['outputPorts']>);
-      this.addEventListener('config', ({ detail: config }) => {
-        this.currentConfig = config;
-      });
-      this.addEventListener('updates', ({ detail: updates }) => {
-        this.currentInputPortValues = { ...this.currentInputPortValues, ...updates };
-      });
-      this.addEventListener('message', ({ detail: message }) => {
-        switch (message.type) {
-          case 'adjustable_timer_update':
-            this._timerState = {
-              startedAt: Date.now(),
-              durationMillis: message.durationMillis,
-              ticking: message.ticking,
-            };
-            break;
-          case 'show_phase':
-            this._showPhase = message.phase;
-            break;
-        }
-      });
     };
 
     this.websocket.onclose = () => {
@@ -104,12 +84,27 @@ export default class CogsConnection<
 
         try {
           if (parsed.config) {
-            this.dispatchEvent('config', parsed.config);
+            this.currentConfig = parsed.config;
+            this.dispatchEvent('config', this.currentConfig);
           } else if (parsed.updates) {
-            this.dispatchEvent('updates', parsed.updates);
+            this.currentInputPortValues = { ...this.currentInputPortValues, ...parsed.updates };
+            this.dispatchEvent('updates', this.currentInputPortValues);
           } else if (parsed.event && parsed.event.key) {
             this.dispatchEvent('event', parsed.event);
           } else if (typeof parsed.message === 'object') {
+            switch (parsed.message.type) {
+              case 'adjustable_timer_update':
+                this._timerState = {
+                  startedAt: Date.now(),
+                  durationMillis: parsed.message.durationMillis,
+                  ticking: parsed.message.ticking,
+                };
+                break;
+              case 'show_phase':
+                this._showPhase = parsed.message.phase;
+                break;
+            }
+
             this.dispatchEvent('message', parsed.message);
           }
         } catch (e) {
