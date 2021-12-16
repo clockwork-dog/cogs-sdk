@@ -88,7 +88,7 @@ export default function CogsConnectionProvider({
 }
 
 /**
- * Get the connection from `<CogsConnnectionProvider>`
+ * Get the connection from `<CogsConnectionProvider>`
  */
 export function useCogsConnection<CustomTypes extends CogsConnectionCustomTypes<CogsConnection>>(): CogsConnection<CustomTypes> {
   return useContext(CogsConnectionContext as React.Context<CogsConnectionContextValue<CustomTypes>>).useCogsConnection();
