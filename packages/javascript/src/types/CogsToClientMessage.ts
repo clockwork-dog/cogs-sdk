@@ -44,7 +44,7 @@ type MediaClientMessage =
   | { type: 'image_hide'; file?: string };
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-export type CogsClientMessage<CustomConfig = {}> =
+export type CogsToClientMessage<CustomConfig = {}> =
   | ShowResetMessage
   | ShowPhaseMessage
   | AdjustableTimerUpdateMessage
@@ -52,4 +52,4 @@ export type CogsClientMessage<CustomConfig = {}> =
   | (MediaClientConfigMessage & CustomConfig)
   | MediaClientMessage;
 
-export default CogsClientMessage;
+export default CogsToClientMessage;

@@ -1,7 +1,8 @@
 import { ConfigValue, EventKeyValue, EventValue, PortValue, ShowPhase } from './types/valueTypes';
 import ReconnectingWebSocket from 'reconnecting-websocket';
-import CogsClientMessage from './types/CogsClientMessage';
+import CogsToClientMessage from './types/CogsToClientMessage';
 import { COGS_SERVER_PORT } from './helpers/urls';
+import MediaClipStateMessage from './types/MediaClipStateMessage';
 
 interface ConnectionEventListeners<
   CustomTypes extends {
@@ -12,13 +13,13 @@ interface ConnectionEventListeners<
 > {
   open: undefined;
   close: undefined;
-  message: CogsClientMessage;
+  message: CogsToClientMessage;
   config: CustomTypes['config'];
   updates: Partial<CustomTypes['inputPorts']>;
   event: CustomTypes['inputEvents'] extends { [key: string]: EventValue | null } ? EventKeyValue<CustomTypes['inputEvents']> : Record<string, never>;
 }
 
-export type TimerState = Omit<Extract<CogsClientMessage, { type: 'adjustable_timer_update' }>, 'type'> & { startedAt: number };
+export type TimerState = Omit<Extract<CogsToClientMessage, { type: 'adjustable_timer_update' }>, 'type'> & { startedAt: number };
 
 export default class CogsConnection<
   CustomTypes extends {
@@ -144,6 +145,12 @@ export default class CogsConnection<
     this.currentOutputPortValues = { ...this.currentOutputPortValues, ...values };
     if (this.isConnected) {
       this.websocket.send(JSON.stringify({ updates: values }));
+    }
+  }
+
+  sendMediaClipState(mediaClipState: MediaClipStateMessage): void {
+    if (this.isConnected) {
+      this.websocket.send(JSON.stringify({ mediaClipState }));
     }
   }
 

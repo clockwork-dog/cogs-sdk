@@ -1,5 +1,6 @@
 export { default as CogsConnection } from './CogsConnection';
-export { default as CogsClientMessage } from './types/CogsClientMessage';
+export { default as CogsToClientMessage } from './types/CogsToClientMessage';
+export { default as MediaClipStateMessage } from './types/MediaClipStateMessage';
 export * from './types/valueTypes';
 export { default as MediaObjectFit } from './types/MediaObjectFit';
 export { default as CogsAudioPlayer } from './AudioPlayer';

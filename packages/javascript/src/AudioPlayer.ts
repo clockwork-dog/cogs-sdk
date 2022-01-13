@@ -2,16 +2,18 @@ import { Howl, Howler } from 'howler';
 import CogsConnection from './CogsConnection';
 import { assetUrl } from './helpers/urls';
 import { ActiveAudioClipState, ActiveClip, AudioClip, AudioState } from './types/AudioState';
-import CogsClientMessage from './types/CogsClientMessage';
+import MediaClipStateMessage, { MediaStatus } from './types/MediaClipStateMessage';
+import CogsToClientMessage from './types/CogsToClientMessage';
 
 interface InternalClipPlayer extends AudioClip {
   player: Howl;
 }
 
-type MediaClientConfigMessage = Extract<CogsClientMessage, { type: 'media_config_update' }>;
+type MediaClientConfigMessage = Extract<CogsToClientMessage, { type: 'media_config_update' }>;
 
 type EventTypes = {
   state: AudioState;
+  audioClipState: MediaClipStateMessage;
 };
 
 export default class AudioPlayer {
@@ -19,8 +21,14 @@ export default class AudioPlayer {
   private globalVolume = 1;
   private audioClipPlayers: { [path: string]: InternalClipPlayer } = {};
 
-  constructor(connection: CogsConnection) {
-    connection.addEventListener('message', (event) => {
+  constructor(cogsConnection: CogsConnection) {
+    // Send the current status of each clip to COGS
+    this.addEventListener('audioClipState', ({ detail }) => {
+      cogsConnection.sendMediaClipState(detail);
+    });
+
+    // Listen for audio control messages
+    cogsConnection.addEventListener('message', (event) => {
       const message = event.detail;
       switch (message.type) {
         case 'media_config_update':
@@ -59,7 +67,7 @@ export default class AudioPlayer {
 
   playAudioClip(path: string, { volume, fade, loop }: { volume: number; fade?: number; loop: boolean }): void {
     if (!(path in this.audioClipPlayers)) {
-      this.audioClipPlayers[path] = createClip(path, { preload: false, ephemeral: true });
+      this.audioClipPlayers[path] = this.createClip(path, { preload: false, ephemeral: true });
     }
 
     this.updateAudioClipPlayer(path, (clipPlayer) => {
@@ -273,12 +281,12 @@ export default class AudioPlayer {
 
       const addedClips = Object.entries(newFiles).filter(([newfile]) => !previousClipPlayers[newfile]);
       addedClips.forEach(([path, config]) => {
-        clipPlayers[path] = createClip(path, { ...config, ephemeral: false });
+        clipPlayers[path] = this.createClip(path, { ...config, ephemeral: false });
       });
 
       const updatedClips = Object.keys(previousClipPlayers).filter((previousFile) => previousFile in newFiles);
       updatedClips.forEach((path) => {
-        clipPlayers[path] = updatedClip(path, clipPlayers[path], { ...newFiles[path], ephemeral: false });
+        clipPlayers[path] = this.updatedClip(path, clipPlayers[path], { ...newFiles[path], ephemeral: false });
       });
 
       return clipPlayers;
@@ -305,6 +313,10 @@ export default class AudioPlayer {
     this.dispatchEvent('state', audioState);
   }
 
+  private notifyClipStateListeners(file: string, status: MediaStatus) {
+    this.dispatchEvent('audioClipState', { mediaType: 'audio', file, status });
+  }
+
   // Type-safe wrapper around EventTarget
   public addEventListener<EventName extends keyof EventTypes>(
     type: EventName,
@@ -323,34 +335,45 @@ export default class AudioPlayer {
   private dispatchEvent<EventName extends keyof EventTypes>(type: EventName, detail: EventTypes[EventName]): void {
     this.eventTarget.dispatchEvent(new CustomEvent(type, { detail }));
   }
-}
 
-function createPlayer(path: string, config: { preload: boolean }) {
-  return new Howl({
-    src: assetUrl(path),
-    autoplay: false,
-    loop: false,
-    volume: 1,
-    html5: !config.preload,
-    preload: config.preload,
-  });
-}
-
-function createClip(file: string, config: InternalClipPlayer['config']): InternalClipPlayer {
-  return {
-    config,
-    player: createPlayer(file, config),
-    activeClips: {},
-  };
-}
-
-function updatedClip(clipPath: string, previousClip: InternalClipPlayer, newConfig: InternalClipPlayer['config']): InternalClipPlayer {
-  const clip = { ...previousClip, config: newConfig };
-  if (previousClip.config.preload !== newConfig.preload) {
-    clip.player.unload();
-    clip.player = createPlayer(clipPath, newConfig);
+  private createPlayer(path: string, config: { preload: boolean }) {
+    const player = new Howl({
+      src: assetUrl(path),
+      autoplay: false,
+      loop: false,
+      volume: 1,
+      html5: !config.preload,
+      preload: config.preload,
+      onplay: () => this.notifyClipStateListeners(path, 'playing'),
+      onpause: () => this.notifyClipStateListeners(path, 'paused'),
+      // Finished play the clip, or one loop of it
+      onend: () => {
+        if (!player.loop()) {
+          this.notifyClipStateListeners(path, 'stopped');
+        }
+      },
+      // Explicit stop
+      onstop: () => this.notifyClipStateListeners(path, 'stopped'),
+    });
+    return player;
   }
-  return clip;
+
+  private createClip(file: string, config: InternalClipPlayer['config']): InternalClipPlayer {
+    return {
+      config,
+      player: this.createPlayer(file, config),
+      activeClips: {},
+    };
+  }
+
+  private updatedClip(clipPath: string, previousClip: InternalClipPlayer, newConfig: InternalClipPlayer['config']): InternalClipPlayer {
+    const clip = { ...previousClip, config: newConfig };
+    if (previousClip.config.preload !== newConfig.preload) {
+      clip.player.unload();
+      clip.player = this.createPlayer(clipPath, newConfig);
+    }
+    return clip;
+  }
 }
 
 function isFadeValid(fade: number | undefined): fade is number {
