@@ -3,13 +3,13 @@ import CogsConnection from './CogsConnection';
 import { assetUrl } from './helpers/urls';
 import { ActiveAudioClipState, ActiveClip, AudioClip, AudioState } from './types/AudioState';
 import MediaClipStateMessage, { MediaStatus } from './types/MediaClipStateMessage';
-import CogsToClientMessage from './types/CogsToClientMessage';
+import CogsClientMessage from './types/CogsClientMessage';
 
 interface InternalClipPlayer extends AudioClip {
   player: Howl;
 }
 
-type MediaClientConfigMessage = Extract<CogsToClientMessage, { type: 'media_config_update' }>;
+type MediaClientConfigMessage = Extract<CogsClientMessage, { type: 'media_config_update' }>;
 
 type EventTypes = {
   state: AudioState;

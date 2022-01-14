@@ -1,6 +1,6 @@
 import { ConfigValue, EventKeyValue, EventValue, PortValue, ShowPhase } from './types/valueTypes';
 import ReconnectingWebSocket from 'reconnecting-websocket';
-import CogsToClientMessage from './types/CogsToClientMessage';
+import CogsClientMessage from './types/CogsClientMessage';
 import { COGS_SERVER_PORT } from './helpers/urls';
 import MediaClipStateMessage from './types/MediaClipStateMessage';
 
@@ -13,13 +13,13 @@ interface ConnectionEventListeners<
 > {
   open: undefined;
   close: undefined;
-  message: CogsToClientMessage;
+  message: CogsClientMessage;
   config: CustomTypes['config'];
   updates: Partial<CustomTypes['inputPorts']>;
   event: CustomTypes['inputEvents'] extends { [key: string]: EventValue | null } ? EventKeyValue<CustomTypes['inputEvents']> : Record<string, never>;
 }
 
-export type TimerState = Omit<Extract<CogsToClientMessage, { type: 'adjustable_timer_update' }>, 'type'> & { startedAt: number };
+export type TimerState = Omit<Extract<CogsClientMessage, { type: 'adjustable_timer_update' }>, 'type'> & { startedAt: number };
 
 export default class CogsConnection<
   CustomTypes extends {
