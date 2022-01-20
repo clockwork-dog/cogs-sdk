@@ -21,25 +21,30 @@ yarn add @clockworkdog/cogs-client-react
 Import the library
 
 ```ts
-import { CogsConnection, AudioPlayer } from '@clockworkdog/cogs-client';
-import { Video, Timer, Hint, useIsConnected, useIsAudioPlaying } from '@clockworkdog/cogs-client-react';
+import { CogsConnectionProvider } from '@clockworkdog/cogs-client';
+import { VideoContainer, Timer, Hint, useIsConnected, useIsAudioPlaying } from '@clockworkdog/cogs-client-react';
 ```
 
 or
 
 ```js
-const { CogsConnection, AudioPlayer } = require('@clockworkdog/cogs-client');
-const { Video, Hint, Timer, useIsConnected, useIsAudioPlaying } = require('@clockworkdog/cogs-client-react');
+const { CogsConnectionProvider } = require('@clockworkdog/cogs-client');
+const { VideoContainer, Hint, Timer, useIsConnected, useIsAudioPlaying } = require('@clockworkdog/cogs-client-react');
 ```
 
 then
 
 ```tsx
-const cogsConnection = new CogsConnection();
-// Add audio playing capability
-const audioPlayer = new AudioPlayer(cogsConnection);
+function App() {
+  return (
+    <CogsConnectionProvider audioPlayer videoPlayer>
+      <MyComponent />
+    </CogsConnectionProvider>
+  );
+}
 
 function MyComponent() {
+  const cogsConnection = useCogsConnection();
   const isConnected = useIsConnected(cogsConnection);
   const isAudioPlaying = useIsAudioPlaying(audioPlayer);
 
@@ -56,10 +61,16 @@ function MyComponent() {
         <Hint connection={cogsConnection} />
       </div>
       {/* Video overlay with the "fit" specified */}
-      <Video connection={cogsConnection} fullscreen />
+      <VideoContainer fullscreen />
     </div>
   );
 }
+```
+
+To position the video yourself you can add a `style` and/or `className` to add styles with CSS:
+
+```tsx
+<VideoContainer className="my-video-container" style={{ position: 'absolute', top: 100, left: 100, width: 400, height: 300 }} />
 ```
 
 ### Local development

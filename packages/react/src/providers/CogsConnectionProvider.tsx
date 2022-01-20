@@ -23,6 +23,8 @@ const CogsConnectionContext = React.createContext<CogsConnectionContextValue>({
 
 /**
  * Create a persistent connection to COGS which can be accessed with `useCogsConnection()`
+ * @param audioPlayer Creates a `CogsAudioPlayer` than can be accessed with `useAudioPlayer()`
+ * @param videoPlayer Creates a `CogsVideoPlayer` than can be accessed with `useVideoPlayer()`
  *
  * ```jsx
  * function MyComponent() {
@@ -33,7 +35,7 @@ const CogsConnectionContext = React.createContext<CogsConnectionContextValue>({
  * }
  *
  * function App() {
- *   return <CogsConnectionProvider>
+ *   return <CogsConnectionProvider audioPlayer videoPlayer>
  *     <MyComponent />
  *   <CogsConnectionProvider/>;
  * }
@@ -54,7 +56,7 @@ const CogsConnectionContext = React.createContext<CogsConnectionContextValue>({
  * }
  *
  * function App() {
- *   return <CogsConnectionProvider>
+ *   return <CogsConnectionProvider audioPlayer videoPlayer>
  *     <MyComponent />
  *   <CogsConnectionProvider/>;
  * }
