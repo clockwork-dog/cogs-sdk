@@ -22,14 +22,14 @@ Import the library
 
 ```ts
 import { CogsConnectionProvider } from '@clockworkdog/cogs-client';
-import { VideoContainer, Timer, Hint, useIsConnected, useIsAudioPlaying } from '@clockworkdog/cogs-client-react';
+import { VideoContainer, Timer, Hint, useIsConnected, useAudioPlayer, useIsAudioPlaying } from '@clockworkdog/cogs-client-react';
 ```
 
 or
 
 ```js
 const { CogsConnectionProvider } = require('@clockworkdog/cogs-client');
-const { VideoContainer, Hint, Timer, useIsConnected, useIsAudioPlaying } = require('@clockworkdog/cogs-client-react');
+const { VideoContainer, Hint, Timer, useIsConnected, useAudioPlayer, useIsAudioPlaying } = require('@clockworkdog/cogs-client-react');
 ```
 
 then
@@ -46,6 +46,8 @@ function App() {
 function MyComponent() {
   const cogsConnection = useCogsConnection();
   const isConnected = useIsConnected(cogsConnection);
+
+  const audioPlayer = useAudioPlayer();
   const isAudioPlaying = useIsAudioPlaying(audioPlayer);
 
   return (
@@ -54,11 +56,11 @@ function MyComponent() {
       <div>Audio playing: {isAudioPlaying}</div>
       <div style={{ fontSize: 100 }}>
         {/* The time from the adjustable timer plugin in the format 'MM:SS' */}
-        <Timer connection={cogsConnection} center />
+        <Timer center />
       </div>
       <div style={{ fontSize: 20 }}>
         {/* The latest text hint as a string */}
-        <Hint connection={cogsConnection} />
+        <Hint />
       </div>
       {/* Video overlay with the "fit" specified */}
       <VideoContainer fullscreen />
