@@ -62,17 +62,11 @@ function MyComponent() {
         {/* The latest text hint as a string */}
         <Hint />
       </div>
-      {/* Video overlay with the "fit" specified */}
-      <VideoContainer fullscreen />
+      {/* Specify where you want the video to be displayed. Leave this out for default fullscreen behavior */}
+      <VideoContainer style={{ position: 'absolute', top: 100, left: 100, width: 400, height: 300 }} />
     </div>
   );
 }
-```
-
-To position the video yourself you can add a `style` and/or `className` to add styles with CSS:
-
-```tsx
-<VideoContainer className="my-video-container" style={{ position: 'absolute', top: 100, left: 100, width: 400, height: 300 }} />
 ```
 
 ### Local development
