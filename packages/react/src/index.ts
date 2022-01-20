@@ -1,5 +1,5 @@
 // Utilities
-export { default as CogsConnectionProvider, useCogsConnection } from './providers/CogsConnectionProvider';
+export { default as CogsConnectionProvider, useCogsConnection, useAudioPlayer, useVideoPlayer } from './providers/CogsConnectionProvider';
 export { default as useIsConnected } from './hooks/useIsConnected';
 export { default as useCogsConfig } from './hooks/useCogsConfig';
 export { default as useCogsEvent } from './hooks/useCogsEvent';
@@ -13,6 +13,9 @@ export { default as useWhenShowReset } from './hooks/useWhenShowReset';
 // Audio
 export { default as useAudioClips } from './hooks/useAudioClips';
 export { default as useIsAudioPlaying } from './hooks/useIsAudioPlaying';
+
+// Video
+export { default as VideoContainer } from './components/VideoContainer';
 
 // Hints
 export { default as useHint } from './hooks/useHint';

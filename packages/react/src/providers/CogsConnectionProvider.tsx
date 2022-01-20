@@ -1,14 +1,22 @@
-import { CogsConnection } from '@clockworkdog/cogs-client';
+import { CogsAudioPlayer, CogsConnection, CogsVideoPlayer } from '@clockworkdog/cogs-client';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 
 type CogsConnectionCustomTypes<Connection> = Connection extends CogsConnection<infer T> ? T : never;
 
 type CogsConnectionContextValue<CustomTypes extends CogsConnectionCustomTypes<CogsConnection> = Record<never, never>> = {
   useCogsConnection: () => CogsConnection<CustomTypes>;
+  useAudioPlayer: () => CogsAudioPlayer | null;
+  useVideoPlayer: () => CogsVideoPlayer | null;
 };
 
 const CogsConnectionContext = React.createContext<CogsConnectionContextValue>({
   useCogsConnection: () => {
+    throw new Error('Please use with <CogsConnectionProvider>');
+  },
+  useAudioPlayer: () => {
+    throw new Error('Please use with <CogsConnectionProvider>');
+  },
+  useVideoPlayer: () => {
     throw new Error('Please use with <CogsConnectionProvider>');
   },
 });
@@ -56,10 +64,14 @@ export default function CogsConnectionProvider({
   hostname,
   port,
   children,
+  audioPlayer,
+  videoPlayer,
 }: {
   hostname?: string;
   port?: number;
   children: React.ReactNode;
+  audioPlayer?: boolean;
+  videoPlayer?: boolean;
 }): JSX.Element | null {
   const connectionRef = useRef<CogsConnection>();
   const [, forceRender] = useState({});
@@ -74,14 +86,30 @@ export default function CogsConnectionProvider({
     };
   }, [hostname, port]);
 
+  const audioPlayerRef = useRef<CogsAudioPlayer>();
+  useEffect(() => {
+    if (audioPlayer && !audioPlayerRef.current && connectionRef.current) {
+      audioPlayerRef.current = new CogsAudioPlayer(connectionRef.current);
+    }
+  }, [audioPlayer]);
+
+  const videoPlayerRef = useRef<CogsVideoPlayer>();
+  useEffect(() => {
+    if (videoPlayer && !videoPlayerRef.current && connectionRef.current) {
+      videoPlayerRef.current = new CogsVideoPlayer(connectionRef.current);
+    }
+  }, [videoPlayer]);
+
   if (!connectionRef.current) {
-    // Do not render if the `useEffect` above has not run
+    // Do not render if the `useEffect`s above have not run
     return null;
   }
 
   const value: CogsConnectionContextValue = {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     useCogsConnection: () => connectionRef.current!,
+    useAudioPlayer: () => audioPlayerRef.current ?? null,
+    useVideoPlayer: () => videoPlayerRef.current ?? null,
   };
 
   return <CogsConnectionContext.Provider value={value}>{children}</CogsConnectionContext.Provider>;
@@ -92,4 +120,18 @@ export default function CogsConnectionProvider({
  */
 export function useCogsConnection<CustomTypes extends CogsConnectionCustomTypes<CogsConnection>>(): CogsConnection<CustomTypes> {
   return useContext(CogsConnectionContext as React.Context<CogsConnectionContextValue<CustomTypes>>).useCogsConnection();
+}
+
+/**
+ * Get the audio player from `<CogsConnectionProvider audioPlayer>`
+ */
+export function useAudioPlayer(): CogsAudioPlayer | null {
+  return useContext(CogsConnectionContext as React.Context<CogsConnectionContextValue>).useAudioPlayer();
+}
+
+/**
+ * Get the video player from `<CogsConnectionProvider audioPlayer>`
+ */
+export function useVideoPlayer(): CogsVideoPlayer | null {
+  return useContext(CogsConnectionContext as React.Context<CogsConnectionContextValue>).useVideoPlayer();
 }
