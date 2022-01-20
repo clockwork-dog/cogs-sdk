@@ -16,15 +16,17 @@ type EventTypes = {
   videoClipState: MediaClipStateMessage;
 };
 
+const DEFAULT_PARENT_ELEMENT = document.body;
+
 export default class VideoPlayer {
   private eventTarget = new EventTarget();
   private globalVolume = 1;
   private videoClipPlayers: { [path: string]: InternalClipPlayer } = {};
   private activeClipPath?: string;
-  private readonly parent: HTMLElement;
+  private parentElement: HTMLElement;
 
-  constructor(cogsConnection: CogsConnection, parent: HTMLElement = document.body) {
-    this.parent = parent;
+  constructor(cogsConnection: CogsConnection, parentElement: HTMLElement = DEFAULT_PARENT_ELEMENT) {
+    this.parentElement = parentElement;
 
     // Send the current status of each clip to COGS
     this.addEventListener('videoClipState', ({ detail }) => {
@@ -59,7 +61,19 @@ export default class VideoPlayer {
     });
   }
 
+  setParentElement(parentElement: HTMLElement): void {
+    this.parentElement = parentElement;
+    Object.values(this.videoClipPlayers).forEach((clipPlayer) => {
+      parentElement.appendChild(clipPlayer.videoElement);
+    });
+  }
+
+  resetParentElement(): void {
+    this.setParentElement(DEFAULT_PARENT_ELEMENT);
+  }
+
   setGlobalVolume(volume: number): void {
+    // TODO: update volume of all videos
     this.globalVolume = volume;
     this.notifyStateListeners();
   }
@@ -78,7 +92,7 @@ export default class VideoPlayer {
 
     this.updateVideoClipPlayer(path, (clipPlayer) => {
       if (clipPlayer.videoElement) {
-        clipPlayer.videoElement.volume = volume;
+        clipPlayer.videoElement.volume = volume * this.globalVolume;
         clipPlayer.videoElement.loop = loop;
         if (clipPlayer.videoElement.currentTime === clipPlayer.videoElement.duration) {
           clipPlayer.videoElement.currentTime = 0;
@@ -228,7 +242,7 @@ export default class VideoPlayer {
     videoElement.src = assetUrl(path);
     videoElement.autoplay = false;
     videoElement.loop = false;
-    videoElement.volume = 1;
+    videoElement.volume = this.globalVolume;
     videoElement.preload = config.preload ? 'auto' : 'none';
     videoElement.addEventListener('playing', () => {
       this.notifyClipStateListeners(path, 'playing');
@@ -245,7 +259,7 @@ export default class VideoPlayer {
     videoElement.style.width = '100%';
     videoElement.style.height = '100%';
     videoElement.style.objectFit = config.fit;
-    this.parent.appendChild(videoElement);
+    this.parentElement.appendChild(videoElement);
     return videoElement;
   }
 
