@@ -90,8 +90,9 @@ export default class VideoPlayer {
       if (!this.videoClipPlayers[path]) {
         this.videoClipPlayers[path] = this.createClipPlayer(path, { preload: false, ephemeral: true, fit });
       }
-      this.activeClipPath = path;
     }
+
+    this.activeClipPath = path;
 
     this.updateVideoClipPlayer(path, (clipPlayer) => {
       if (clipPlayer.videoElement) {
