@@ -73,7 +73,10 @@ export default class VideoPlayer {
   }
 
   setGlobalVolume(volume: number): void {
-    // TODO: update volume of all videos
+    // Adjust volume of all videos taking into account previous global volume
+    Object.values(this.videoClipPlayers).forEach((clipPlayer) => {
+      clipPlayer.videoElement.volume = (clipPlayer.videoElement.volume / this.globalVolume) * volume;
+    });
     this.globalVolume = volume;
     this.notifyStateListeners();
   }
