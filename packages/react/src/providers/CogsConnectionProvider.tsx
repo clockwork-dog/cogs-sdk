@@ -10,15 +10,9 @@ type CogsConnectionContextValue<CustomTypes extends CogsConnectionCustomTypes<Co
 };
 
 const CogsConnectionContext = React.createContext<CogsConnectionContextValue>({
-  useCogsConnection: () => {
-    throw new Error('Please use with <CogsConnectionProvider>');
-  },
-  useAudioPlayer: () => {
-    throw new Error('Please use with <CogsConnectionProvider>');
-  },
-  useVideoPlayer: () => {
-    throw new Error('Please use with <CogsConnectionProvider>');
-  },
+  useCogsConnection: () => undefined as any,
+  useAudioPlayer: () => undefined as any,
+  useVideoPlayer: () => undefined as any,
 });
 
 /**
