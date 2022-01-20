@@ -266,12 +266,20 @@ export default class AudioPlayer {
   }
 
   private updateConfig(newFiles: MediaClientConfigMessage['files']) {
+    const newAudioFiles = Object.fromEntries(
+      Object.entries(newFiles).filter(([, { type }]) => {
+        // COGS 4.6 did not send a `type` but only reported audio files
+        // so we assume audio if no `type` is given
+        return type === 'audio' || !type;
+      })
+    );
+
     const previousClipPlayers = this.audioClipPlayers;
     this.audioClipPlayers = (() => {
       const clipPlayers = { ...previousClipPlayers };
 
       const removedClips = Object.keys(previousClipPlayers).filter(
-        (previousFile) => !(previousFile in newFiles) && !previousClipPlayers[previousFile].config.ephemeral
+        (previousFile) => !(previousFile in newAudioFiles) && !previousClipPlayers[previousFile].config.ephemeral
       );
       removedClips.forEach((file) => {
         const player = previousClipPlayers[file].player;
@@ -279,14 +287,14 @@ export default class AudioPlayer {
         delete clipPlayers[file];
       });
 
-      const addedClips = Object.entries(newFiles).filter(([newfile]) => !previousClipPlayers[newfile]);
+      const addedClips = Object.entries(newAudioFiles).filter(([newfile]) => !previousClipPlayers[newfile]);
       addedClips.forEach(([path, config]) => {
         clipPlayers[path] = this.createClip(path, { ...config, ephemeral: false });
       });
 
-      const updatedClips = Object.keys(previousClipPlayers).filter((previousFile) => previousFile in newFiles);
+      const updatedClips = Object.keys(previousClipPlayers).filter((previousFile) => previousFile in newAudioFiles);
       updatedClips.forEach((path) => {
-        clipPlayers[path] = this.updatedClip(path, clipPlayers[path], { ...newFiles[path], ephemeral: false });
+        clipPlayers[path] = this.updatedClip(path, clipPlayers[path], { ...newAudioFiles[path], ephemeral: false });
       });
 
       return clipPlayers;

@@ -171,27 +171,29 @@ export default class VideoPlayer {
   }
 
   private updateConfig(newPaths: MediaClientConfigMessage['files']) {
+    const newVideoPaths = Object.fromEntries(Object.entries(newPaths).filter(([, { type }]) => type === 'video' || !type));
+
     const previousClipPlayers = this.videoClipPlayers;
     this.videoClipPlayers = (() => {
       const clipPlayers = { ...previousClipPlayers };
 
       const removedClips = Object.keys(previousClipPlayers).filter(
-        (previousPath) => !(previousPath in newPaths) && !previousClipPlayers[previousPath].config.ephemeral
+        (previousPath) => !(previousPath in newVideoPaths) && !previousClipPlayers[previousPath].config.ephemeral
       );
       removedClips.forEach((path) => {
         this.unloadClip(path);
       });
 
-      const addedClips = Object.entries(newPaths).filter(([newFile]) => !previousClipPlayers[newFile]);
+      const addedClips = Object.entries(newVideoPaths).filter(([newFile]) => !previousClipPlayers[newFile]);
       addedClips.forEach(([path, config]) => {
         clipPlayers[path] = this.createClipPlayer(path, { ...config, ephemeral: false, fit: 'contain' });
       });
 
-      const updatedClips = Object.entries(previousClipPlayers).filter(([previousPath]) => previousPath in newPaths);
+      const updatedClips = Object.entries(previousClipPlayers).filter(([previousPath]) => previousPath in newVideoPaths);
       updatedClips.forEach(([path, previousClipPlayer]) => {
-        if (previousClipPlayer.config.preload !== newPaths[path].preload) {
+        if (previousClipPlayer.config.preload !== newVideoPaths[path].preload) {
           this.unloadClip(path);
-          return this.createClipPlayer(path, { ...previousClipPlayer.config, preload: newPaths[path].preload, ephemeral: false });
+          return this.createClipPlayer(path, { ...previousClipPlayer.config, preload: newVideoPaths[path].preload, ephemeral: false });
         }
       });
 
@@ -246,7 +248,7 @@ export default class VideoPlayer {
     videoElement.autoplay = false;
     videoElement.loop = false;
     videoElement.volume = this.globalVolume;
-    videoElement.preload = config.preload ? 'auto' : 'none';
+    videoElement.preload = config.preload ? 'metadata' : 'none';
     videoElement.addEventListener('playing', () => {
       this.notifyClipStateListeners(path, 'playing');
     });

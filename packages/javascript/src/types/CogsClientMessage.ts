@@ -28,7 +28,12 @@ interface TextHintsUpdateMessage {
 interface MediaClientConfigMessage {
   type: 'media_config_update';
   globalVolume: number;
-  files: { [path: string]: { preload: boolean } };
+  files: {
+    [path: string]: {
+      preload: boolean;
+      type: 'audio' | 'video';
+    };
+  };
 }
 
 type MediaClientMessage =
