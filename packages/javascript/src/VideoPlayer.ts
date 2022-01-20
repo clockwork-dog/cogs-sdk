@@ -101,6 +101,7 @@ export default class VideoPlayer {
           clipPlayer.videoElement.currentTime = 0;
         }
         clipPlayer.videoElement.play();
+        clipPlayer.videoElement.style.display = 'block';
       }
       return clipPlayer;
     });
@@ -119,14 +120,7 @@ export default class VideoPlayer {
 
   stopVideoClip(): void {
     if (this.activeClipPath) {
-      const path = this.activeClipPath;
-      this.updateVideoClipPlayer(path, (clipPlayer) => {
-        clipPlayer.videoElement.pause();
-        clipPlayer.videoElement.currentTime = 0;
-        return clipPlayer;
-      });
-      this.handleStoppedClip(path);
-      this.notifyClipStateListeners(path, 'stopped');
+      this.handleStoppedClip(this.activeClipPath);
     }
   }
 
@@ -155,7 +149,13 @@ export default class VideoPlayer {
     }
 
     this.activeClipPath = undefined;
-    this.updateVideoClipPlayer(path, (clipPlayer) => clipPlayer);
+    this.updateVideoClipPlayer(path, (clipPlayer) => {
+      clipPlayer.videoElement.pause();
+      clipPlayer.videoElement.currentTime = 0;
+      clipPlayer.videoElement.style.display = 'none';
+      return clipPlayer;
+    });
+    this.notifyClipStateListeners(path, 'stopped');
   }
 
   private updateVideoClipPlayer(path: string, update: (player: InternalClipPlayer) => InternalClipPlayer | null) {
@@ -255,7 +255,6 @@ export default class VideoPlayer {
     videoElement.addEventListener('ended', () => {
       if (!videoElement.loop) {
         this.handleStoppedClip(path);
-        this.notifyClipStateListeners(path, 'stopped');
       }
     });
     videoElement.style.position = 'absolute';
@@ -264,6 +263,7 @@ export default class VideoPlayer {
     videoElement.style.width = '100%';
     videoElement.style.height = '100%';
     videoElement.style.objectFit = config.fit;
+    videoElement.style.display = 'none';
     this.parentElement.appendChild(videoElement);
     return videoElement;
   }
