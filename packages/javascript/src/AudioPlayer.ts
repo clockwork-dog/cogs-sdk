@@ -346,7 +346,7 @@ export default class AudioPlayer {
       preload: config.preload,
       onplay: () => this.notifyClipStateListeners(path, 'playing'),
       onpause: () => this.notifyClipStateListeners(path, 'paused'),
-      // Finished play the clip, or one loop of it
+      // Finished playing the clip, or one loop of it
       onend: () => {
         if (!player.loop()) {
           this.notifyClipStateListeners(path, 'stopped');

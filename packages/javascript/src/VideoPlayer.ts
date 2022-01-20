@@ -1,0 +1,266 @@
+import CogsConnection from './CogsConnection';
+import { assetUrl } from './helpers/urls';
+import { ActiveVideoClipState, VideoClip, VideoState } from './types/VideoState';
+import MediaClipStateMessage, { MediaStatus } from './types/MediaClipStateMessage';
+import CogsClientMessage from './types/CogsClientMessage';
+import { MediaObjectFit } from '.';
+
+interface InternalClipPlayer extends VideoClip {
+  videoElement: HTMLVideoElement;
+}
+
+type MediaClientConfigMessage = Extract<CogsClientMessage, { type: 'media_config_update' }>;
+
+type EventTypes = {
+  state: VideoState;
+  videoClipState: MediaClipStateMessage;
+};
+
+export default class VideoPlayer {
+  private eventTarget = new EventTarget();
+  private globalVolume = 1;
+  private videoClipPlayers: { [path: string]: InternalClipPlayer } = {};
+  private activeClipPath?: string;
+  private readonly parent: HTMLElement;
+
+  constructor(cogsConnection: CogsConnection, parent: HTMLElement = document.body) {
+    this.parent = parent;
+
+    // Send the current status of each clip to COGS
+    this.addEventListener('videoClipState', ({ detail }) => {
+      cogsConnection.sendMediaClipState(detail);
+    });
+
+    // Listen for video control messages
+    cogsConnection.addEventListener('message', (event) => {
+      const message = event.detail;
+      switch (message.type) {
+        case 'media_config_update':
+          this.setGlobalVolume(message.globalVolume);
+          this.updateConfig(message.files);
+          break;
+        case 'video_play':
+          this.playVideoClip(message.file, {
+            volume: message.volume,
+            loop: Boolean(message.loop),
+            fit: message.fit,
+          });
+          break;
+        case 'video_pause':
+          this.pauseVideoClip();
+          break;
+        case 'video_stop':
+          this.stopVideoClip();
+          break;
+        case 'video_set_volume':
+          this.setVideoClipVolume({ volume: message.volume });
+          break;
+      }
+    });
+  }
+
+  setGlobalVolume(volume: number): void {
+    this.globalVolume = volume;
+    this.notifyStateListeners();
+  }
+
+  playVideoClip(path: string, { volume, loop, fit }: { volume: number; loop: boolean; fit: MediaObjectFit }): void {
+    if (this.activeClipPath) {
+      if (this.activeClipPath !== path) {
+        this.stopVideoClip();
+      }
+    } else {
+      if (!this.videoClipPlayers[path]) {
+        this.videoClipPlayers[path] = this.createClipPlayer(path, { preload: false, ephemeral: true, fit });
+      }
+      this.activeClipPath = path;
+    }
+
+    this.updateVideoClipPlayer(path, (clipPlayer) => {
+      if (clipPlayer.videoElement) {
+        clipPlayer.videoElement.volume = volume;
+        clipPlayer.videoElement.loop = loop;
+        if (clipPlayer.videoElement.currentTime === clipPlayer.videoElement.duration) {
+          clipPlayer.videoElement.currentTime = 0;
+        }
+        clipPlayer.videoElement.play();
+      }
+      return clipPlayer;
+    });
+  }
+
+  pauseVideoClip(): void {
+    if (this.activeClipPath) {
+      const path = this.activeClipPath;
+      this.updateVideoClipPlayer(path, (clipPlayer) => {
+        clipPlayer.videoElement?.pause();
+        return clipPlayer;
+      });
+      this.notifyClipStateListeners(path, 'paused');
+    }
+  }
+
+  stopVideoClip(): void {
+    if (this.activeClipPath) {
+      const path = this.activeClipPath;
+      this.updateVideoClipPlayer(path, (clipPlayer) => {
+        clipPlayer.videoElement.pause();
+        clipPlayer.videoElement.currentTime = 0;
+        return clipPlayer;
+      });
+      this.handleStoppedClip(path);
+      this.notifyClipStateListeners(path, 'stopped');
+    }
+  }
+
+  setVideoClipVolume({ volume }: { volume: number }): void {
+    if (!this.activeClipPath) {
+      return;
+    }
+
+    if (!(volume >= 0 && volume <= 1)) {
+      console.warn('Invalid volume', volume);
+      return;
+    }
+
+    this.updateVideoClipPlayer(this.activeClipPath, (clipPlayer) => {
+      if (clipPlayer.videoElement) {
+        clipPlayer.videoElement.volume = volume;
+      }
+      return clipPlayer;
+    });
+  }
+
+  private handleStoppedClip(path: string) {
+    // Once an ephemeral clip stops, cleanup and remove the player
+    if (this.activeClipPath === path && this.videoClipPlayers[this.activeClipPath].config.ephemeral) {
+      this.unloadClip(path);
+    }
+
+    this.activeClipPath = undefined;
+    this.updateVideoClipPlayer(path, (clipPlayer) => clipPlayer);
+  }
+
+  private updateVideoClipPlayer(path: string, update: (player: InternalClipPlayer) => InternalClipPlayer | null) {
+    if (this.videoClipPlayers[path]) {
+      const newPlayer = update(this.videoClipPlayers[path]);
+      if (newPlayer) {
+        this.videoClipPlayers[path] = newPlayer;
+      } else {
+        delete this.videoClipPlayers[path];
+      }
+      this.notifyStateListeners();
+    }
+  }
+
+  private updateConfig(newPaths: MediaClientConfigMessage['files']) {
+    const previousClipPlayers = this.videoClipPlayers;
+    this.videoClipPlayers = (() => {
+      const clipPlayers = { ...previousClipPlayers };
+
+      const removedClips = Object.keys(previousClipPlayers).filter(
+        (previousPath) => !(previousPath in newPaths) && !previousClipPlayers[previousPath].config.ephemeral
+      );
+      removedClips.forEach((path) => {
+        this.unloadClip(path);
+      });
+
+      const addedClips = Object.entries(newPaths).filter(([newFile]) => !previousClipPlayers[newFile]);
+      addedClips.forEach(([path, config]) => {
+        clipPlayers[path] = this.createClipPlayer(path, { ...config, ephemeral: false, fit: 'contain' });
+      });
+
+      const updatedClips = Object.entries(previousClipPlayers).filter(([previousPath]) => previousPath in newPaths);
+      updatedClips.forEach(([path, previousClipPlayer]) => {
+        if (previousClipPlayer.config.preload !== newPaths[path].preload) {
+          this.unloadClip(path);
+          return this.createClipPlayer(path, { ...previousClipPlayer.config, preload: newPaths[path].preload, ephemeral: false });
+        }
+      });
+
+      return clipPlayers;
+    })();
+    this.notifyStateListeners();
+  }
+
+  private notifyStateListeners() {
+    const VideoState: VideoState = {
+      globalVolume: this.globalVolume,
+      isPlaying: typeof this.activeClipPath === 'string' && !this.videoClipPlayers[this.activeClipPath].videoElement?.paused,
+      clips: { ...this.videoClipPlayers },
+      activeClip: this.activeClipPath
+        ? {
+            path: this.activeClipPath,
+            state: !this.videoClipPlayers[this.activeClipPath].videoElement?.paused ? ActiveVideoClipState.Playing : ActiveVideoClipState.Paused,
+            loop: this.videoClipPlayers[this.activeClipPath].videoElement?.loop ?? false,
+            volume: this.videoClipPlayers[this.activeClipPath].videoElement?.volume ?? 0,
+          }
+        : undefined,
+    };
+    this.dispatchEvent('state', VideoState);
+  }
+
+  private notifyClipStateListeners(file: string, status: MediaStatus) {
+    this.dispatchEvent('videoClipState', { mediaType: 'video', file, status });
+  }
+
+  // Type-safe wrapper around EventTarget
+  public addEventListener<EventName extends keyof EventTypes>(
+    type: EventName,
+    listener: (ev: CustomEvent<EventTypes[EventName]>) => void,
+    options?: boolean | AddEventListenerOptions
+  ): void {
+    this.eventTarget.addEventListener(type, listener as EventListener, options);
+  }
+  public removeEventListener<EventName extends keyof EventTypes>(
+    type: EventName,
+    listener: (ev: CustomEvent<EventTypes[EventName]>) => void,
+    options?: boolean | EventListenerOptions
+  ): void {
+    this.eventTarget.removeEventListener(type, listener as EventListener, options);
+  }
+  private dispatchEvent<EventName extends keyof EventTypes>(type: EventName, detail: EventTypes[EventName]): void {
+    this.eventTarget.dispatchEvent(new CustomEvent(type, { detail }));
+  }
+
+  private createVideoElement(path: string, config: { preload: boolean; fit: MediaObjectFit }) {
+    const videoElement = document.createElement('video');
+    videoElement.src = assetUrl(path);
+    videoElement.autoplay = false;
+    videoElement.loop = false;
+    videoElement.volume = 1;
+    videoElement.preload = config.preload ? 'auto' : 'none';
+    videoElement.addEventListener('playing', () => {
+      this.notifyClipStateListeners(path, 'playing');
+    });
+    videoElement.addEventListener('ended', () => {
+      if (!videoElement.loop) {
+        this.handleStoppedClip(path);
+        this.notifyClipStateListeners(path, 'stopped');
+      }
+    });
+    videoElement.style.position = 'absolute';
+    videoElement.style.top = '0';
+    videoElement.style.left = '0';
+    videoElement.style.width = '100%';
+    videoElement.style.height = '100%';
+    videoElement.style.objectFit = config.fit;
+    this.parent.appendChild(videoElement);
+    return videoElement;
+  }
+
+  private createClipPlayer(path: string, config: InternalClipPlayer['config']): InternalClipPlayer {
+    return {
+      config,
+      videoElement: this.createVideoElement(path, config),
+    };
+  }
+
+  private unloadClip(path: string) {
+    if (this.activeClipPath === path) {
+      this.activeClipPath = undefined;
+    }
+    this.videoClipPlayers[path]?.videoElement.remove();
+    this.updateVideoClipPlayer(path, () => null);
+  }
+}
