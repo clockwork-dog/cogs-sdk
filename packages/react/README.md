@@ -21,15 +21,29 @@ yarn add @clockworkdog/cogs-client-react
 Import the library
 
 ```ts
-import { CogsConnectionProvider } from '@clockworkdog/cogs-client';
-import { VideoContainer, Timer, Hint, useIsConnected, useAudioPlayer, useIsAudioPlaying } from '@clockworkdog/cogs-client-react';
+import {
+  CogsConnectionProvider,
+  VideoContainer,
+  Timer,
+  Hint,
+  useIsConnected,
+  useAudioPlayer,
+  useIsAudioPlaying,
+} from '@clockworkdog/cogs-client-react';
 ```
 
 or
 
 ```js
-const { CogsConnectionProvider } = require('@clockworkdog/cogs-client');
-const { VideoContainer, Hint, Timer, useIsConnected, useAudioPlayer, useIsAudioPlaying } = require('@clockworkdog/cogs-client-react');
+const {
+  CogsConnectionProvider,
+  VideoContainer,
+  Hint,
+  Timer,
+  useIsConnected,
+  useAudioPlayer,
+  useIsAudioPlaying,
+} = require('@clockworkdog/cogs-client-react');
 ```
 
 then
