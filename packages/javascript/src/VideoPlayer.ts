@@ -57,6 +57,9 @@ export default class VideoPlayer {
         case 'video_set_volume':
           this.setVideoClipVolume({ volume: message.volume });
           break;
+        case 'video_set_loop':
+          this.setVideoClipLoop({ loop: message.loop });
+          break;
       }
     });
   }
@@ -139,6 +142,19 @@ export default class VideoPlayer {
     this.updateVideoClipPlayer(this.activeClipPath, (clipPlayer) => {
       if (clipPlayer.videoElement) {
         clipPlayer.videoElement.volume = volume;
+      }
+      return clipPlayer;
+    });
+  }
+
+  setVideoClipLoop({ loop }: { loop: true | undefined }): void {
+    if (!this.activeClipPath) {
+      return;
+    }
+
+    this.updateVideoClipPlayer(this.activeClipPath, (clipPlayer) => {
+      if (clipPlayer.videoElement) {
+        clipPlayer.videoElement.loop = loop || false;
       }
       return clipPlayer;
     });

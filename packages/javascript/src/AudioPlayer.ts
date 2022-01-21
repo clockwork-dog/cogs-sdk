@@ -55,6 +55,9 @@ export default class AudioPlayer {
         case 'audio_set_clip_volume':
           this.setAudioClipVolume(message.file, { volume: message.volume, fade: message.fade });
           break;
+        case 'audio_set_loop':
+          this.setAudioClipLoop(message.file, { loop: message.loop });
+          break;
       }
     });
   }
@@ -226,6 +229,25 @@ export default class AudioPlayer {
               }
 
               return [soundIdStr, { ...clip, volume }] as const;
+            } else {
+              return [soundIdStr, clip] as const;
+            }
+          })
+        ),
+      };
+    });
+  }
+
+  setAudioClipLoop(path: string, { loop }: { loop: true | undefined }): void {
+    this.updateAudioClipPlayer(path, (clipPlayer) => {
+      return {
+        ...clipPlayer,
+        activeClips: Object.fromEntries(
+          Object.entries(clipPlayer.activeClips).map(([soundIdStr, clip]) => {
+            if (clip.state !== ActiveAudioClipState.Stopping) {
+              const soundId = parseInt(soundIdStr);
+              clipPlayer.player.loop(loop || false, soundId);
+              return [soundIdStr, { ...clip, loop }] as const;
             } else {
               return [soundIdStr, clip] as const;
             }
