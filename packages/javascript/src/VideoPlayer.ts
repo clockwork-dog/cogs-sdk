@@ -98,6 +98,7 @@ export default class VideoPlayer {
       if (clipPlayer.videoElement) {
         clipPlayer.videoElement.volume = volume * this.globalVolume;
         clipPlayer.videoElement.loop = loop;
+        clipPlayer.videoElement.style.objectFit = fit;
         if (clipPlayer.videoElement.currentTime === clipPlayer.videoElement.duration) {
           clipPlayer.videoElement.currentTime = 0;
         }
