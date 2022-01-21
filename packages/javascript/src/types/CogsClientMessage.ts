@@ -47,8 +47,10 @@ type MediaClientMessage =
   | { type: 'video_stop' }
   | { type: 'video_set_volume'; volume: number }
   | { type: 'video_set_loop'; loop: true | undefined }
+  | { type: 'video_set_fit'; fit: MediaObjectFit }
   | { type: 'image_show'; file: string; fit: MediaObjectFit; hideOthers?: boolean }
-  | { type: 'image_hide'; file?: string };
+  | { type: 'image_hide'; file?: string }
+  | { type: 'image_set_fit'; file: string; fit: MediaObjectFit };
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type CogsClientMessage<CustomConfig = {}> =
