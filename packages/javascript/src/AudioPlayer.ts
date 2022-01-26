@@ -60,6 +60,25 @@ export default class AudioPlayer {
           break;
       }
     });
+
+    // On connection, send the current playing state of all clips
+    // (Usually empty unless websocket is reconnecting)
+
+    const sendInitialClipStates = () => {
+      const files = Object.entries(this.audioClipPlayers).map(([file, player]) => {
+        const activeClips = Object.values(player.activeClips);
+        const status = activeClips.some(({ state }) => state === ActiveAudioClipState.Playing)
+          ? ('playing' as const)
+          : activeClips.some(({ state }) => state === ActiveAudioClipState.Paused || state === ActiveAudioClipState.Pausing)
+          ? ('paused' as const)
+          : ('stopped' as const);
+        return [file, status] as [string, typeof status];
+      });
+      cogsConnection.sendInitialMediaClipStates({ mediaType: 'audio', files });
+    };
+
+    cogsConnection.addEventListener('open', sendInitialClipStates);
+    sendInitialClipStates();
   }
 
   setGlobalVolume(volume: number): void {

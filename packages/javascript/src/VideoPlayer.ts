@@ -66,6 +66,24 @@ export default class VideoPlayer {
           break;
       }
     });
+
+    // On connection, send the current playing state of all clips
+    // (Usually empty unless websocket is reconnecting)
+
+    const sendInitialClipStates = () => {
+      const files = Object.entries(this.videoClipPlayers).map(([file, player]) => {
+        const status = !player.videoElement.paused
+          ? ('playing' as const)
+          : player.videoElement.currentTime === 0 || player.videoElement.currentTime === player.videoElement.duration
+          ? ('paused' as const)
+          : ('stopped' as const);
+        return [file, status] as [string, typeof status];
+      });
+      cogsConnection.sendInitialMediaClipStates({ mediaType: 'video', files });
+    };
+
+    cogsConnection.addEventListener('open', sendInitialClipStates);
+    sendInitialClipStates();
   }
 
   setParentElement(parentElement: HTMLElement): void {

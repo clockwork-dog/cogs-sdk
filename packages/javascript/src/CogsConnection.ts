@@ -3,6 +3,7 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 import CogsClientMessage from './types/CogsClientMessage';
 import { COGS_SERVER_PORT } from './helpers/urls';
 import MediaClipStateMessage from './types/MediaClipStateMessage';
+import AllMediaClipStatesMessage from './types/AllMediaClipStatesMessage';
 
 interface ConnectionEventListeners<
   CustomTypes extends {
@@ -145,6 +146,12 @@ export default class CogsConnection<
     this.currentOutputPortValues = { ...this.currentOutputPortValues, ...values };
     if (this.isConnected) {
       this.websocket.send(JSON.stringify({ updates: values }));
+    }
+  }
+
+  sendInitialMediaClipStates(allMediaClipStates: AllMediaClipStatesMessage): void {
+    if (this.isConnected) {
+      this.websocket.send(JSON.stringify({ allMediaClipStates }));
     }
   }
 
