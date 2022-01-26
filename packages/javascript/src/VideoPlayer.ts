@@ -7,6 +7,7 @@ import { MediaObjectFit } from '.';
 
 interface InternalClipPlayer extends VideoClip {
   videoElement: HTMLVideoElement;
+  volume: number;
 }
 
 type MediaClientConfigMessage = Extract<CogsClientMessage, { type: 'media_config_update' }>;
@@ -78,12 +79,11 @@ export default class VideoPlayer {
     this.setParentElement(DEFAULT_PARENT_ELEMENT);
   }
 
-  setGlobalVolume(volume: number): void {
-    // Adjust volume of all videos taking into account previous global volume
+  setGlobalVolume(globalVolume: number): void {
     Object.values(this.videoClipPlayers).forEach((clipPlayer) => {
-      clipPlayer.videoElement.volume = (clipPlayer.videoElement.volume / this.globalVolume) * volume;
+      clipPlayer.videoElement.volume = clipPlayer.volume * globalVolume;
     });
-    this.globalVolume = volume;
+    this.globalVolume = globalVolume;
     this.notifyStateListeners();
   }
 
@@ -101,16 +101,15 @@ export default class VideoPlayer {
     this.activeClipPath = path;
 
     this.updateVideoClipPlayer(path, (clipPlayer) => {
-      if (clipPlayer.videoElement) {
-        clipPlayer.videoElement.volume = volume * this.globalVolume;
-        clipPlayer.videoElement.loop = loop;
-        clipPlayer.videoElement.style.objectFit = fit;
-        if (clipPlayer.videoElement.currentTime === clipPlayer.videoElement.duration) {
-          clipPlayer.videoElement.currentTime = 0;
-        }
-        clipPlayer.videoElement.play();
-        clipPlayer.videoElement.style.display = 'block';
+      clipPlayer.volume = volume;
+      clipPlayer.videoElement.volume = volume * this.globalVolume;
+      clipPlayer.videoElement.loop = loop;
+      clipPlayer.videoElement.style.objectFit = fit;
+      if (clipPlayer.videoElement.currentTime === clipPlayer.videoElement.duration) {
+        clipPlayer.videoElement.currentTime = 0;
       }
+      clipPlayer.videoElement.play();
+      clipPlayer.videoElement.style.display = 'block';
       return clipPlayer;
     });
   }
@@ -276,12 +275,12 @@ export default class VideoPlayer {
     this.eventTarget.dispatchEvent(new CustomEvent(type, { detail }));
   }
 
-  private createVideoElement(path: string, config: { preload: boolean; fit: MediaObjectFit }) {
+  private createVideoElement(path: string, config: { preload: boolean; fit: MediaObjectFit }, { volume }: { volume: number }) {
     const videoElement = document.createElement('video');
     videoElement.src = assetUrl(path);
     videoElement.autoplay = false;
     videoElement.loop = false;
-    videoElement.volume = this.globalVolume;
+    videoElement.volume = this.globalVolume * volume;
     videoElement.preload = config.preload ? 'metadata' : 'none';
     videoElement.addEventListener('playing', () => {
       this.notifyClipStateListeners(path, 'playing');
@@ -303,9 +302,11 @@ export default class VideoPlayer {
   }
 
   private createClipPlayer(path: string, config: InternalClipPlayer['config']): InternalClipPlayer {
+    const volume = 1;
     return {
       config,
-      videoElement: this.createVideoElement(path, config),
+      videoElement: this.createVideoElement(path, config, { volume }),
+      volume,
     };
   }
 
