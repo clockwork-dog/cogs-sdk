@@ -143,7 +143,7 @@ export default class VideoPlayer {
 
     this.updateVideoClipPlayer(this.activeClipPath, (clipPlayer) => {
       if (clipPlayer.videoElement) {
-        clipPlayer.videoElement.volume = volume;
+        clipPlayer.videoElement.volume = volume * this.globalVolume;
       }
       return clipPlayer;
     });
