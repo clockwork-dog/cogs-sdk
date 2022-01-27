@@ -18,7 +18,14 @@ const CogsConnectionContext = React.createContext<CogsConnectionContextValue>({
 /**
  * Create a persistent connection to COGS which can be accessed with `useCogsConnection()`
  * @param audioPlayer Creates a `CogsAudioPlayer` than can be accessed with `useAudioPlayer()`
+ *
+ * Note: If unset, the audio player will remain active.
+ *
  * @param videoPlayer Creates a `CogsVideoPlayer` than can be accessed with `useVideoPlayer()`
+ *
+ * Note: If unset, the video player will remain active.
+ *
+ * *Example:*
  *
  * ```jsx
  * function MyComponent() {
