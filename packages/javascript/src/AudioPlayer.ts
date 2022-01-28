@@ -145,7 +145,7 @@ export default class AudioPlayer {
         }
 
         const activeClip: ActiveClip = {
-          id: playId,
+          playId,
           state: ActiveAudioClipState.Playing,
           loop,
           volume,

@@ -23,7 +23,7 @@ export default class VideoPlayer {
   private eventTarget = new EventTarget();
   private globalVolume = 1;
   private videoClipPlayers: { [path: string]: InternalClipPlayer } = {};
-  private activeClipPath?: string;
+  private activeClip?: { path: string; playId: string };
   private parentElement: HTMLElement;
 
   constructor(cogsConnection: CogsConnection, parentElement: HTMLElement = DEFAULT_PARENT_ELEMENT) {
@@ -44,6 +44,7 @@ export default class VideoPlayer {
           break;
         case 'video_play':
           this.playVideoClip(message.file, {
+            playId: message.playId,
             volume: message.volume,
             loop: Boolean(message.loop),
             fit: message.fit,
@@ -105,9 +106,9 @@ export default class VideoPlayer {
     this.notifyStateListeners();
   }
 
-  playVideoClip(path: string, { volume, loop, fit }: { volume: number; loop: boolean; fit: MediaObjectFit }): void {
-    if (this.activeClipPath) {
-      if (this.activeClipPath !== path) {
+  playVideoClip(path: string, { playId, volume, loop, fit }: { playId: string; volume: number; loop: boolean; fit: MediaObjectFit }): void {
+    if (this.activeClip) {
+      if (this.activeClip.path !== path) {
         this.stopVideoClip();
       }
     } else {
@@ -116,7 +117,7 @@ export default class VideoPlayer {
       }
     }
 
-    this.activeClipPath = path;
+    this.activeClip = { path, playId };
 
     this.updateVideoClipPlayer(path, (clipPlayer) => {
       clipPlayer.volume = volume;
@@ -133,24 +134,24 @@ export default class VideoPlayer {
   }
 
   pauseVideoClip(): void {
-    if (this.activeClipPath) {
-      const path = this.activeClipPath;
+    if (this.activeClip) {
+      const { playId, path } = this.activeClip;
       this.updateVideoClipPlayer(path, (clipPlayer) => {
         clipPlayer.videoElement?.pause();
         return clipPlayer;
       });
-      this.notifyClipStateListeners(path, 'paused');
+      this.notifyClipStateListeners(playId, path, 'paused');
     }
   }
 
   stopVideoClip(): void {
-    if (this.activeClipPath) {
-      this.handleStoppedClip(this.activeClipPath);
+    if (this.activeClip) {
+      this.handleStoppedClip(this.activeClip.path);
     }
   }
 
   setVideoClipVolume({ volume }: { volume: number }): void {
-    if (!this.activeClipPath) {
+    if (!this.activeClip) {
       return;
     }
 
@@ -159,7 +160,7 @@ export default class VideoPlayer {
       return;
     }
 
-    this.updateVideoClipPlayer(this.activeClipPath, (clipPlayer) => {
+    this.updateVideoClipPlayer(this.activeClip.path, (clipPlayer) => {
       if (clipPlayer.videoElement) {
         clipPlayer.videoElement.volume = volume * this.globalVolume;
       }
@@ -168,11 +169,11 @@ export default class VideoPlayer {
   }
 
   setVideoClipLoop({ loop }: { loop: true | undefined }): void {
-    if (!this.activeClipPath) {
+    if (!this.activeClip) {
       return;
     }
 
-    this.updateVideoClipPlayer(this.activeClipPath, (clipPlayer) => {
+    this.updateVideoClipPlayer(this.activeClip.path, (clipPlayer) => {
       if (clipPlayer.videoElement) {
         clipPlayer.videoElement.loop = loop || false;
       }
@@ -181,11 +182,11 @@ export default class VideoPlayer {
   }
 
   setVideoClipFit({ fit }: { fit: MediaObjectFit }): void {
-    if (!this.activeClipPath) {
+    if (!this.activeClip) {
       return;
     }
 
-    this.updateVideoClipPlayer(this.activeClipPath, (clipPlayer) => {
+    this.updateVideoClipPlayer(this.activeClip.path, (clipPlayer) => {
       if (clipPlayer.videoElement) {
         clipPlayer.videoElement.style.objectFit = fit;
       }
@@ -194,19 +195,24 @@ export default class VideoPlayer {
   }
 
   private handleStoppedClip(path: string) {
+    if (!this.activeClip || this.activeClip.path !== path) {
+      return;
+    }
+
     // Once an ephemeral clip stops, cleanup and remove the player
-    if (this.activeClipPath === path && this.videoClipPlayers[this.activeClipPath].config.ephemeral) {
+    if (this.videoClipPlayers[this.activeClip.path].config.ephemeral) {
       this.unloadClip(path);
     }
 
-    this.activeClipPath = undefined;
+    const playId = this.activeClip.playId;
+    this.activeClip = undefined;
     this.updateVideoClipPlayer(path, (clipPlayer) => {
       clipPlayer.videoElement.pause();
       clipPlayer.videoElement.currentTime = 0;
       clipPlayer.videoElement.style.display = 'none';
       return clipPlayer;
     });
-    this.notifyClipStateListeners(path, 'stopped');
+    this.notifyClipStateListeners(playId, path, 'stopped');
   }
 
   private updateVideoClipPlayer(path: string, update: (player: InternalClipPlayer) => InternalClipPlayer | null) {
@@ -257,22 +263,22 @@ export default class VideoPlayer {
   private notifyStateListeners() {
     const VideoState: VideoState = {
       globalVolume: this.globalVolume,
-      isPlaying: typeof this.activeClipPath === 'string' && !this.videoClipPlayers[this.activeClipPath].videoElement?.paused,
+      isPlaying: this.activeClip ? !this.videoClipPlayers[this.activeClip.path].videoElement?.paused : false,
       clips: { ...this.videoClipPlayers },
-      activeClip: this.activeClipPath
+      activeClip: this.activeClip
         ? {
-            path: this.activeClipPath,
-            state: !this.videoClipPlayers[this.activeClipPath].videoElement?.paused ? ActiveVideoClipState.Playing : ActiveVideoClipState.Paused,
-            loop: this.videoClipPlayers[this.activeClipPath].videoElement?.loop ?? false,
-            volume: this.videoClipPlayers[this.activeClipPath].videoElement?.volume ?? 0,
+            path: this.activeClip.path,
+            state: !this.videoClipPlayers[this.activeClip.path].videoElement?.paused ? ActiveVideoClipState.Playing : ActiveVideoClipState.Paused,
+            loop: this.videoClipPlayers[this.activeClip.path].videoElement?.loop ?? false,
+            volume: this.videoClipPlayers[this.activeClip.path].videoElement?.volume ?? 0,
           }
         : undefined,
     };
     this.dispatchEvent('state', VideoState);
   }
 
-  private notifyClipStateListeners(file: string, status: MediaStatus) {
-    this.dispatchEvent('videoClipState', { playId: 'TODO', mediaType: 'video', file, status });
+  private notifyClipStateListeners(playId: string, file: string, status: MediaStatus) {
+    this.dispatchEvent('videoClipState', { playId, mediaType: 'video', file, status });
   }
 
   // Type-safe wrapper around EventTarget
@@ -302,7 +308,9 @@ export default class VideoPlayer {
     videoElement.volume = this.globalVolume * volume;
     videoElement.preload = config.preload ? 'metadata' : 'none';
     videoElement.addEventListener('playing', () => {
-      this.notifyClipStateListeners(path, 'playing');
+      if (this.activeClip?.path === path) {
+        this.notifyClipStateListeners(this.activeClip.playId, path, 'playing');
+      }
     });
     videoElement.addEventListener('ended', () => {
       if (!videoElement.loop) {
@@ -330,8 +338,8 @@ export default class VideoPlayer {
   }
 
   private unloadClip(path: string) {
-    if (this.activeClipPath === path) {
-      this.activeClipPath = undefined;
+    if (this.activeClip?.path === path) {
+      this.activeClip = undefined;
     }
     this.videoClipPlayers[path]?.videoElement.remove();
     this.updateVideoClipPlayer(path, () => null);
