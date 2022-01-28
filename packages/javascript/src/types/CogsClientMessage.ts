@@ -37,11 +37,11 @@ interface MediaClientConfigMessage {
 }
 
 type MediaClientMessage =
-  | { type: 'audio_play'; file: string; fade?: number; loop?: true; volume: number }
-  | { type: 'audio_pause'; file: string; fade?: number }
-  | { type: 'audio_stop'; file?: string; fade?: number }
-  | { type: 'audio_set_clip_volume'; file: string; volume: number; fade?: number }
-  | { type: 'audio_set_loop'; file: string; loop: true | undefined }
+  | { type: 'audio_play'; playId: string; file: string; fade?: number; loop?: true; volume: number }
+  | { type: 'audio_pause'; playId?: string; file: string; fade?: number }
+  | { type: 'audio_stop'; playId?: string; file?: string; fade?: number }
+  | { type: 'audio_set_clip_volume'; playId?: string; file: string; volume: number; fade?: number }
+  | { type: 'audio_set_loop'; id?: string; file: string; loop: true | undefined }
   | { type: 'video_play'; file: string; loop?: true; volume: number; fit: MediaObjectFit }
   | { type: 'video_pause' }
   | { type: 'video_stop' }

@@ -272,7 +272,7 @@ export default class VideoPlayer {
   }
 
   private notifyClipStateListeners(file: string, status: MediaStatus) {
-    this.dispatchEvent('videoClipState', { mediaType: 'video', file, status });
+    this.dispatchEvent('videoClipState', { playId: 'TODO', mediaType: 'video', file, status });
   }
 
   // Type-safe wrapper around EventTarget

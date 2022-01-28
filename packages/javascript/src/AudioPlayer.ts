@@ -37,6 +37,7 @@ export default class AudioPlayer {
           break;
         case 'audio_play':
           this.playAudioClip(message.file, {
+            playId: message.playId,
             volume: message.volume,
             loop: Boolean(message.loop),
             fade: message.fade,
@@ -87,7 +88,7 @@ export default class AudioPlayer {
     this.notifyStateListeners();
   }
 
-  playAudioClip(path: string, { volume, fade, loop }: { volume: number; fade?: number; loop: boolean }): void {
+  playAudioClip(path: string, { playId, volume, fade, loop }: { playId: string; volume: number; fade?: number; loop: boolean }): void {
     if (!(path in this.audioClipPlayers)) {
       this.audioClipPlayers[path] = this.createClip(path, { preload: false, ephemeral: true });
     }
@@ -115,19 +116,36 @@ export default class AudioPlayer {
 
       [...pausedSoundIds, ...newSoundIds].forEach((soundId) => {
         // Cleanup any old callbacks first
+        clipPlayer.player.off('play', undefined, soundId);
+        clipPlayer.player.off('pause', undefined, soundId);
         clipPlayer.player.off('fade', undefined, soundId);
         clipPlayer.player.off('end', undefined, soundId);
         clipPlayer.player.off('stop', undefined, soundId);
         clipPlayer.player.loop(loop, soundId);
 
-        clipPlayer.player.once('stop', () => this.handleStoppedClip(path, soundId), soundId);
+        clipPlayer.player.once(
+          'stop',
+          () => {
+            this.notifyClipStateListeners(playId, path, 'stopped');
+            this.handleStoppedClip(path, soundId);
+          },
+          soundId
+        );
 
         // Looping clips fire the 'end' callback on every loop
         if (!loop) {
-          clipPlayer.player.once('end', () => this.handleStoppedClip(path, soundId), soundId);
+          clipPlayer.player.once(
+            'end',
+            () => {
+              this.handleStoppedClip(path, soundId);
+              this.notifyClipStateListeners(playId, path, 'stopped');
+            },
+            soundId
+          );
         }
 
         const activeClip: ActiveClip = {
+          id: playId,
           state: ActiveAudioClipState.Playing,
           loop,
           volume,
@@ -153,6 +171,7 @@ export default class AudioPlayer {
 
       return clipPlayer;
     });
+    this.notifyClipStateListeners(playId, path, 'playing');
   }
 
   pauseAudioClip(path: string, fade?: number): void {
@@ -362,8 +381,8 @@ export default class AudioPlayer {
     this.dispatchEvent('state', audioState);
   }
 
-  private notifyClipStateListeners(file: string, status: MediaStatus) {
-    this.dispatchEvent('audioClipState', { mediaType: 'audio', file, status });
+  private notifyClipStateListeners(playId: string, file: string, status: MediaStatus) {
+    this.dispatchEvent('audioClipState', { mediaType: 'audio', playId, file, status });
   }
 
   // Type-safe wrapper around EventTarget
@@ -393,16 +412,6 @@ export default class AudioPlayer {
       volume: 1,
       html5: !config.preload,
       preload: config.preload,
-      onplay: () => this.notifyClipStateListeners(path, 'playing'),
-      onpause: () => this.notifyClipStateListeners(path, 'paused'),
-      // Finished playing the clip, or one loop of it
-      onend: () => {
-        if (!player.loop()) {
-          this.notifyClipStateListeners(path, 'stopped');
-        }
-      },
-      // Explicit stop
-      onstop: () => this.notifyClipStateListeners(path, 'stopped'),
     });
     return player;
   }
