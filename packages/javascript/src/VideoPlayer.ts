@@ -59,9 +59,6 @@ export default class VideoPlayer {
         case 'video_set_volume':
           this.setVideoClipVolume({ volume: message.volume });
           break;
-        case 'video_set_loop':
-          this.setVideoClipLoop({ loop: message.loop });
-          break;
         case 'video_set_fit':
           this.setVideoClipFit({ fit: message.fit });
           break;
