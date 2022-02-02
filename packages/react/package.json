@@ -8,6 +8,7 @@
     "lint:json": "prettier --list-different .eslintrc *.json",
     "lint:ts": "eslint --ext .js,.ts --ignore-path .gitignore .",
     "build": "tsc",
+    "watch-build": "tsc -w",
     "build-docs": "typedoc --out docs --name @clockworkdog/cogs-client-react src/index.ts",
     "release": "yarn publish --access public"
   },
