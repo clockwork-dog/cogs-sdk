@@ -14,6 +14,7 @@ export interface ActiveClip {
   state: ActiveAudioClipState;
   loop: boolean;
   volume: number;
+  playId: string;
 }
 
 export interface AudioState {

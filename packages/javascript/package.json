@@ -1,6 +1,6 @@
 {
   "name": "@clockworkdog/cogs-client",
-  "version": "0.16.1",
+  "version": "0.17.0",
   "main": "dist/index.js",
   "unpkg": "dist/browser/index.js",
   "scripts": {
@@ -9,13 +9,14 @@
     "lint:json": "prettier --list-different .eslintrc *.json",
     "lint:ts": "eslint --ext .js,.ts --ignore-path .gitignore .",
     "build": "tsc && browserify --debug --standalone COGS dist/index.js -o dist/browser/index.js",
+    "watch-build": "tsc -w",
     "release": "yarn publish --access public"
   },
   "keywords": [],
   "author": "Clockwork Dog <info@clockwork.dog>",
   "license": "MIT",
   "devDependencies": {
-    "@types/howler": "^2.2.2",
+    "@types/howler": "^2.2.4",
     "@typescript-eslint/eslint-plugin": "^4.12.0",
     "@typescript-eslint/parser": "^4.12.0",
     "browserify": "^17.0.0",
@@ -26,7 +27,7 @@
     "typescript": "^4.1.3"
   },
   "dependencies": {
-    "howler": "^2.2.1",
+    "howler": "^2.2.3",
     "reconnecting-websocket": "^4.4.0"
   },
   "description": "Connect to COGS to build a custom Media Master",
