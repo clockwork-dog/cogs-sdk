@@ -98,9 +98,3 @@ audioPlayer.addEventListener('state', (audioState) => {
 When developing locally you should connect to COGS in "simulator" mode by appending `?simulator=true&t=media_master&name=MEDIA_MASTER_NAME` to the URL. Replace `MEDIA_MASTER_NAME` with the name of the Media Master you set in COGS.
 
 For example, with your custom content hosted on port 3000, http://localhost:3000?simulator=true&t=media_master&name=Timer+screen will connect as the simulator for `Timer screen`.
-
-## Release process
-
-[Click here to create a new release on GitHub](https://github.com/clockwork-dog/cogs-client-lib/releases/new) prefixed with a `v`.
-
-The release will be automatically built and released on npm.
