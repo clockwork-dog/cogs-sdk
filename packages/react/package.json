@@ -1,6 +1,6 @@
 {
   "name": "@clockworkdog/cogs-client-react",
-  "version": "0.16.3",
+  "version": "0.17.0",
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -8,6 +8,7 @@
     "lint:json": "prettier --list-different .eslintrc *.json",
     "lint:ts": "eslint --ext .js,.ts --ignore-path .gitignore .",
     "build": "tsc",
+    "watch-build": "tsc -w",
     "build-docs": "typedoc --out docs --name @clockworkdog/cogs-client-react src/index.ts",
     "release": "yarn publish --access public"
   },
@@ -30,7 +31,7 @@
     "typescript": "^4.1.3"
   },
   "dependencies": {
-    "@clockworkdog/cogs-client": "^0.16.1"
+    "@clockworkdog/cogs-client": "latest"
   },
   "description": "React components and hooks to connect to COGS to build a custom Media Master",
   "repository": {
