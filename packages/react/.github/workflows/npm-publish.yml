@@ -17,6 +17,8 @@ jobs:
           node-version: 14
           registry-url: https://registry.npmjs.org/
       - run: yarn
+      - name: Set version from git tag
+        run: yarn version --no-git-tag-version --new-version ${GITHUB_REF#refs/tags/}
       - run: yarn build
       - run: yarn release
         env:
