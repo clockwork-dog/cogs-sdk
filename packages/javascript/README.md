@@ -9,7 +9,7 @@ Create content for your COGS Media Master
 ### Browser
 
 ```html
-<script src="https://unpkg.com/@clockworkdog/cogs-client@0"></script>
+<script src="https://unpkg.com/@clockworkdog/cogs-client@1"></script>
 ```
 
 ### NPM
