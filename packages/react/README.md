@@ -84,7 +84,6 @@ Or, if you're using `create-react-app` for your project, you'll need to configur
 
 ## Release process
 
-1. Create a new commit with a bumped version number in `package.json`.
-2. [Click here to create a new release on GitHub](https://github.com/clockwork-dog/cogs-client-react-lib/releases/new) where the Tag Version is the version from `package.json` prefixed with a `v`.
+[Click here to create a new release on GitHub](https://github.com/clockwork-dog/cogs-client-react-lib/releases/new) prefixed with a `v`.
 
 The release will be automatically built and released on npm.
