@@ -21,26 +21,47 @@ yarn add @clockworkdog/cogs-client-react
 Import the library
 
 ```ts
-import { CogsConnection, AudioPlayer } from '@clockworkdog/cogs-client';
-import { Video, Timer, Hint, useIsConnected, useIsAudioPlaying } from '@clockworkdog/cogs-client-react';
+import {
+  CogsConnectionProvider,
+  VideoContainer,
+  Timer,
+  Hint,
+  useIsConnected,
+  useAudioPlayer,
+  useIsAudioPlaying,
+} from '@clockworkdog/cogs-client-react';
 ```
 
 or
 
 ```js
-const { CogsConnection, AudioPlayer } = require('@clockworkdog/cogs-client');
-const { Video, Hint, Timer, useIsConnected, useIsAudioPlaying } = require('@clockworkdog/cogs-client-react');
+const {
+  CogsConnectionProvider,
+  VideoContainer,
+  Hint,
+  Timer,
+  useIsConnected,
+  useAudioPlayer,
+  useIsAudioPlaying,
+} = require('@clockworkdog/cogs-client-react');
 ```
 
 then
 
 ```tsx
-const cogsConnection = new CogsConnection();
-// Add audio playing capability
-const audioPlayer = new AudioPlayer(cogsConnection);
+function App() {
+  return (
+    <CogsConnectionProvider audioPlayer videoPlayer>
+      <MyComponent />
+    </CogsConnectionProvider>
+  );
+}
 
 function MyComponent() {
+  const cogsConnection = useCogsConnection();
   const isConnected = useIsConnected(cogsConnection);
+
+  const audioPlayer = useAudioPlayer();
   const isAudioPlaying = useIsAudioPlaying(audioPlayer);
 
   return (
@@ -49,14 +70,14 @@ function MyComponent() {
       <div>Audio playing: {isAudioPlaying}</div>
       <div style={{ fontSize: 100 }}>
         {/* The time from the adjustable timer plugin in the format 'MM:SS' */}
-        <Timer connection={cogsConnection} center />
+        <Timer center />
       </div>
       <div style={{ fontSize: 20 }}>
         {/* The latest text hint as a string */}
-        <Hint connection={cogsConnection} />
+        <Hint />
       </div>
-      {/* Video overlay with the "fit" specified */}
-      <Video connection={cogsConnection} fullscreen />
+      {/* Specify where you want the video to be displayed. Leave this out for default fullscreen behavior */}
+      <VideoContainer style={{ position: 'absolute', top: 100, left: 100, width: 400, height: 300 }} />
     </div>
   );
 }

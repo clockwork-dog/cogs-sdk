@@ -24,6 +24,9 @@ export default function useImages(connection: CogsConnection): Image[] {
             setImages([]);
           }
           break;
+        case 'image_set_fit':
+          setImages((images) => images.map((image) => (!message.file || message.file === image.file ? { ...image, fit: message.fit } : image)));
+          break;
       }
     }, [])
   );

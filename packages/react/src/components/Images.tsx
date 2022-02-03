@@ -1,11 +1,12 @@
 import { assetUrl, CogsConnection } from '@clockworkdog/cogs-client';
 import React from 'react';
 import useImages from '../hooks/useImages';
+import { useCogsConnection } from '../providers/CogsConnectionProvider';
 
 export default function Images({
   className,
   style,
-  connection,
+  connection: customConnection,
   fullscreen,
 }: {
   className?: string;
@@ -13,6 +14,9 @@ export default function Images({
   connection: CogsConnection;
   fullscreen?: boolean | { style: React.CSSProperties };
 }): JSX.Element | null {
+  const providerConnection = useCogsConnection();
+  const connection = customConnection ?? providerConnection;
+
   const images = useImages(connection);
 
   const fullscreenCustomStyle = typeof fullscreen === 'object' ? fullscreen.style : undefined;

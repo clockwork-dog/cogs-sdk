@@ -23,12 +23,12 @@
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
-"@clockworkdog/cogs-client@^0.16.1":
-  version "0.16.1"
-  resolved "https://registry.yarnpkg.com/@clockworkdog/cogs-client/-/cogs-client-0.16.1.tgz#a5a04417a58238b562d3fc4a1d3e5760471714d9"
-  integrity sha512-CRCxliTbIgD9wUKPvSKKBld7FOeEpeFB30xBZhJHEpZQWZ37PrI4GxMg9MpcZtmaA56h+w2i0TQEZ+RShgO8KQ==
+"@clockworkdog/cogs-client@latest":
+  version "1.0.0-rc.1"
+  resolved "https://registry.yarnpkg.com/@clockworkdog/cogs-client/-/cogs-client-1.0.0-rc.1.tgz#ee4f577978ce9ea9b49847b1ce64d7261f4e9321"
+  integrity sha512-gfQ4WvwasMCrUunbRmYpnLz+swzTqQKMEQrT8FpuqzXGNcdqkegfA92qRtoXnARCbR2oweiqCNsfaizB+DJk7g==
   dependencies:
-    howler "^2.2.1"
+    howler "^2.2.3"
     reconnecting-websocket "^4.4.0"
 
 "@eslint/eslintrc@^0.4.0":
@@ -764,10 +764,10 @@ has@^1.0.3:
   dependencies:
     function-bind "^1.1.1"
 
-howler@^2.2.1:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/howler/-/howler-2.2.1.tgz#a521a9b495841e8bb9aa12e651bebba0affc179e"
-  integrity sha512-0iIXvuBO/81CcrQ/HSSweYmbT50fT2mIc9XMFb+kxIfk2pW/iKzDbX1n3fZmDXMEIpYvyyfrB+gXwPYSDqUxIQ==
+howler@^2.2.3:
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/howler/-/howler-2.2.3.tgz#a2eff9b08b586798e7a2ee17a602a90df28715da"
+  integrity sha512-QM0FFkw0LRX1PR8pNzJVAY25JhIWvbKMBFM4gqk+QdV+kPXOhleWGCB6AiAF/goGjIHK2e/nIElplvjQwhr0jg==
 
 ignore@^4.0.6:
   version "4.0.6"
