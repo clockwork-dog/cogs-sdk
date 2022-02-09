@@ -196,12 +196,13 @@ export default class VideoPlayer {
       return;
     }
 
+    const playId = this.activeClip.playId;
+
     // Once an ephemeral clip stops, cleanup and remove the player
     if (this.videoClipPlayers[this.activeClip.path].config.ephemeral) {
       this.unloadClip(path);
     }
 
-    const playId = this.activeClip.playId;
     this.activeClip = undefined;
     this.updateVideoClipPlayer(path, (clipPlayer) => {
       clipPlayer.videoElement.pause();
