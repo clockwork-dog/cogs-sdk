@@ -304,7 +304,7 @@ export default class VideoPlayer {
     videoElement.autoplay = false;
     videoElement.loop = false;
     videoElement.volume = this.globalVolume * volume;
-    videoElement.preload = config.preload ? 'metadata' : 'none';
+    videoElement.preload = config.preload ? 'auto' : 'none';
     videoElement.addEventListener('playing', () => {
       if (this.activeClip?.path === path) {
         this.notifyClipStateListeners(this.activeClip.playId, path, 'playing');
