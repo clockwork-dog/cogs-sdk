@@ -337,7 +337,9 @@ export default class VideoPlayer {
 
   private unloadClip(path: string) {
     if (this.activeClip?.path === path) {
+      const playId = this.activeClip.playId;
       this.activeClip = undefined;
+      this.notifyClipStateListeners(playId, path, 'stopped');
     }
     this.videoClipPlayers[path]?.videoElement.remove();
     this.updateVideoClipPlayer(path, () => null);
