@@ -232,12 +232,17 @@ export default class VideoPlayer {
     this.videoClipPlayers = (() => {
       const clipPlayers = { ...previousClipPlayers };
 
-      const removedClips = Object.keys(previousClipPlayers).filter(
-        (previousPath) => !(previousPath in newVideoPaths) && !previousClipPlayers[previousPath].config.ephemeral
-      );
+      const removedClips = Object.keys(previousClipPlayers).filter((previousPath) => !(previousPath in newVideoPaths));
       removedClips.forEach((path) => {
-        this.unloadClip(path);
-        delete clipPlayers[path];
+        if (this.activeClip?.path === path && previousClipPlayers[path]?.config.ephemeral === false) {
+          this.updateVideoClipPlayer(path, (player) => {
+            player.config = { ...player.config, ephemeral: true };
+            return player;
+          });
+        } else {
+          this.unloadClip(path);
+          delete clipPlayers[path];
+        }
       });
 
       const addedClips = Object.entries(newVideoPaths).filter(([newFile]) => !previousClipPlayers[newFile]);
@@ -248,8 +253,11 @@ export default class VideoPlayer {
       const updatedClips = Object.entries(previousClipPlayers).filter(([previousPath]) => previousPath in newVideoPaths);
       updatedClips.forEach(([path, previousClipPlayer]) => {
         if (previousClipPlayer.config.preload !== newVideoPaths[path].preload) {
-          this.unloadClip(path);
-          clipPlayers[path] = this.createClipPlayer(path, { ...previousClipPlayer.config, preload: newVideoPaths[path].preload, ephemeral: false });
+          this.updateVideoClipPlayer(path, (player) => {
+            player.config = { ...player.config, preload: newVideoPaths[path].preload, ephemeral: false };
+            player.videoElement.preload = player.config.preload ? 'auto' : 'none';
+            return player;
+          });
         }
       });
 
