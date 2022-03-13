@@ -204,7 +204,7 @@ function websocketParametersFromUrl(url: string): { path: string; pathParams?: U
     return { path: `/simulator/${encodeURIComponent(name)}`, pathParams, useReconnectingWebsocket: true };
   } else if (display) {
     pathParams.delete('display');
-    return { path: `/display/${encodeURIComponent(display)}`, useReconnectingWebsocket: true };
+    return { path: `/display/${encodeURIComponent(display)}` };
   } else {
     const serial = pathParams.get('serial') ?? '';
     pathParams.delete('serial');
