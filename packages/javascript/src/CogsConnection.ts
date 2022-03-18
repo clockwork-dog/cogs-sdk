@@ -203,8 +203,10 @@ function websocketParametersFromUrl(url: string): { path: string; pathParams?: U
     pathParams.delete('name');
     return { path: `/simulator/${encodeURIComponent(name)}`, pathParams, useReconnectingWebsocket: true };
   } else if (display) {
+    const displayIdIndex = pathParams.get('displayIdIndex') ?? '';
     pathParams.delete('display');
-    return { path: `/display/${encodeURIComponent(display)}` };
+    pathParams.delete('displayIdIndex');
+    return { path: `/display/${encodeURIComponent(display)}/${encodeURIComponent(displayIdIndex)}` };
   } else {
     const serial = pathParams.get('serial') ?? '';
     pathParams.delete('serial');
