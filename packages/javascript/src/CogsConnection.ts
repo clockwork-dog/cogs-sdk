@@ -65,7 +65,7 @@ export default class CogsConnection<
   ) {
     this.currentOutputPortValues = { ...outputPortValues };
     const { useReconnectingWebsocket, path, pathParams } = websocketParametersFromUrl(document.location.href);
-    const socketUrl = `ws://${hostname}:${port}${path}?${pathParams}`;
+    const socketUrl = `ws://${hostname}:${port}${path}${pathParams ? '?' + pathParams : ''}`;
     this.websocket = useReconnectingWebsocket ? new ReconnectingWebSocket(socketUrl) : new WebSocket(socketUrl);
 
     this.websocket.onopen = () => {
@@ -182,11 +182,12 @@ export default class CogsConnection<
   }
 }
 
-function websocketParametersFromUrl(url: string): { path: string; pathParams: URLSearchParams; useReconnectingWebsocket?: boolean } {
+function websocketParametersFromUrl(url: string): { path: string; pathParams?: URLSearchParams; useReconnectingWebsocket?: boolean } {
   const parsedUrl = new URL(url);
   const pathParams = new URLSearchParams(parsedUrl.searchParams);
   const localClientId = pathParams.get('local_id');
   const isSimulator = pathParams.get('simulator') === 'true';
+  const display = pathParams.get('display') ?? '';
 
   if (localClientId) {
     const type = pathParams.get('t') ?? '';
@@ -201,6 +202,11 @@ function websocketParametersFromUrl(url: string): { path: string; pathParams: UR
     pathParams.delete('simulator');
     pathParams.delete('name');
     return { path: `/simulator/${encodeURIComponent(name)}`, pathParams, useReconnectingWebsocket: true };
+  } else if (display) {
+    const displayIdIndex = pathParams.get('displayIdIndex') ?? '';
+    pathParams.delete('display');
+    pathParams.delete('displayIdIndex');
+    return { path: `/display/${encodeURIComponent(display)}/${encodeURIComponent(displayIdIndex)}` };
   } else {
     const serial = pathParams.get('serial') ?? '';
     pathParams.delete('serial');
