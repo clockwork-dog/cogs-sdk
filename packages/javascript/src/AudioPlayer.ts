@@ -32,7 +32,9 @@ export default class AudioPlayer {
       const message = event.detail;
       switch (message.type) {
         case 'media_config_update':
-          this.setGlobalVolume(message.globalVolume);
+          if (this.globalVolume !== message.globalVolume) {
+            this.setGlobalVolume(message.globalVolume);
+          }
           this.updateConfig(message.files);
           break;
         case 'audio_play':
@@ -123,22 +125,14 @@ export default class AudioPlayer {
         clipPlayer.player.off('end', undefined, soundId);
         clipPlayer.player.off('stop', undefined, soundId);
 
-        clipPlayer.player.once(
-          'stop',
-          () => {
-            this.handleStoppedClip(path, soundId);
-            this.notifyClipStateListeners(playId, path, 'stopped'); // TODO: Reconcile
-          },
-          soundId
-        );
+        clipPlayer.player.once('stop', () => this.handleStoppedClip(path, playId, soundId), soundId);
 
         // Looping clips fire the 'end' callback on every loop
         clipPlayer.player.on(
           'end',
           () => {
             if (!clipPlayer.activeClips[soundId]?.loop) {
-              this.handleStoppedClip(path, soundId);
-              this.notifyClipStateListeners(playId, path, 'stopped'); // TODO: Reconcile
+              this.handleStoppedClip(path, playId, soundId);
             }
           },
           soundId
@@ -192,7 +186,6 @@ export default class AudioPlayer {
       return clipPlayer;
     });
 
-    // TODO: Reconcile?
     this.notifyClipStateListeners(playId, path, 'playing');
   }
 
@@ -334,7 +327,9 @@ export default class AudioPlayer {
     });
   }
 
-  private handleStoppedClip(path: string, soundId: number) {
+  private handleStoppedClip(path: string, playId: string, soundId: number) {
+    this.notifyClipStateListeners(playId, path, 'stopped');
+
     this.updateAudioClipPlayer(path, (clipPlayer) => {
       delete clipPlayer.activeClips[soundId];
       return clipPlayer;
