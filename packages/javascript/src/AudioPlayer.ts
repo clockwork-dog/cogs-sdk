@@ -1,9 +1,11 @@
 import { Howl, Howler } from 'howler';
 import CogsConnection from './CogsConnection';
 import { assetUrl } from './helpers/urls';
-import { ActiveAudioClipState, ActiveClip, AudioClip, AudioState } from './types/AudioState';
+import { ActiveClip, AudioClip, AudioState } from './types/AudioState';
 import MediaClipStateMessage, { MediaStatus } from './types/MediaClipStateMessage';
 import CogsClientMessage from './types/CogsClientMessage';
+
+const DEBUG = true;
 
 interface InternalClipPlayer extends AudioClip {
   player: Howl;
@@ -32,7 +34,9 @@ export default class AudioPlayer {
       const message = event.detail;
       switch (message.type) {
         case 'media_config_update':
-          this.setGlobalVolume(message.globalVolume);
+          if (this.globalVolume !== message.globalVolume) {
+            this.setGlobalVolume(message.globalVolume);
+          }
           this.updateConfig(message.files);
           break;
         case 'audio_play':
@@ -44,7 +48,7 @@ export default class AudioPlayer {
           });
           break;
         case 'audio_pause':
-          this.pauseAudioClip(message.file, message.fade);
+          this.pauseAudioClip(message.file, { fade: message.fade });
           break;
         case 'audio_stop':
           if (message.file) {
@@ -61,13 +65,20 @@ export default class AudioPlayer {
 
     // On connection, send the current playing state of all clips
     // (Usually empty unless websocket is reconnecting)
-
     const sendInitialClipStates = () => {
       const files = Object.entries(this.audioClipPlayers).map(([file, player]) => {
         const activeClips = Object.values(player.activeClips);
-        const status = activeClips.some(({ state }) => state === ActiveAudioClipState.Playing)
+        const status = activeClips.some(
+          ({ state }) =>
+            state.type === 'playing' ||
+            state.type === 'pausing' ||
+            state.type === 'stopping' ||
+            state.type === 'play_requested' ||
+            state.type === 'pause_requested' ||
+            state.type === 'stop_requested'
+        )
           ? ('playing' as const)
-          : activeClips.some(({ state }) => state === ActiveAudioClipState.Paused || state === ActiveAudioClipState.Pausing)
+          : activeClips.some(({ state }) => state.type === 'paused')
           ? ('paused' as const)
           : ('stopped' as const);
         return [file, status] as [string, typeof status];
@@ -86,24 +97,35 @@ export default class AudioPlayer {
   }
 
   playAudioClip(path: string, { playId, volume, fade, loop }: { playId: string; volume: number; fade?: number; loop: boolean }): void {
+    log('Playing clip', { path });
+
     if (!(path in this.audioClipPlayers)) {
+      log('Creating ephemeral clip', { path });
       this.audioClipPlayers[path] = this.createClip(path, { preload: false, ephemeral: true });
     }
 
     this.updateAudioClipPlayer(path, (clipPlayer) => {
+      // Paused clips need to be played again
       const pausedSoundIds = Object.entries(clipPlayer.activeClips)
-        .filter(([, { state }]) => state === ActiveAudioClipState.Paused || state === ActiveAudioClipState.Pausing)
+        .filter(([, { state }]) => state.type === 'paused' || state.type === 'pausing')
         .map(([id]) => parseInt(id));
 
-      // Paused clips need to be played again
       pausedSoundIds.forEach((soundId) => {
+        log('Resuming paused clip', { soundId });
         clipPlayer.player.play(soundId);
       });
 
-      // If no currently paused/pausing clips, play a new clip
-      const newSoundIds = pausedSoundIds.length > 0 ? [] : [clipPlayer.player.play()];
+      // Clips with pause requested no longer need to pause, they can continue playing now
+      const pauseRequestedSoundIds = Object.entries(clipPlayer.activeClips)
+        .filter(([, { state }]) => state.type === 'pause_requested')
+        .map(([id]) => parseInt(id));
 
-      [...pausedSoundIds, ...newSoundIds].forEach((soundId) => {
+      // If no currently paused/pausing/pause_requested clips, play a new clip
+      const newSoundIds = pausedSoundIds.length > 0 || pauseRequestedSoundIds.length > 0 ? [] : [clipPlayer.player.play()];
+
+      // paused and pause_requested clips treated the same, they should have their properties
+      // updated with the latest play action's properties
+      [...pausedSoundIds, ...pauseRequestedSoundIds, ...newSoundIds].forEach((soundId) => {
         clipPlayer.player.loop(loop, soundId);
 
         // Cleanup any old callbacks first
@@ -113,22 +135,14 @@ export default class AudioPlayer {
         clipPlayer.player.off('end', undefined, soundId);
         clipPlayer.player.off('stop', undefined, soundId);
 
-        clipPlayer.player.once(
-          'stop',
-          () => {
-            this.handleStoppedClip(path, soundId);
-            this.notifyClipStateListeners(playId, path, 'stopped');
-          },
-          soundId
-        );
+        clipPlayer.player.once('stop', () => this.handleStoppedClip(path, playId, soundId), soundId);
 
         // Looping clips fire the 'end' callback on every loop
         clipPlayer.player.on(
           'end',
           () => {
             if (!clipPlayer.activeClips[soundId]?.loop) {
-              this.handleStoppedClip(path, soundId);
-              this.notifyClipStateListeners(playId, path, 'stopped');
+              this.handleStoppedClip(path, playId, soundId);
             }
           },
           soundId
@@ -136,13 +150,33 @@ export default class AudioPlayer {
 
         const activeClip: ActiveClip = {
           playId,
-          state: ActiveAudioClipState.Playing,
+          state: { type: 'play_requested' },
           loop,
           volume,
         };
 
-        // Start fade when clip starts
+        // Once clip starts, check if it should actually be paused or stopped
+        // If not, then update state to 'playing'
+        clipPlayer.player.once(
+          'play',
+          () => {
+            const clipState = clipPlayer.activeClips[soundId].state;
+            if (clipState.type === 'pause_requested') {
+              log('Clip started playing but should be paused', { path, soundId });
+              this.pauseAudioClip(path, { fade: clipState.fade }, soundId, true);
+            } else if (clipState.type === 'stop_requested') {
+              log('Clip started playing but should be stopped', { path, soundId });
+              this.stopAudioClip(path, { fade: clipState.fade }, soundId, true);
+            } else {
+              this.updateActiveAudioClip(path, soundId, (clip) => ({ ...clip, state: { type: 'playing' } }));
+            }
+          },
+          soundId
+        );
+
+        // To fade or to no fade?
         if (isFadeValid(fade)) {
+          // Start fade when clip starts
           clipPlayer.player.volume(0, soundId);
           clipPlayer.player.once(
             'play',
@@ -155,81 +189,135 @@ export default class AudioPlayer {
           clipPlayer.player.volume(volume, soundId);
         }
 
-        // Track new active clip
+        // Track new/updated active clip
         clipPlayer.activeClips = { ...clipPlayer.activeClips, [soundId]: activeClip };
       });
 
       return clipPlayer;
     });
+
     this.notifyClipStateListeners(playId, path, 'playing');
   }
 
-  pauseAudioClip(path: string, fade?: number): void {
-    this.updateAudioClipPlayer(path, (clipPlayer) => {
-      return {
-        ...clipPlayer,
-        activeClips: Object.fromEntries(
-          Object.entries(clipPlayer.activeClips)
-            .filter(([, clip]) => clip.state === ActiveAudioClipState.Playing)
-            .map(([soundIdStr, clip]) => {
-              const soundId = parseInt(soundIdStr);
+  pauseAudioClip(path: string, { fade }: { fade?: number }, onlySoundId?: number, allowIfPauseRequested?: boolean): void {
+    // No active clips to pause
+    if (Object.keys(this.audioClipPlayers[path]?.activeClips ?? {}).length === 0) {
+      return;
+    }
 
+    this.updateAudioClipPlayer(path, (clipPlayer) => {
+      clipPlayer.activeClips = Object.fromEntries(
+        Object.entries(clipPlayer.activeClips).map(([soundIdStr, clip]) => {
+          const soundId = parseInt(soundIdStr);
+
+          // If onlySoundId specified, only update that clip
+          if (onlySoundId === undefined || onlySoundId === soundId) {
+            if ((allowIfPauseRequested && clip.state.type === 'pause_requested') || clip.state.type === 'playing' || clip.state.type === 'pausing') {
               if (isFadeValid(fade)) {
                 // Fade then pause
                 clipPlayer.player.once(
                   'fade',
                   (soundId) => {
                     clipPlayer.player.pause(soundId);
-                    this.updateActiveAudioClip(path, soundId, (clip) => ({ ...clip, state: ActiveAudioClipState.Paused }));
+                    this.updateActiveAudioClip(path, soundId, (clip) => ({ ...clip, state: { type: 'paused' } }));
+                    this.notifyClipStateListeners(clip.playId, path, 'paused');
                   },
                   soundId
                 );
+
                 clipPlayer.player.fade(clipPlayer.player.volume(soundId) as number, 0, fade * 1000, soundId);
-                return [soundIdStr, { ...clip, state: ActiveAudioClipState.Pausing }] as const;
+                clip.state = { type: 'pausing' };
               } else {
                 // Pause now
                 clipPlayer.player.pause(soundId);
-                return [soundId, { ...clip, state: ActiveAudioClipState.Paused }] as const;
+                clip.state = { type: 'paused' };
+                this.notifyClipStateListeners(clip.playId, path, 'paused');
               }
-            })
-        ),
-      };
+            }
+            // Clip hasn't started playing yet, or has already had pause_requested (but fade may have changed so update here)
+            else if (clip.state.type === 'play_requested' || clip.state.type === 'pause_requested') {
+              clip.state = { type: 'pause_requested', fade };
+            }
+          }
+
+          return [soundIdStr, clip];
+        })
+      );
+
+      return clipPlayer;
     });
   }
 
-  stopAudioClip(path: string, { fade }: { fade?: number }): void {
-    const clipPlayer = this.audioClipPlayers[path];
-    if (!clipPlayer) {
+  stopAudioClip(path: string, { fade }: { fade?: number }, onlySoundId?: number, allowIfStopRequested?: boolean): void {
+    // No active clips to stop
+    if (Object.keys(this.audioClipPlayers[path]?.activeClips ?? {}).length === 0) {
       return;
     }
-    const { player, activeClips } = clipPlayer;
 
-    // Cleanup any old fade callbacks first
-    player.off('fade');
+    this.updateAudioClipPlayer(path, (clipPlayer) => {
+      clipPlayer.activeClips = Object.fromEntries(
+        Object.entries(clipPlayer.activeClips).map(([soundIdStr, clip]) => {
+          const soundId = parseInt(soundIdStr);
 
-    if (isFadeValid(fade)) {
-      // Start fade out for each non-paused active clip
-      Object.entries(activeClips).forEach(([soundIdStr, clip]) => {
-        const soundId = parseInt(soundIdStr);
-        if (clip.state === ActiveAudioClipState.Playing || clip.state === ActiveAudioClipState.Pausing) {
-          player.fade(player.volume(soundId) as number, 0, fade * 1000, soundId);
-          // Set callback after starting new fade, otherwise it will fire straight away as the previous fade is cancelled
-          player.once('fade', (soundId) => player.stop(soundId), soundId);
+          // If onlySoundId specified, only update that clip
+          if (onlySoundId === undefined || onlySoundId === soundId) {
+            if (
+              (allowIfStopRequested && clip.state.type === 'stop_requested') ||
+              clip.state.type === 'playing' ||
+              clip.state.type === 'pausing' ||
+              clip.state.type === 'paused' ||
+              clip.state.type === 'stopping'
+            ) {
+              if (isFadeValid(fade) && clip.state.type !== 'paused') {
+                // Cleanup any old fade callbacks first
+                // TODO: Remove cast once https://github.com/DefinitelyTyped/DefinitelyTyped/pull/59411 is merged
+                (clipPlayer.player as Howl & {
+                  off(
+                    event:
+                      | 'load'
+                      | 'loaderror'
+                      | 'playerror'
+                      | 'play'
+                      | 'end'
+                      | 'pause'
+                      | 'stop'
+                      | 'mute'
+                      | 'volume'
+                      | 'rate'
+                      | 'seek'
+                      | 'fade'
+                      | 'unlock',
+                    id: number
+                  ): Howl;
+                }).off('fade', soundId);
 
-          this.updateActiveAudioClip(path, soundId, (clip) => ({ ...clip, state: ActiveAudioClipState.Stopping }));
-        } else {
-          player.stop(soundId);
-        }
-      });
-    } else {
-      Object.keys(activeClips).forEach((soundIdStr) => {
-        const soundId = parseInt(soundIdStr);
-        player.stop(soundId);
-      });
-    }
+                clipPlayer.player.fade(clipPlayer.player.volume(soundId) as number, 0, fade * 1000, soundId);
+                // Set callback after starting new fade, otherwise it will fire straight away as the previous fade is cancelled
+                clipPlayer.player.once('fade', (soundId) => clipPlayer.player.stop(soundId), soundId);
+
+                clip.state = { type: 'stopping' };
+              } else {
+                clipPlayer.player.stop(soundId);
+              }
+            }
+            // Clip hasn't started playing yet, or has already had stop_requested (but fade may have changed so update here)
+            // or has pause_requested, but stop takes precedence
+            else if (clip.state.type === 'play_requested' || clip.state.type === 'pause_requested' || clip.state.type === 'stop_requested') {
+              log("Trying to stop clip which hasn't started playing yet", { path, soundId });
+              clip.state = { type: 'stop_requested', fade };
+            }
+          }
+
+          return [soundIdStr, clip];
+        })
+      );
+
+      return clipPlayer;
+    });
   }
 
   stopAllAudioClips(options: { fade?: number }): void {
+    log('Stopping all clips');
     Object.keys(this.audioClipPlayers).forEach((path) => {
       this.stopAudioClip(path, options);
     });
@@ -241,36 +329,42 @@ export default class AudioPlayer {
       return;
     }
 
+    // No active clips to set volume for
+    if (Object.keys(this.audioClipPlayers[path]?.activeClips ?? {}).length === 0) {
+      return;
+    }
+
     this.updateAudioClipPlayer(path, (clipPlayer) => {
-      return {
-        ...clipPlayer,
-        activeClips: Object.fromEntries(
-          Object.entries(clipPlayer.activeClips).map(([soundIdStr, clip]) => {
-            // Ignored for pausing/stopping instances
-            if (clip.state === ActiveAudioClipState.Playing || clip.state === ActiveAudioClipState.Paused) {
-              const soundId = parseInt(soundIdStr);
+      clipPlayer.activeClips = Object.fromEntries(
+        Object.entries(clipPlayer.activeClips).map(([soundIdStr, clip]) => {
+          // Ignored for pausing/stopping instances
+          if (clip.state.type !== 'pausing' && clip.state.type !== 'stopping') {
+            const soundId = parseInt(soundIdStr);
 
-              if (isFadeValid(fade)) {
-                clipPlayer.player.fade(clipPlayer.player.volume(soundId) as number, volume, fade * 1000);
-              } else {
-                clipPlayer.player.volume(volume);
-              }
-
-              return [soundIdStr, { ...clip, volume }] as const;
+            if (isFadeValid(fade)) {
+              clipPlayer.player.fade(clipPlayer.player.volume(soundId) as number, volume, fade * 1000);
             } else {
-              return [soundIdStr, clip] as const;
+              clipPlayer.player.volume(volume);
             }
-          })
-        ),
-      };
+
+            return [soundIdStr, { ...clip, volume }] as const;
+          } else {
+            return [soundIdStr, clip] as const;
+          }
+        })
+      );
+
+      return clipPlayer;
     });
   }
 
-  private handleStoppedClip(path: string, soundId: number) {
+  private handleStoppedClip(path: string, playId: string, soundId: number) {
     this.updateAudioClipPlayer(path, (clipPlayer) => {
       delete clipPlayer.activeClips[soundId];
       return clipPlayer;
     });
+
+    this.notifyClipStateListeners(playId, path, 'stopped');
   }
 
   private updateActiveAudioClip(path: string, soundId: number, update: (clip: ActiveClip) => ActiveClip) {
@@ -342,7 +436,7 @@ export default class AudioPlayer {
       return clips;
     }, {} as { [path: string]: AudioClip });
     const isPlaying = Object.values(this.audioClipPlayers).some(({ activeClips }) =>
-      Object.values(activeClips).some((clip) => clip.state === ActiveAudioClipState.Playing)
+      Object.values(activeClips).some((clip) => clip.state.type === 'playing' || clip.state.type === 'pausing' || clip.state.type === 'stopping')
     );
     const audioState: AudioState = {
       globalVolume: this.globalVolume,
@@ -382,7 +476,6 @@ export default class AudioPlayer {
       loop: false,
       volume: 1,
       html5: !config.preload,
-      preload: config.preload,
     });
     return player;
   }
@@ -402,6 +495,12 @@ export default class AudioPlayer {
       clip.player = this.createPlayer(clipPath, newConfig);
     }
     return clip;
+  }
+}
+
+function log(...data: any[]): void {
+  if (DEBUG) {
+    console.log(...data);
   }
 }
 
