@@ -436,7 +436,7 @@ export default class AudioPlayer {
       return clips;
     }, {} as { [path: string]: AudioClip });
     const isPlaying = Object.values(this.audioClipPlayers).some(({ activeClips }) =>
-      Object.values(activeClips).some((clip) => clip.state.type === 'playing' || clip.state.type === 'play_requested')
+      Object.values(activeClips).some((clip) => clip.state.type === 'playing' || clip.state.type === 'pausing' || clip.state.type === 'stopping')
     );
     const audioState: AudioState = {
       globalVolume: this.globalVolume,
