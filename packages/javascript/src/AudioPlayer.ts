@@ -271,25 +271,7 @@ export default class AudioPlayer {
               if (isFadeValid(fade) && clip.state.type !== 'paused') {
                 // Cleanup any old fade callbacks first
                 // TODO: Remove cast once https://github.com/DefinitelyTyped/DefinitelyTyped/pull/59411 is merged
-                (clipPlayer.player as Howl & {
-                  off(
-                    event:
-                      | 'load'
-                      | 'loaderror'
-                      | 'playerror'
-                      | 'play'
-                      | 'end'
-                      | 'pause'
-                      | 'stop'
-                      | 'mute'
-                      | 'volume'
-                      | 'rate'
-                      | 'seek'
-                      | 'fade'
-                      | 'unlock',
-                    id: number
-                  ): Howl;
-                }).off('fade', soundId);
+                clipPlayer.player.off('fade', soundId);
 
                 clipPlayer.player.fade(clipPlayer.player.volume(soundId) as number, 0, fade * 1000, soundId);
                 // Set callback after starting new fade, otherwise it will fire straight away as the previous fade is cancelled
