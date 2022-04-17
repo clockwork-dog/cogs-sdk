@@ -25,14 +25,21 @@ interface TextHintsUpdateMessage {
 
 // Media
 
+export type Media =
+  | {
+      type: 'audio';
+      preload: boolean;
+    }
+  | {
+      type: 'video';
+      preload: boolean | 'auto' | 'metadata' | 'none';
+    };
+
 interface MediaClientConfigMessage {
   type: 'media_config_update';
   globalVolume: number;
   files: {
-    [path: string]: {
-      preload: boolean;
-      type: 'audio' | 'video';
-    };
+    [path: string]: Media;
   };
 }
 
