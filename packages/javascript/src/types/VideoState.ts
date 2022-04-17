@@ -6,7 +6,7 @@ export enum ActiveVideoClipState {
 }
 
 export interface VideoClip {
-  config: { preload: boolean; ephemeral: boolean; fit: MediaObjectFit };
+  config: { preload: 'auto' | 'metadata' | 'none'; ephemeral: boolean; fit: MediaObjectFit };
 }
 
 export interface ActiveClip {

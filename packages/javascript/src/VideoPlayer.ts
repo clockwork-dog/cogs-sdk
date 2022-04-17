@@ -110,7 +110,7 @@ export default class VideoPlayer {
       }
     } else {
       if (!this.videoClipPlayers[path]) {
-        this.videoClipPlayers[path] = this.createClipPlayer(path, { preload: false, ephemeral: true, fit });
+        this.videoClipPlayers[path] = this.createClipPlayer(path, { preload: 'none', ephemeral: true, fit });
       }
     }
 
@@ -247,14 +247,18 @@ export default class VideoPlayer {
 
       const addedClips = Object.entries(newVideoPaths).filter(([newFile]) => !previousClipPlayers[newFile]);
       addedClips.forEach(([path, config]) => {
-        clipPlayers[path] = this.createClipPlayer(path, { ...config, ephemeral: false, fit: 'contain' });
+        clipPlayers[path] = this.createClipPlayer(path, { ...config, preload: preloadString(config.preload), ephemeral: false, fit: 'contain' });
       });
 
       const updatedClips = Object.entries(previousClipPlayers).filter(([previousPath]) => previousPath in newVideoPaths);
       updatedClips.forEach(([path, previousClipPlayer]) => {
         if (previousClipPlayer.config.preload !== newVideoPaths[path].preload) {
           this.updateVideoClipPlayer(path, (player) => {
-            player.config = { ...player.config, preload: newVideoPaths[path].preload, ephemeral: false };
+            player.config = {
+              ...player.config,
+              preload: preloadString(newVideoPaths[path].preload),
+              ephemeral: false,
+            };
             player.videoElement.preload = player.config.preload ? 'auto' : 'none';
             return player;
           });
@@ -306,13 +310,13 @@ export default class VideoPlayer {
     this.eventTarget.dispatchEvent(new CustomEvent(type, { detail }));
   }
 
-  private createVideoElement(path: string, config: { preload: boolean; fit: MediaObjectFit }, { volume }: { volume: number }) {
+  private createVideoElement(path: string, config: VideoClip['config'], { volume }: { volume: number }) {
     const videoElement = document.createElement('video');
     videoElement.src = assetUrl(path);
     videoElement.autoplay = false;
     videoElement.loop = false;
     videoElement.volume = this.globalVolume * volume;
-    videoElement.preload = config.preload ? 'auto' : 'none';
+    videoElement.preload = config.preload;
     videoElement.addEventListener('playing', () => {
       if (this.activeClip?.path === path) {
         this.notifyClipStateListeners(this.activeClip.playId, path, 'playing');
@@ -352,4 +356,8 @@ export default class VideoPlayer {
     this.videoClipPlayers[path]?.videoElement.remove();
     this.updateVideoClipPlayer(path, () => null);
   }
+}
+
+function preloadString(preload: boolean | 'auto' | 'metadata' | 'none'): 'auto' | 'metadata' | 'none' {
+  return typeof preload === 'string' ? preload : preload ? 'metadata' : 'none';
 }

@@ -3,7 +3,7 @@ import CogsConnection from './CogsConnection';
 import { assetUrl } from './helpers/urls';
 import { ActiveClip, AudioClip, AudioState } from './types/AudioState';
 import MediaClipStateMessage, { MediaStatus } from './types/MediaClipStateMessage';
-import CogsClientMessage from './types/CogsClientMessage';
+import CogsClientMessage, { Media } from './types/CogsClientMessage';
 
 const DEBUG = true;
 
@@ -374,7 +374,8 @@ export default class AudioPlayer {
 
   private updateConfig(newFiles: MediaClientConfigMessage['files']) {
     const newAudioFiles = Object.fromEntries(
-      Object.entries(newFiles).filter(([, { type }]) => {
+      Object.entries(newFiles).filter((file): file is [string, Extract<Media, { type: 'audio' }>] => {
+        const type = file[1].type;
         // COGS 4.6 did not send a `type` but only reported audio files
         // so we assume audio if no `type` is given
         return type === 'audio' || !type;
