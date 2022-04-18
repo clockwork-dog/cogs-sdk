@@ -108,10 +108,10 @@ export default class VideoPlayer {
       if (this.activeClip.path !== path) {
         this.stopVideoClip();
       }
-    } else {
-      if (!this.videoClipPlayers[path]) {
-        this.videoClipPlayers[path] = this.createClipPlayer(path, { preload: 'none', ephemeral: true, fit });
-      }
+    }
+
+    if (!this.videoClipPlayers[path]) {
+      this.videoClipPlayers[path] = this.createClipPlayer(path, { preload: 'none', ephemeral: true, fit });
     }
 
     this.activeClip = { path, playId };
@@ -199,7 +199,7 @@ export default class VideoPlayer {
     const playId = this.activeClip.playId;
 
     // Once an ephemeral clip stops, cleanup and remove the player
-    if (this.videoClipPlayers[this.activeClip.path].config.ephemeral) {
+    if (this.videoClipPlayers[this.activeClip.path]?.config.ephemeral) {
       this.unloadClip(path);
     }
 
