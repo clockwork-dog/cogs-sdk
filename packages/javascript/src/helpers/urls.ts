@@ -2,7 +2,7 @@ export const COGS_SERVER_PORT = 12095;
 
 export function assetUrl(file: string): string {
   const location = typeof window !== 'undefined' ? window.location : undefined;
-  return `${location?.protocol}//${location?.hostname}:${COGS_SERVER_PORT}/assets/${file}`;
+  return `${location?.protocol}//${location?.hostname}:${COGS_SERVER_PORT}/assets/${encodeURIComponent(file)}`;
 }
 
 export function preloadUrl(url: string): Promise<string> {
