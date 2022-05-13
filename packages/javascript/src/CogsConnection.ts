@@ -194,7 +194,7 @@ function websocketParametersFromUrl(url: string): { path: string; pathParams?: U
     const type = pathParams.get('t') ?? '';
     pathParams.delete('local_id');
     return {
-      path: `/client/local/${encodeURIComponent(localClientId)}`,
+      path: `/local/${encodeURIComponent(localClientId)}`,
       pathParams: new URLSearchParams({ t: type }),
       useReconnectingWebsocket: true,
     };
