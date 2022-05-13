@@ -188,6 +188,7 @@ function websocketParametersFromUrl(url: string): { path: string; pathParams?: U
   const localClientId = pathParams.get('local_id');
   const isSimulator = pathParams.get('simulator') === 'true';
   const display = pathParams.get('display') ?? '';
+  const pluginId = parsedUrl.pathname.startsWith('/plugin/') ? parsedUrl.pathname.split('/')[2] : undefined;
 
   if (localClientId) {
     const type = pathParams.get('t') ?? '';
@@ -207,6 +208,8 @@ function websocketParametersFromUrl(url: string): { path: string; pathParams?: U
     pathParams.delete('display');
     pathParams.delete('displayIdIndex');
     return { path: `/display/${encodeURIComponent(display)}/${encodeURIComponent(displayIdIndex)}` };
+  } else if (pluginId) {
+    return { path: `/plugin/${encodeURIComponent(pluginId)}`, useReconnectingWebsocket: true };
   } else {
     const serial = pathParams.get('serial') ?? '';
     pathParams.delete('serial');
