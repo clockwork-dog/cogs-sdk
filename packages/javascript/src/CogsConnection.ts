@@ -90,7 +90,7 @@ export default class CogsConnection<
             this.dispatchEvent('config', this.currentConfig);
           } else if (parsed.updates) {
             this.currentInputPortValues = { ...this.currentInputPortValues, ...parsed.updates };
-            this.dispatchEvent('updates', this.currentInputPortValues);
+            this.dispatchEvent('updates', parsed.updates);
           } else if (parsed.event && parsed.event.key) {
             this.dispatchEvent('event', parsed.event);
           } else if (typeof parsed.message === 'object') {
