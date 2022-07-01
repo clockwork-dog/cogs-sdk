@@ -22,6 +22,8 @@ export default class AudioPlayer {
   private eventTarget = new EventTarget();
   private globalVolume = 1;
   private audioClipPlayers: { [path: string]: InternalClipPlayer } = {};
+  private audioOutputs: MediaDeviceInfo[] | undefined = undefined;
+  private selectedAudioOutput = '';
 
   constructor(cogsConnection: CogsConnection) {
     // Send the current status of each clip to COGS
@@ -34,10 +36,15 @@ export default class AudioPlayer {
       const message = event.detail;
       switch (message.type) {
         case 'media_config_update':
-          if (this.globalVolume !== message.globalVolume) {
-            this.setGlobalVolume(message.globalVolume);
+          {
+            if (this.globalVolume !== message.globalVolume) {
+              this.setGlobalVolume(message.globalVolume);
+            }
+            if (message.audioOutput !== undefined) {
+              this.setAudioOutput(message.audioOutput);
+            }
+            this.updateConfig(message.files);
           }
-          this.updateConfig(message.files);
           break;
         case 'audio_play':
           this.playAudioClip(message.file, {
@@ -65,29 +72,49 @@ export default class AudioPlayer {
 
     // On connection, send the current playing state of all clips
     // (Usually empty unless websocket is reconnecting)
-    const sendInitialClipStates = () => {
-      const files = Object.entries(this.audioClipPlayers).map(([file, player]) => {
-        const activeClips = Object.values(player.activeClips);
-        const status = activeClips.some(
-          ({ state }) =>
-            state.type === 'playing' ||
-            state.type === 'pausing' ||
-            state.type === 'stopping' ||
-            state.type === 'play_requested' ||
-            state.type === 'pause_requested' ||
-            state.type === 'stop_requested'
-        )
-          ? ('playing' as const)
-          : activeClips.some(({ state }) => state.type === 'paused')
-          ? ('paused' as const)
-          : ('stopped' as const);
-        return [file, status] as [string, typeof status];
-      });
-      cogsConnection.sendInitialMediaClipStates({ mediaType: 'audio', files });
-    };
+    {
+      const sendInitialClipStates = () => {
+        const files = Object.entries(this.audioClipPlayers).map(([file, player]) => {
+          const activeClips = Object.values(player.activeClips);
+          const status = activeClips.some(
+            ({ state }) =>
+              state.type === 'playing' ||
+              state.type === 'pausing' ||
+              state.type === 'stopping' ||
+              state.type === 'play_requested' ||
+              state.type === 'pause_requested' ||
+              state.type === 'stop_requested'
+          )
+            ? ('playing' as const)
+            : activeClips.some(({ state }) => state.type === 'paused')
+            ? ('paused' as const)
+            : ('stopped' as const);
+          return [file, status] as [string, typeof status];
+        });
+        cogsConnection.sendInitialMediaClipStates({ mediaType: 'audio', files });
+      };
 
-    cogsConnection.addEventListener('open', sendInitialClipStates);
-    sendInitialClipStates();
+      cogsConnection.addEventListener('open', sendInitialClipStates);
+      sendInitialClipStates();
+    }
+
+    // TODO: move this to connection level given that it also applies to videos
+    // Send a list of audio outputs to COGS and keep it up to date
+    {
+      const refreshAudioOutputs = async () => {
+        // `navigator.mediaDevices` is undefined on COGS AV <= 4.5 because of secure origin permissions
+        if (navigator.mediaDevices) {
+          const audioOutputs = (await navigator.mediaDevices.enumerateDevices()).filter(({ kind }) => kind === 'audiooutput');
+          cogsConnection.sendAudioOutputs(audioOutputs);
+          this.audioOutputs = audioOutputs;
+          this.setAudioOutput(this.selectedAudioOutput);
+        }
+      };
+
+      cogsConnection.addEventListener('open', refreshAudioOutputs);
+      navigator.mediaDevices?.addEventListener('devicechange', refreshAudioOutputs);
+      refreshAudioOutputs();
+    }
   }
 
   setGlobalVolume(volume: number): void {
@@ -372,6 +399,23 @@ export default class AudioPlayer {
     this.notifyStateListeners();
   }
 
+  setAudioOutput(audioOutput: string): void {
+    const sinkId = this.getSinkId(audioOutput);
+    console.log('audioOutput', audioOutput, 'sinkId', sinkId);
+    if (sinkId !== undefined) {
+      for (const clipPlayer of Object.values(this.audioClipPlayers)) {
+        setPlayerSinkId(clipPlayer.player, sinkId);
+      }
+    } else {
+      console.warn(`Audio output not found: ${audioOutput}`);
+    }
+    this.selectedAudioOutput = audioOutput;
+  }
+
+  private getSinkId(audioOutput: string): string | undefined {
+    return audioOutput ? this.audioOutputs?.find(({ label }) => label === audioOutput)?.deviceId : '';
+  }
+
   private updateConfig(newFiles: MediaClientConfigMessage['files']) {
     const newAudioFiles = Object.fromEntries(
       Object.entries(newFiles).filter((file): file is [string, Extract<Media, { type: 'audio' }>] => {
@@ -460,6 +504,7 @@ export default class AudioPlayer {
       volume: 1,
       html5: !config.preload,
     });
+    setPlayerSinkId(player, this.getSinkId(this.selectedAudioOutput));
     return player;
   }
 
@@ -489,4 +534,18 @@ function log(...data: any[]): void {
 
 function isFadeValid(fade: number | undefined): fade is number {
   return typeof fade === 'number' && !isNaN(fade) && fade > 0;
+}
+
+function setPlayerSinkId(player: Howl, sinkId: string | undefined) {
+  if (sinkId === undefined) {
+    return;
+  }
+
+  if ((player as any)._html5) {
+    (player as any)._sounds.forEach((sound: { _node: HTMLAudioElement }) => {
+      sound._node, (sound._node as any).setSinkId(sinkId);
+    });
+  } else {
+    // TODO: handle web audio
+  }
 }

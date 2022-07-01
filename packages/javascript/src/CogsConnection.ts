@@ -161,6 +161,12 @@ export default class CogsConnection<
     }
   }
 
+  sendAudioOutputs(audioOutputs: MediaDeviceInfo[]): void {
+    if (this.isConnected) {
+      this.websocket.send(JSON.stringify({ audioOutputs }));
+    }
+  }
+
   // Type-safe wrapper around EventTarget
   public addEventListener<
     EventName extends keyof ConnectionEventListeners<CustomTypes>,
