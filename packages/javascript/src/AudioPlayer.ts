@@ -380,6 +380,7 @@ export default class AudioPlayer {
   }
 
   setAudioSink(sinkId: string): void {
+    log(`Setting sink ID for all clips:`, sinkId);
     for (const clipPlayer of Object.values(this.audioClipPlayers)) {
       setPlayerSinkId(clipPlayer.player, sinkId);
     }
