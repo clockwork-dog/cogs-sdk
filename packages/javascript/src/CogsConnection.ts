@@ -59,6 +59,16 @@ export default class CogsConnection<
     return this._timerState ? { ...this._timerState } : null;
   }
 
+  /**
+   * Cached audio outputs use to look up the device/sink ID when a different device label is requested
+   */
+  private audioOutputs: MediaDeviceInfo[] | undefined = undefined;
+
+  private _selectedAudioOutput = '';
+  public get selectedAudioOutput(): string {
+    return this._selectedAudioOutput;
+  }
+
   constructor(
     { hostname = document.location.hostname, port = COGS_SERVER_PORT }: { hostname?: string; port?: number } = {},
     outputPortValues: CustomTypes['outputPorts'] = undefined
@@ -116,6 +126,22 @@ export default class CogsConnection<
         console.error('Unable to parse incoming data from server', data, e);
       }
     };
+
+    // Send a list of audio outputs to COGS and keep it up to date
+    {
+      const refreshAudioOutputs = async () => {
+        // `navigator.mediaDevices` is undefined on COGS AV <= 4.5 because of secure origin permissions
+        if (navigator.mediaDevices) {
+          const audioOutputs = (await navigator.mediaDevices.enumerateDevices()).filter(({ kind }) => kind === 'audiooutput');
+          this.sendAudioOutputs(audioOutputs);
+          this.audioOutputs = audioOutputs;
+        }
+      };
+
+      this.addEventListener('open', refreshAudioOutputs);
+      navigator.mediaDevices?.addEventListener('devicechange', refreshAudioOutputs);
+      refreshAudioOutputs();
+    }
   }
 
   public get isConnected(): boolean {
@@ -147,6 +173,10 @@ export default class CogsConnection<
     if (this.isConnected) {
       this.websocket.send(JSON.stringify({ updates: values }));
     }
+  }
+
+  public getAudioSinkId(audioOutput: string): string | undefined {
+    return audioOutput ? this.audioOutputs?.find(({ label }) => label === audioOutput)?.deviceId : '';
   }
 
   sendInitialMediaClipStates(allMediaClipStates: AllMediaClipStatesMessage): void {
