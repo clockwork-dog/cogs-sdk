@@ -473,7 +473,8 @@ export default class AudioPlayer {
       autoplay: false,
       loop: false,
       volume: 1,
-      html5: !config.preload,
+      html5: true,
+      preload: config.preload,
     });
     setPlayerSinkId(player, this.sinkId);
     return player;
