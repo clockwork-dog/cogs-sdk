@@ -35,16 +35,14 @@ export default class AudioPlayer {
       const message = event.detail;
       switch (message.type) {
         case 'media_config_update':
-          {
-            if (this.globalVolume !== message.globalVolume) {
-              this.setGlobalVolume(message.globalVolume);
-            }
-            if (message.audioOutput !== undefined) {
-              const sinkId = cogsConnection.getAudioSinkId(message.audioOutput);
-              this.setAudioSink(sinkId ?? '');
-            }
-            this.updateConfig(message.files);
+          if (this.globalVolume !== message.globalVolume) {
+            this.setGlobalVolume(message.globalVolume);
           }
+          if (message.audioOutput !== undefined) {
+            const sinkId = cogsConnection.getAudioSinkId(message.audioOutput);
+            this.setAudioSink(sinkId ?? '');
+          }
+          this.updateConfig(message.files);
           break;
         case 'audio_play':
           this.playAudioClip(message.file, {

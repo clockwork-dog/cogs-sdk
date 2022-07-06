@@ -25,6 +25,7 @@ export default class VideoPlayer {
   private videoClipPlayers: { [path: string]: InternalClipPlayer } = {};
   private activeClip?: { path: string; playId: string };
   private parentElement: HTMLElement;
+  private sinkId = '';
 
   constructor(cogsConnection: CogsConnection, parentElement: HTMLElement = DEFAULT_PARENT_ELEMENT) {
     this.parentElement = parentElement;
@@ -40,6 +41,10 @@ export default class VideoPlayer {
       switch (message.type) {
         case 'media_config_update':
           this.setGlobalVolume(message.globalVolume);
+          if (message.audioOutput !== undefined) {
+            const sinkId = cogsConnection.getAudioSinkId(message.audioOutput);
+            this.setAudioSink(sinkId ?? '');
+          }
           this.updateConfig(message.files);
           break;
         case 'video_play':
@@ -225,6 +230,13 @@ export default class VideoPlayer {
     }
   }
 
+  setAudioSink(sinkId: string): void {
+    for (const clipPlayer of Object.values(this.videoClipPlayers)) {
+      setPlayerSinkId(clipPlayer, sinkId);
+    }
+    this.sinkId = sinkId;
+  }
+
   private updateConfig(newPaths: MediaClientConfigMessage['files']) {
     const newVideoPaths = Object.fromEntries(Object.entries(newPaths).filter(([, { type }]) => type === 'video' || !type));
 
@@ -340,11 +352,13 @@ export default class VideoPlayer {
 
   private createClipPlayer(path: string, config: InternalClipPlayer['config']): InternalClipPlayer {
     const volume = 1;
-    return {
+    const player = {
       config,
       videoElement: this.createVideoElement(path, config, { volume }),
       volume,
     };
+    setPlayerSinkId(player, this.sinkId);
+    return player;
   }
 
   private unloadClip(path: string) {
@@ -360,4 +374,12 @@ export default class VideoPlayer {
 
 function preloadString(preload: boolean | 'auto' | 'metadata' | 'none'): 'auto' | 'metadata' | 'none' {
   return typeof preload === 'string' ? preload : preload ? 'metadata' : 'none';
+}
+
+function setPlayerSinkId(player: InternalClipPlayer, sinkId: string | undefined) {
+  if (sinkId === undefined) {
+    return;
+  }
+
+  (player.videoElement as any).setSinkId(sinkId);
 }
