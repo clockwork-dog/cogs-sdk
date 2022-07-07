@@ -513,7 +513,7 @@ function setPlayerSinkId(player: Howl, sinkId: string | undefined) {
 
   if ((player as any)._html5) {
     (player as any)._sounds.forEach((sound: { _node: HTMLAudioElement }) => {
-      sound._node, (sound._node as any).setSinkId(sinkId);
+      (sound._node as any).setSinkId(sinkId);
     });
   } else {
     // TODO: handle web audio
