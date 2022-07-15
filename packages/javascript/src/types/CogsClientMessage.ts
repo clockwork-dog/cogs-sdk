@@ -38,6 +38,7 @@ export type Media =
 interface MediaClientConfigMessage {
   type: 'media_config_update';
   globalVolume: number;
+  audioOutput?: string;
   files: {
     [path: string]: Media;
   };

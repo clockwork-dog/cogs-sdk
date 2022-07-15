@@ -22,6 +22,7 @@ export default class AudioPlayer {
   private eventTarget = new EventTarget();
   private globalVolume = 1;
   private audioClipPlayers: { [path: string]: InternalClipPlayer } = {};
+  private sinkId = '';
 
   constructor(cogsConnection: CogsConnection) {
     // Send the current status of each clip to COGS
@@ -36,6 +37,10 @@ export default class AudioPlayer {
         case 'media_config_update':
           if (this.globalVolume !== message.globalVolume) {
             this.setGlobalVolume(message.globalVolume);
+          }
+          if (message.audioOutput !== undefined) {
+            const sinkId = cogsConnection.getAudioSinkId(message.audioOutput);
+            this.setAudioSink(sinkId ?? '');
           }
           this.updateConfig(message.files);
           break;
@@ -372,6 +377,14 @@ export default class AudioPlayer {
     this.notifyStateListeners();
   }
 
+  setAudioSink(sinkId: string): void {
+    log(`Setting sink ID for all clips:`, sinkId);
+    for (const clipPlayer of Object.values(this.audioClipPlayers)) {
+      setPlayerSinkId(clipPlayer.player, sinkId);
+    }
+    this.sinkId = sinkId;
+  }
+
   private updateConfig(newFiles: MediaClientConfigMessage['files']) {
     const newAudioFiles = Object.fromEntries(
       Object.entries(newFiles).filter((file): file is [string, Extract<Media, { type: 'audio' }>] => {
@@ -458,8 +471,10 @@ export default class AudioPlayer {
       autoplay: false,
       loop: false,
       volume: 1,
-      html5: !config.preload,
+      html5: true,
+      preload: config.preload,
     });
+    setPlayerSinkId(player, this.sinkId);
     return player;
   }
 
@@ -489,4 +504,19 @@ function log(...data: any[]): void {
 
 function isFadeValid(fade: number | undefined): fade is number {
   return typeof fade === 'number' && !isNaN(fade) && fade > 0;
+}
+
+function setPlayerSinkId(player: Howl, sinkId: string | undefined) {
+  if (sinkId === undefined) {
+    return;
+  }
+
+  if ((player as any)._html5) {
+    (player as any)._sounds.forEach((sound: { _node: HTMLAudioElement }) => {
+      (sound._node as any).setSinkId(sinkId);
+    });
+  } else {
+    // TODO: handle web audio
+    console.warn('Cannot set sink ID: web audio not supported', player);
+  }
 }
