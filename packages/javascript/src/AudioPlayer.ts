@@ -140,6 +140,12 @@ export default class AudioPlayer {
         clipPlayer.player.off('end', undefined, soundId);
         clipPlayer.player.off('stop', undefined, soundId);
 
+        // Non-preloaded clips don't yet have an HTML audio node
+        // so we need to set the audio output when it's playing
+        clipPlayer.player.once('play', () => {
+          setPlayerSinkId(clipPlayer.player, this.sinkId);
+        });
+
         clipPlayer.player.once('stop', () => this.handleStoppedClip(path, playId, soundId), soundId);
 
         // Looping clips fire the 'end' callback on every loop
