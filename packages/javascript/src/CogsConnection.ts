@@ -197,6 +197,17 @@ export default class CogsConnection<
     }
   }
 
+  /**
+   * Show or hide the plugin window.
+   * @param visible Whether to show or hide the window
+   * This is only relevant for plugins, not for Media Master content.
+   */
+  public setPluginWindowVisible(visible: boolean): void {
+    if (this.isConnected) {
+      this.websocket.send(JSON.stringify({ window: { visible } }));
+    }
+  }
+
   // Type-safe wrapper around EventTarget
   public addEventListener<
     EventName extends keyof ConnectionEventListeners<CustomTypes>,
