@@ -1,10 +1,4 @@
-// We need to require this rather than importing it to ensure Webpack picks the correct version of the library.
-// We also then need to import the same class as a type so we can return the correct Typescript types.
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-/// @ts-ignore
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { Html5VideoPipeline, isRtcpBye } = require('media-stream-library/dist/browser-cjs.js');
-import type { Html5VideoPipeline as THtml5VideoPipeline, Rtcp } from 'media-stream-library';
+import { Html5VideoPipeline, isRtcpBye } from '@clockworkdog/media-stream-library-browser';
 import { COGS_SERVER_PORT } from './helpers/urls';
 
 /**
@@ -26,7 +20,7 @@ export default class RtspStreamer {
    * Start an RTSP video stream on with the given URI on the given video element.
    * @returns The playing HTML5 video pipeline.
    */
-  public play(params: { uri: string; videoElement: HTMLVideoElement }): THtml5VideoPipeline {
+  public play(params: { uri: string; videoElement: HTMLVideoElement }): Html5VideoPipeline {
     const { uri, videoElement } = params;
 
     const pipeline = new Html5VideoPipeline({
@@ -36,7 +30,7 @@ export default class RtspStreamer {
     });
 
     // Restart stream on RTCP BYE (stream ended)
-    pipeline.rtsp.onRtcp = (rtcp: Rtcp) => {
+    pipeline.rtsp.onRtcp = (rtcp) => {
       if (isRtcpBye(rtcp)) {
         setTimeout(() => this.play(params), 0);
       }
