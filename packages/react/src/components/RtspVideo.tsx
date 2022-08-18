@@ -2,7 +2,7 @@ import { CogsRtspStreamer } from '@clockworkdog/cogs-client';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import usePageVisibility from '../hooks/usePageVisibility';
 
-export interface RtspVideoProps extends React.DetailedHTMLProps<React.VideoHTMLAttributes<HTMLVideoElement>, HTMLVideoElement> {
+export interface RtspVideoProps {
   uri: string;
   websocketHostname?: string;
   websocketPort?: number;
@@ -14,7 +14,13 @@ export interface RtspVideoProps extends React.DetailedHTMLProps<React.VideoHTMLA
  * websocket on the same hostname as COGS is running, but can be configured by passing in custom
  * websocket details.
  */
-export default function RtspVideo({ uri, websocketHostname, websocketPort, websocketPath, ...rest }: RtspVideoProps): JSX.Element | null {
+export default function RtspVideo({
+  uri,
+  websocketHostname,
+  websocketPort,
+  websocketPath,
+  ...rest
+}: RtspVideoProps & React.DetailedHTMLProps<React.VideoHTMLAttributes<HTMLVideoElement>, HTMLVideoElement>): JSX.Element | null {
   // We need to monitor the page visibility as we only want the stream to play when the page is visible
   // This is needed because the stream will "pause" when the page looses focus and start playback when it
   // becomes visible again. This will essentially cause a delay to be introduced into the stream when loosing
