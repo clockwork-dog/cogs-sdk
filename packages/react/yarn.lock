@@ -23,19 +23,19 @@
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
-"@clockworkdog/cogs-client@^1.4.2":
-  version "1.4.2"
-  resolved "https://registry.yarnpkg.com/@clockworkdog/cogs-client/-/cogs-client-1.4.2.tgz#79c236afed2a2a7ba7ea46319c8886fe0e48c55e"
-  integrity sha512-ZTQtVP37i5tGZWWw+4Zzbz9nfUc22KXdnTRYVoXJE0aJP0XLC0YlLPeZOlOytDTcIjFhWBVOnfIWRHo3+492OA==
+"@clockworkdog/cogs-client@^1.4.3":
+  version "1.4.3"
+  resolved "https://registry.yarnpkg.com/@clockworkdog/cogs-client/-/cogs-client-1.4.3.tgz#c943e0d904d43c65265420e675dbd5dca4945f83"
+  integrity sha512-Evj0j74vvTR92xv3qXlZMsmksbqldhur8Ae5Z62VYNHpyrihjh/ION/GuBKJMK8VXuR22X699jxbkxsYRR3O3A==
   dependencies:
-    "@clockworkdog/media-stream-library-browser" "^11.1.1-fixes.5"
+    "@clockworkdog/media-stream-library-browser" "^11.1.1-fixes.6"
     howler "2.2.1"
     reconnecting-websocket "^4.4.0"
 
-"@clockworkdog/media-stream-library-browser@^11.1.1-fixes.5":
-  version "11.1.1-fixes.5"
-  resolved "https://registry.yarnpkg.com/@clockworkdog/media-stream-library-browser/-/media-stream-library-browser-11.1.1-fixes.5.tgz#7fad2b45e219c4a574970621a90297bb14d6c03c"
-  integrity sha512-2OVZe1p6jXO5y0SnT7l+FMQxDztmQ1P2ycuvlQSkUAdq7LskFDe+S9TkNDeaqvckMS/a4QdQekibJHYj7ij7FQ==
+"@clockworkdog/media-stream-library-browser@^11.1.1-fixes.6":
+  version "11.1.1-fixes.6"
+  resolved "https://registry.yarnpkg.com/@clockworkdog/media-stream-library-browser/-/media-stream-library-browser-11.1.1-fixes.6.tgz#a672d3ef417a829a85b12be2386c79aa8faa2cae"
+  integrity sha512-gdN3+ATwleWeRDcCk9/VvpEZ1E+vZfYEr/aV+iIRO8K6jNJHOsKIk7lZkt7ujczWJ5E2Z72v93oeaMFnwET8gw==
   dependencies:
     "@types/node" "16.11.32"
     "@types/ws" "8.5.3"
@@ -45,7 +45,6 @@
     process "0.11.10"
     stream-browserify "3.0.0"
     ts-md5 "1.2.11"
-    url-polyfill "^1.1.12"
     ws "8.5.0"
 
 "@eslint/eslintrc@^0.4.0":
@@ -1560,11 +1559,6 @@ uri-js@^4.2.2:
   integrity sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==
   dependencies:
     punycode "^2.1.0"
-
-url-polyfill@^1.1.12:
-  version "1.1.12"
-  resolved "https://registry.yarnpkg.com/url-polyfill/-/url-polyfill-1.1.12.tgz#6cdaa17f6b022841b3aec0bf8dbd87ac0cd33331"
-  integrity sha512-mYFmBHCapZjtcNHW0MDq9967t+z4Dmg5CJ0KqysK3+ZbyoNOWQHksGCTWwDhxGXllkWlOc10Xfko6v4a3ucM6A==
 
 util-deprecate@^1.0.1:
   version "1.0.2"
