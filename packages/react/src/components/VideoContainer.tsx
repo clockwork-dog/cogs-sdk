@@ -29,7 +29,11 @@ export default function VideoContainer({
     <div
       ref={containerRef}
       className={className}
-      style={fullscreen ? { position: 'absolute', zIndex: 1, top: 0, left: 0, width: '100vw', height: '100vh', ...fullscreenCustomStyle } : style}
+      style={
+        fullscreen
+          ? { position: 'absolute', zIndex: 1, top: 0, left: 0, width: '100vw', height: '100vh', ...fullscreenCustomStyle }
+          : { position: 'relative', ...style }
+      }
     />
   );
 }
