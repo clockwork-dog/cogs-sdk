@@ -6,21 +6,33 @@ Create content for your COGS Media Master
 
 ## Add to your project
 
-### Browser
+### Static HTML
+
+Download `cogs-client.js` from https://unpkg.com/@clockworkdog/cogs-client and save it to your project.
+
+Include the script in your HTML page:
 
 ```html
-<script src="https://unpkg.com/@clockworkdog/cogs-client@1"></script>
+<script src="./cogs-client.js"></script>
 ```
 
-### NPM
+(Avoid `<script>` tags with `http...` so your content works without an internet connection.)
+
+### NPM / Yarn
+
+If you haven't yet created a web project we recommend using Vite with Typescript:
+
+```shell
+yarn create vite my-custom-content --template vanilla-ts
+cd my-custom-content
+yarn
+```
+
+Then add `cogs-client` with NPM or Yarn:
 
 ```shell
 npm install --save @clockworkdog/cogs-client
-```
-
-### Yarn
-
-```shell
+# OR
 yarn add @clockworkdog/cogs-client
 ```
 
