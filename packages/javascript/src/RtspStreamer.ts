@@ -24,28 +24,38 @@ export default class RtspStreamer {
 
   /**
    * Start an RTSP video stream on with the given URI on the given video element.
-   * @returns The playing HTML5 video pipeline.
+   * @returns An object with a function to close the pipeline
    */
-  public play(params: { uri: string; videoElement: HTMLVideoElement; playbackRate?: number }): Html5VideoPipeline {
+  public play(params: { uri: string; videoElement: HTMLVideoElement; playbackRate?: number; restartIfStopped?: boolean }): { close: () => void } {
     const { uri, videoElement } = params;
 
-    const pipeline = new Html5VideoPipeline({
-      ws: { uri: this._websocketUri },
-      rtsp: { uri: uri },
-      mediaElement: videoElement,
-    });
+    let pipeline: Html5VideoPipeline;
 
-    // Restart stream on RTCP BYE (stream ended)
-    pipeline.rtsp.onRtcp = (rtcp) => {
-      if (isRtcpBye(rtcp)) {
-        setTimeout(() => this.play(params), 0);
-      }
+    const startPipeline = () => {
+      pipeline?.close();
+
+      pipeline = new Html5VideoPipeline({
+        ws: { uri: this._websocketUri },
+        rtsp: { uri: uri },
+        mediaElement: videoElement,
+      });
+
+      // Restart stream on RTCP BYE (stream ended)
+      pipeline.rtsp.onRtcp = (rtcp) => {
+        if (isRtcpBye(rtcp)) {
+          console.log('Video stream ended. Restarting.');
+          videoElement.pause();
+          setTimeout(startPipeline, 0);
+        }
+      };
+
+      // Start playback when ready
+      pipeline.ready.then(() => {
+        pipeline.rtsp.play();
+      });
     };
 
-    // Start playback when ready
-    pipeline.ready.then(() => {
-      pipeline.rtsp.play();
-    });
+    startPipeline();
 
     if (params.playbackRate) {
       const playbackRate = params.playbackRate ?? DEFAULT_VIDEO_PLAYBACK_RATE;
@@ -55,6 +65,51 @@ export default class RtspStreamer {
       });
     }
 
-    return pipeline;
+    let removeRestartListeners: (() => void) | null = null;
+
+    if (params.restartIfStopped) {
+      let playing = false;
+      let interval: NodeJS.Timer | null = null;
+      const handleTimeUpdate = () => {
+        playing = true;
+      };
+      const handlePlay = () => {
+        playing = true;
+        videoElement.addEventListener('timeupdate', handleTimeUpdate);
+        if (!interval) {
+          interval = setInterval(() => {
+            if (!playing) {
+              console.log('Video stopped playing. Restarting.');
+              videoElement.pause();
+              setTimeout(startPipeline, 0);
+            }
+            playing = false;
+          }, 2000);
+        }
+      };
+      const handlePause = () => {
+        videoElement.removeEventListener('timeupdate', handleTimeUpdate);
+        if (interval) {
+          clearInterval(interval);
+          interval = null;
+        }
+      };
+
+      videoElement.addEventListener('play', handlePlay);
+      videoElement.addEventListener('pause', handlePause);
+
+      removeRestartListeners = () => {
+        handlePause();
+        videoElement.removeEventListener('play', handlePlay);
+        videoElement.removeEventListener('pause', handlePause);
+      };
+    }
+
+    return {
+      close: () => {
+        pipeline?.close();
+        removeRestartListeners?.();
+      },
+    };
   }
 }
