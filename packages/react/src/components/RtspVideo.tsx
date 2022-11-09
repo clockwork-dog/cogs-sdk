@@ -1,4 +1,4 @@
-import { CogsRtspStreamer } from '@clockworkdog/cogs-client';
+import { CogsRtspStreamer, LIVE_VIDEO_PLAYBACK_RATE } from '@clockworkdog/cogs-client';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import usePageVisibility from '../hooks/usePageVisibility';
 
@@ -7,6 +7,7 @@ export interface RtspVideoProps {
   websocketHostname?: string;
   websocketPort?: number;
   websocketPath?: string;
+  live?: boolean;
 }
 
 /**
@@ -19,6 +20,7 @@ export default function RtspVideo({
   websocketHostname,
   websocketPort,
   websocketPath,
+  live,
   ...rest
 }: RtspVideoProps & React.DetailedHTMLProps<React.VideoHTMLAttributes<HTMLVideoElement>, HTMLVideoElement>): JSX.Element | null {
   // We need to monitor the page visibility as we only want the stream to play when the page is visible
@@ -53,12 +55,14 @@ export default function RtspVideo({
     const pipeline = rtspStreamer.play({
       uri,
       videoElement: videoRef,
+      playbackRate: live ? LIVE_VIDEO_PLAYBACK_RATE : undefined,
+      restartIfStopped: live ? true : undefined,
     });
 
     return () => {
       pipeline.close();
     };
-  }, [uri, isVisible, rtspStreamer, videoRef]);
+  }, [uri, isVisible, rtspStreamer, videoRef, live]);
 
   return <video ref={videoRefCallback} autoPlay {...rest} />;
 }
