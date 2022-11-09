@@ -1,9 +1,11 @@
 import { Html5VideoPipeline, isRtcpBye } from '@clockworkdog/media-stream-library-browser';
 import { COGS_SERVER_PORT } from './helpers/urls';
 
+const DEFAULT_VIDEO_PLAYBACK_RATE = 1;
+
 // Use a faster-than-realtime playback rate by default
 // so that it keeps up with a realtime stream in case of video buffering
-const DEFAULT_VIDEO_PLAYBACK_RATE = 1.1;
+export const LIVE_VIDEO_PLAYBACK_RATE = 1.1;
 
 /**
  * Manages a websocket connection to the COGS TCP relay which can be used to send RTSP video
@@ -45,10 +47,13 @@ export default class RtspStreamer {
       pipeline.rtsp.play();
     });
 
-    videoElement.playbackRate = params.playbackRate ?? DEFAULT_VIDEO_PLAYBACK_RATE;
-    videoElement.addEventListener('play', () => {
-      videoElement.playbackRate = params.playbackRate ?? DEFAULT_VIDEO_PLAYBACK_RATE;
-    });
+    if (params.playbackRate) {
+      const playbackRate = params.playbackRate ?? DEFAULT_VIDEO_PLAYBACK_RATE;
+      videoElement.playbackRate = playbackRate;
+      videoElement.addEventListener('play', () => {
+        videoElement.playbackRate = playbackRate;
+      });
+    }
 
     return pipeline;
   }
