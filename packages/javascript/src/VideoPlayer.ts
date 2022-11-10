@@ -5,8 +5,12 @@ import MediaClipStateMessage, { MediaStatus } from './types/MediaClipStateMessag
 import CogsClientMessage from './types/CogsClientMessage';
 import { MediaObjectFit } from '.';
 
+interface HTMLVideoElementWithAudioSink extends HTMLVideoElement {
+  setSinkId?: (sinkId: string) => void;
+}
+
 interface InternalClipPlayer extends VideoClip {
-  videoElement: HTMLVideoElement;
+  videoElement: HTMLVideoElementWithAudioSink;
   volume: number;
 }
 
@@ -381,5 +385,7 @@ function setPlayerSinkId(player: InternalClipPlayer, sinkId: string | undefined)
     return;
   }
 
-  (player.videoElement as any).setSinkId(sinkId);
+  if (typeof player.videoElement.setSinkId === 'function') {
+    player.videoElement.setSinkId(sinkId);
+  }
 }

@@ -7,8 +7,16 @@ import CogsClientMessage, { Media } from './types/CogsClientMessage';
 
 const DEBUG = true;
 
+interface HTMLAudioElementWithAudioSink extends HTMLAudioElement {
+  setSinkId?: (sinkId: string) => void;
+}
+interface HowlWithHTMLSounds extends Howl {
+  _html5?: unknown;
+  _sounds?: { _node?: HTMLAudioElementWithAudioSink }[];
+}
+
 interface InternalClipPlayer extends AudioClip {
-  player: Howl;
+  player: HowlWithHTMLSounds;
 }
 
 type MediaClientConfigMessage = Extract<CogsClientMessage, { type: 'media_config_update' }>;
@@ -512,14 +520,14 @@ function isFadeValid(fade: number | undefined): fade is number {
   return typeof fade === 'number' && !isNaN(fade) && fade > 0;
 }
 
-function setPlayerSinkId(player: Howl, sinkId: string | undefined) {
+function setPlayerSinkId(player: HowlWithHTMLSounds, sinkId: string | undefined) {
   if (sinkId === undefined) {
     return;
   }
 
-  if ((player as any)._html5) {
-    (player as any)._sounds.forEach((sound: { _node: HTMLAudioElement }) => {
-      (sound._node as any).setSinkId(sinkId);
+  if (player._html5) {
+    player._sounds?.forEach((sound) => {
+      sound._node?.setSinkId?.(sinkId);
     });
   } else {
     // TODO: handle web audio
