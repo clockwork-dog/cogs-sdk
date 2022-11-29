@@ -328,6 +328,7 @@ export default class VideoPlayer {
 
   private createVideoElement(path: string, config: VideoClip['config'], { volume }: { volume: number }) {
     const videoElement = document.createElement('video');
+    videoElement.playsInline = true; // Required for iOS
     videoElement.src = assetUrl(path);
     videoElement.autoplay = false;
     videoElement.loop = false;

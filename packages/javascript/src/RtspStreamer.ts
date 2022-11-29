@@ -29,6 +29,8 @@ export default class RtspStreamer {
   public play(params: { uri: string; videoElement: HTMLVideoElement; playbackRate?: number; restartIfStopped?: boolean }): { close: () => void } {
     const { uri, videoElement } = params;
 
+    videoElement.playsInline = true; // Required for iOS
+
     let pipeline: Html5VideoPipeline;
 
     const startPipeline = () => {
