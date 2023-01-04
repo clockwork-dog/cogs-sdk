@@ -23,10 +23,10 @@
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
-"@clockworkdog/cogs-client@^1.5.0":
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/@clockworkdog/cogs-client/-/cogs-client-1.5.0.tgz#a11ca7404c274dd555808b56a9572cc457a853a5"
-  integrity sha512-dKUQ+fVlcJi/pV/bP0/++UwzWR4AlUPdAkUwFo/x2ddTeIZWq41wTqzw9wpR/HhzF4r1Z49tkNNDqtmE3KwkCg==
+"@clockworkdog/cogs-client@^1.5.1":
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/@clockworkdog/cogs-client/-/cogs-client-1.5.1.tgz#7041c2acf83f656b56ac961b421ed4feeb0fa5ec"
+  integrity sha512-0cWI6BcnWCOF066AEpefdwt7oGSuUVzxvT8v7mhSifKSxmUQGvFkKdDvE45KGro9gFWlQCdVYUzMVBUV6PMoOA==
   dependencies:
     "@clockworkdog/media-stream-library-browser" "^11.1.1-fixes.6"
     howler "2.2.1"
