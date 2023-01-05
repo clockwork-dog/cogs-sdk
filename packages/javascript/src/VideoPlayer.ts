@@ -106,7 +106,7 @@ export default class VideoPlayer {
 
   setGlobalVolume(globalVolume: number): void {
     Object.values(this.videoClipPlayers).forEach((clipPlayer) => {
-      clipPlayer.videoElement.volume = clipPlayer.volume * globalVolume;
+      setVideoElementVolume(clipPlayer.videoElement, clipPlayer.volume * globalVolume);
     });
     this.globalVolume = globalVolume;
     this.notifyStateListeners();
@@ -127,7 +127,7 @@ export default class VideoPlayer {
 
     this.updateVideoClipPlayer(path, (clipPlayer) => {
       clipPlayer.volume = volume;
-      clipPlayer.videoElement.volume = volume * this.globalVolume;
+      setVideoElementVolume(clipPlayer.videoElement, volume * this.globalVolume);
       clipPlayer.videoElement.loop = loop;
       clipPlayer.videoElement.style.objectFit = fit;
       if (clipPlayer.videoElement.currentTime === clipPlayer.videoElement.duration) {
@@ -168,7 +168,8 @@ export default class VideoPlayer {
 
     this.updateVideoClipPlayer(this.activeClip.path, (clipPlayer) => {
       if (clipPlayer.videoElement) {
-        clipPlayer.videoElement.volume = volume * this.globalVolume;
+        clipPlayer.volume = volume;
+        setVideoElementVolume(clipPlayer.videoElement, volume * this.globalVolume);
       }
       return clipPlayer;
     });
@@ -296,7 +297,9 @@ export default class VideoPlayer {
             path: this.activeClip.path,
             state: !this.videoClipPlayers[this.activeClip.path].videoElement?.paused ? ActiveVideoClipState.Playing : ActiveVideoClipState.Paused,
             loop: this.videoClipPlayers[this.activeClip.path].videoElement?.loop ?? false,
-            volume: this.videoClipPlayers[this.activeClip.path].videoElement?.volume ?? 0,
+            volume: this.videoClipPlayers[this.activeClip.path].videoElement?.muted
+              ? 0
+              : this.videoClipPlayers[this.activeClip.path].videoElement?.volume ?? 0,
           }
         : undefined,
     };
@@ -332,7 +335,7 @@ export default class VideoPlayer {
     videoElement.src = assetUrl(path);
     videoElement.autoplay = false;
     videoElement.loop = false;
-    videoElement.volume = this.globalVolume * volume;
+    setVideoElementVolume(videoElement, volume * this.globalVolume);
     videoElement.preload = config.preload;
     videoElement.addEventListener('playing', () => {
       if (this.activeClip?.path === path) {
@@ -389,4 +392,14 @@ function setPlayerSinkId(player: InternalClipPlayer, sinkId: string | undefined)
   if (typeof player.videoElement.setSinkId === 'function') {
     player.videoElement.setSinkId(sinkId);
   }
+}
+
+/**
+ * Set video volume
+ *
+ * This doesn't work on iOS (volume is read-only) so at least mute it if the volume is zero
+ */
+function setVideoElementVolume(videoElement: HTMLVideoElement, volume: number) {
+  videoElement.volume = volume;
+  videoElement.muted = volume === 0;
 }

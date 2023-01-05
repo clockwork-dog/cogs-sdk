@@ -7,6 +7,9 @@ import CogsClientMessage, { Media } from './types/CogsClientMessage';
 
 const DEBUG = true;
 
+// Check an iOS-only property (See https://developer.mozilla.org/en-US/docs/Web/API/Navigator#non-standard_properties)
+const IS_IOS = typeof (navigator as { standalone?: boolean }).standalone !== 'undefined';
+
 interface HTMLAudioElementWithAudioSink extends HTMLAudioElement {
   setSinkId?: (sinkId: string) => void;
 }
@@ -197,15 +200,16 @@ export default class AudioPlayer {
         if (isFadeValid(fade)) {
           // Start fade when clip starts
           clipPlayer.player.volume(0, soundId);
+          clipPlayer.player.mute(false, soundId);
           clipPlayer.player.once(
             'play',
             () => {
-              clipPlayer.player.fade(0, volume, fade * 1000, soundId);
+              fadeAudioPlayerVolume(clipPlayer.player, volume, fade * 1000, soundId);
             },
             soundId
           );
         } else {
-          clipPlayer.player.volume(volume, soundId);
+          setAudioPlayerVolume(clipPlayer.player, volume, soundId);
         }
 
         // Track new/updated active clip
@@ -244,7 +248,7 @@ export default class AudioPlayer {
                   soundId
                 );
 
-                clipPlayer.player.fade(clipPlayer.player.volume(soundId) as number, 0, fade * 1000, soundId);
+                fadeAudioPlayerVolume(clipPlayer.player, 0, fade * 1000, soundId);
                 clip.state = { type: 'pausing' };
               } else {
                 // Pause now
@@ -292,7 +296,7 @@ export default class AudioPlayer {
                 // TODO: Remove cast once https://github.com/DefinitelyTyped/DefinitelyTyped/pull/59411 is merged
                 clipPlayer.player.off('fade', soundId);
 
-                clipPlayer.player.fade(clipPlayer.player.volume(soundId) as number, 0, fade * 1000, soundId);
+                fadeAudioPlayerVolume(clipPlayer.player, 0, fade * 1000, soundId);
                 // Set callback after starting new fade, otherwise it will fire straight away as the previous fade is cancelled
                 clipPlayer.player.once('fade', (soundId) => clipPlayer.player.stop(soundId), soundId);
 
@@ -343,9 +347,9 @@ export default class AudioPlayer {
             const soundId = parseInt(soundIdStr);
 
             if (isFadeValid(fade)) {
-              clipPlayer.player.fade(clipPlayer.player.volume(soundId) as number, volume, fade * 1000);
+              fadeAudioPlayerVolume(clipPlayer.player, volume, fade * 1000, soundId);
             } else {
-              clipPlayer.player.volume(volume);
+              setAudioPlayerVolume(clipPlayer.player, volume, soundId);
             }
 
             return [soundIdStr, { ...clip, volume }] as const;
@@ -516,8 +520,11 @@ function log(...data: any[]): void {
   }
 }
 
+/**
+ * @returns `true` if this is this a valid fade duration. Always returns `false` on iOS
+ */
 function isFadeValid(fade: number | undefined): fade is number {
-  return typeof fade === 'number' && !isNaN(fade) && fade > 0;
+  return !IS_IOS && typeof fade === 'number' && !isNaN(fade) && fade > 0;
 }
 
 function setPlayerSinkId(player: HowlWithHTMLSounds, sinkId: string | undefined) {
@@ -533,4 +540,24 @@ function setPlayerSinkId(player: HowlWithHTMLSounds, sinkId: string | undefined)
     // TODO: handle web audio
     console.warn('Cannot set sink ID: web audio not supported', player);
   }
+}
+
+/**
+ * Set audio volume
+ *
+ * This doesn't work on iOS (volume is read-only) so at least mute it if the volume is zero
+ */
+function setAudioPlayerVolume(howl: HowlWithHTMLSounds, volume: number, soundId: number) {
+  howl.volume(volume, soundId);
+  howl.mute(volume === 0, soundId);
+}
+
+/**
+ * Fade to audio volume
+ *
+ * This doesn't work on iOS (volume is read-only) so at least mute it if the volume is zero
+ */
+function fadeAudioPlayerVolume(howl: HowlWithHTMLSounds, volume: number, fade: number, soundId: number) {
+  howl.mute(false, soundId);
+  howl.fade(howl.volume(soundId) as number, volume, fade, soundId);
 }
