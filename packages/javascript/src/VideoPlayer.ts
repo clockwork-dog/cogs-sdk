@@ -289,7 +289,7 @@ export default class VideoPlayer {
               preload: preloadString(newVideoPaths[path].preload),
               ephemeral: false,
             };
-            player.videoElement.preload = player.config.preload ? 'auto' : 'none';
+            player.videoElement.preload = player.config.preload;
             return player;
           });
         }
