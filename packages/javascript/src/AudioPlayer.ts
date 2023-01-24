@@ -182,8 +182,8 @@ export default class AudioPlayer {
         clipPlayer.player.once(
           'play',
           () => {
-            const clipState = clipPlayer.activeClips[soundId].state;
-            if (clipState.type === 'pause_requested') {
+            const clipState = clipPlayer.activeClips[soundId]?.state;
+            if (clipState?.type === 'pause_requested') {
               log('Clip started playing but should be paused', { path, soundId });
               this.pauseAudioClip(path, { fade: clipState.fade }, soundId, true);
             } else if (clipState.type === 'stop_requested') {
