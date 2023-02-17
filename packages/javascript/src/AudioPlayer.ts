@@ -36,8 +36,6 @@ export default class AudioPlayer {
   private sinkId = '';
 
   constructor(cogsConnection: CogsConnection) {
-    log('Using LOCAL');
-
     // Send the current status of each clip to COGS
     this.addEventListener('audioClipState', ({ detail }) => {
       cogsConnection.sendMediaClipState(detail);
@@ -186,7 +184,7 @@ export default class AudioPlayer {
         clipPlayer.player.once('stop', () => this.handleStoppedClip(path, playId, soundId), soundId);
 
         // Looping clips fire the 'end' callback on every loop
-        clipPlayer.player.on(
+        clipPlayer.player.once(
           'end',
           () => {
             if (!clipPlayer.activeClips[soundId]?.loop) {
@@ -210,9 +208,7 @@ export default class AudioPlayer {
           'play',
           () => {
             log('play() callback - update state', { soundId });
-
             const clipState = clipPlayer.activeClips[soundId]?.state;
-            log('AudioPlay State?', clipState);
             if (clipState?.type === 'pause_requested') {
               log('Clip started playing but should be paused', { path, soundId });
               this.pauseAudioClip(path, { fade: clipState.fade }, soundId, true);
@@ -267,18 +263,12 @@ export default class AudioPlayer {
 
           // If onlySoundId specified, only update that clip
           if (onlySoundId === undefined || onlySoundId === soundId) {
-            if (
-              (allowIfPauseRequested && clip.state.type === 'pause_requested') ||
-              clip.state.type === 'playing' ||
-              clip.state.type === 'pausing' ||
-              clip.state.type === 'play_requested'
-            ) {
+            if ((allowIfPauseRequested && clip.state.type === 'pause_requested') || clip.state.type === 'playing' || clip.state.type === 'pausing') {
               if (isFadeValid(fade)) {
                 // Fade then pause
                 clipPlayer.player.once(
                   'fade',
                   (soundId) => {
-                    log(clip.state.type, 'State in fade');
                     clipPlayer.player.pause(soundId);
                     log('CLIP -> paused (after fade)');
                     this.updateActiveAudioClip(path, soundId, (clip) => ({ ...clip, state: { type: 'paused' } }));
@@ -288,17 +278,6 @@ export default class AudioPlayer {
                 );
 
                 fadeAudioPlayerVolume(clipPlayer.player, 0, fade * 1000, soundId);
-                log('AudioPause State?', clip.state.type);
-                if (clip.state.type === 'play_requested') {
-                  clipPlayer.player.pause(soundId);
-                  log('CLIP -> paused');
-                  clip.state = { type: 'paused' };
-                  this.notifyClipStateListeners(clip.playId, path, 'paused');
-                  clipPlayer.player.play(soundId);
-                  log('CLIP -> playing');
-                  clip.state = { type: 'playing' };
-                  this.notifyClipStateListeners(clip.playId, path, 'playing');
-                }
                 log('CLIP -> pausing');
                 clip.state = { type: 'pausing' };
               } else {
@@ -310,7 +289,7 @@ export default class AudioPlayer {
               }
             }
             // Clip hasn't started playing yet, or has already had pause_requested (but fade may have changed so update here)
-            else if (clip.state.type === 'pause_requested') {
+            else if (clip.state.type === 'play_requested' || clip.state.type === 'pause_requested') {
               log('CLIP -> pause_requested');
               clip.state = { type: 'pause_requested', fade };
             }
