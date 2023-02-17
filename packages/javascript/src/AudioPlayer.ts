@@ -184,7 +184,7 @@ export default class AudioPlayer {
         clipPlayer.player.once('stop', () => this.handleStoppedClip(path, playId, soundId), soundId);
 
         // Looping clips fire the 'end' callback on every loop
-        clipPlayer.player.once(
+        clipPlayer.player.on(
           'end',
           () => {
             if (!clipPlayer.activeClips[soundId]?.loop) {
@@ -204,7 +204,7 @@ export default class AudioPlayer {
 
         // Once clip starts, check if it should actually be paused or stopped
         // If not, then update state to 'playing'
-        clipPlayer.player.on(
+        clipPlayer.player.once(
           'play',
           () => {
             log('play() callback - update state', { soundId });
