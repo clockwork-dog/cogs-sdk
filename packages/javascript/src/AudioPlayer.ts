@@ -5,7 +5,7 @@ import { ActiveClip, AudioClip, AudioState } from './types/AudioState';
 import MediaClipStateMessage, { MediaStatus } from './types/MediaClipStateMessage';
 import CogsClientMessage, { Media } from './types/CogsClientMessage';
 
-const DEBUG = true;
+const DEBUG = false;
 
 // Check an iOS-only property (See https://developer.mozilla.org/en-US/docs/Web/API/Navigator#non-standard_properties)
 const IS_IOS = typeof (navigator as { standalone?: boolean }).standalone !== 'undefined';
