@@ -30,6 +30,10 @@ yarn add @clockworkdog/cogs-client
 
 ## Usage
 
+### Create a `cogs-plugin-manifest.json` file
+
+See [PluginManifestJson](https://clockwork-dog.github.io/cogs-client-lib/interfaces/PluginManifestJson.html) for details of what to include.
+
 ### Import the library
 
 #### Browser
