@@ -1,4 +1,4 @@
-import { ConfigValue, EventKeyValue, EventValue, StateValue, ShowPhase } from './types/valueTypes';
+import { EventKeyValue, ShowPhase } from './types/valueTypes';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import CogsClientMessage from './types/CogsClientMessage';
 import { COGS_SERVER_PORT } from './helpers/urls';
@@ -7,31 +7,53 @@ import AllMediaClipStatesMessage from './types/AllMediaClipStatesMessage';
 import { PluginManifestJson } from './types/PluginManifestJson';
 import ManifestTypes from './types/ManifestTypes';
 
-interface ConnectionEventListeners<
-  // TODO: convert to manifest generic type
-  CustomTypes extends {
-    config?: { [configKey: string]: ConfigValue };
-    inputPorts?: { [port: string]: StateValue };
-    inputEvents?: { [key: string]: EventValue | null };
+export class OpenEvent extends Event {
+  constructor() {
+    super('open');
   }
-> {
-  open: undefined;
-  close: undefined;
-  message: CogsClientMessage;
-  config: CustomTypes['config'];
-  updates: Partial<CustomTypes['state']>; // TODO: rename to "state"
-  event: CustomTypes['inputEvents'] extends { [key: string]: EventValue | null } ? EventKeyValue<CustomTypes['inputEvents']> : Record<string, never>;
+}
+
+export class CloseEvent extends Event {
+  constructor() {
+    super('close');
+  }
+}
+
+export class CogsMessageEvent extends Event {
+  constructor(public readonly message: CogsClientMessage) {
+    super('message');
+  }
+}
+
+export class StateChangedEvent<State> extends Event {
+  constructor(public readonly state: State) {
+    super('state');
+  }
+}
+
+export class ConfigChangedEvent<Config> extends Event {
+  constructor(public readonly config: Config) {
+    super('config');
+  }
+}
+
+// TODO: Event should have type-checked `name` and `value` properties
+export class IncomingEvent<EventNameValue extends { name: string; value?: unknown }> extends Event {
+  constructor(public readonly name: EventNameValue['name'], public readonly value: EventNameValue['value']) {
+    super('event');
+  }
+}
+
+interface ConnectionEventListeners<Manifest extends DeepReadonly<PluginManifestJson>> {
+  open: OpenEvent;
+  close: CloseEvent;
+  message: CogsMessageEvent;
+  config: ConfigChangedEvent<ManifestTypes.ConfigAsObject<Manifest>>;
+  state: StateChangedEvent<Partial<ManifestTypes.StateAsObject<Manifest>>>;
+  event: IncomingEvent<NonNullable<NonNullable<Manifest['events']>['fromCogs']>[number]>;
 }
 
 export type TimerState = Omit<Extract<CogsClientMessage, { type: 'adjustable_timer_update' }>, 'type'> & { startedAt: number };
-
-// TODO: remove this
-type CustomTypes = {
-  config?: { [configKey: string]: ConfigValue };
-  state?: { [stateKey: string]: StateValue };
-  inputEvents?: { [key: string]: EventValue | null };
-  outputEvents?: { [key: string]: EventValue | null };
-};
 
 export default class CogsConnection<
   Manifest extends DeepReadonly<PluginManifestJson> // `DeepReadonly` allows passing `as const` literal
@@ -83,12 +105,12 @@ export default class CogsConnection<
       this.currentConfig = {} as ManifestTypes.ConfigAsObject<Manifest>; // Received on open connection
       this.currentState = {} as ManifestTypes.StateAsObject<Manifest>; // Received on open connection
 
-      this.dispatchEvent('open', undefined);
+      this.dispatchEvent(new OpenEvent());
       this.setState(this.currentState); // TODO: Remove this because you should set it manually...??
     };
 
     this.websocket.onclose = () => {
-      this.dispatchEvent('close', undefined);
+      this.dispatchEvent(new CloseEvent());
     };
 
     this.websocket.onmessage = ({ data }) => {
@@ -98,27 +120,28 @@ export default class CogsConnection<
         try {
           if (parsed.config) {
             this.currentConfig = parsed.config;
-            this.dispatchEvent('config', this.currentConfig);
+            this.dispatchEvent(new ConfigChangedEvent(this.currentConfig));
           } else if (parsed.updates) {
             this.currentState = { ...this.currentState, ...parsed.updates };
-            this.dispatchEvent('updates', parsed.updates);
+            this.dispatchEvent(new StateChangedEvent(parsed.updates));
           } else if (parsed.event && parsed.event.key) {
-            this.dispatchEvent('event', parsed.event);
+            this.dispatchEvent(new IncomingEvent(parsed.event.key, parsed.event.value));
           } else if (typeof parsed.message === 'object') {
-            switch (parsed.message.type) {
+            const message: CogsClientMessage = parsed.message;
+            switch (message.type) {
               case 'adjustable_timer_update':
                 this._timerState = {
                   startedAt: Date.now(),
-                  durationMillis: parsed.message.durationMillis,
-                  ticking: parsed.message.ticking,
+                  durationMillis: message.durationMillis,
+                  ticking: message.ticking,
                 };
                 break;
               case 'show_phase':
-                this._showPhase = parsed.message.phase;
+                this._showPhase = message.phase;
                 break;
             }
 
-            this.dispatchEvent('message', parsed.message);
+            this.dispatchEvent(new CogsMessageEvent(message));
           }
         } catch (e) {
           console.warn('Error handling data', data, e);
@@ -213,22 +236,19 @@ export default class CogsConnection<
 
   // Type-safe wrapper around EventTarget
   public addEventListener<
-    EventName extends keyof ConnectionEventListeners<CustomTypes>,
-    EventValue extends ConnectionEventListeners<CustomTypes>[EventName]
-  >(type: EventName, listener: (ev: CustomEvent<EventValue>) => void, options?: boolean | AddEventListenerOptions): void {
+    EventName extends keyof ConnectionEventListeners<Manifest>,
+    EventValue extends ConnectionEventListeners<Manifest>[EventName]
+  >(type: EventName, listener: (ev: EventValue) => void, options?: boolean | AddEventListenerOptions): void {
     this.eventTarget.addEventListener(type, listener as EventListener, options);
   }
   public removeEventListener<
-    EventName extends keyof ConnectionEventListeners<CustomTypes>,
-    EventValue extends ConnectionEventListeners<CustomTypes>[EventName]
-  >(type: EventName, listener: (ev: CustomEvent<EventValue>) => void, options?: boolean | EventListenerOptions): void {
+    EventName extends keyof ConnectionEventListeners<Manifest>,
+    EventValue extends ConnectionEventListeners<Manifest>[EventName]
+  >(type: EventName, listener: (ev: EventValue) => void, options?: boolean | EventListenerOptions): void {
     this.eventTarget.removeEventListener(type, listener as EventListener, options);
   }
-  private dispatchEvent<EventName extends keyof ConnectionEventListeners<CustomTypes>>(
-    type: EventName,
-    detail: ConnectionEventListeners<CustomTypes>[EventName]
-  ): void {
-    this.eventTarget.dispatchEvent(new CustomEvent(type, { detail }));
+  private dispatchEvent<EventName extends keyof ConnectionEventListeners<Manifest>>(event: ConnectionEventListeners<Manifest>[EventName]): void {
+    this.eventTarget.dispatchEvent(event);
   }
 }
 
@@ -276,3 +296,8 @@ connection.config.Bar;
 connection.state.Count;
 connection.setState({});
 connection.sendEvent('Here is a number', 746);
+connection.addEventListener('event', (e) => {
+  if (e.name === 'Here is a number') {
+    const val = e.value;
+  }
+});

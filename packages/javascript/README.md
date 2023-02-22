@@ -30,9 +30,51 @@ yarn add @clockworkdog/cogs-client
 
 ## Usage
 
-### Create a `cogs-plugin-manifest.json` file
+### Create a `cogs-plugin-manifest.js` file
 
 See [PluginManifestJson](https://clockwork-dog.github.io/cogs-client-lib/interfaces/PluginManifestJson.html) for details of what to include.
+
+e.g.
+
+```js
+export default /** @type {const} */ ({
+  name: 'My Custom Screen',
+  icon: '',
+  description: 'A big button',
+  version: '1',
+  config: [
+    {
+      name: 'Color',
+      value: { type: 'string', default: 'red' },
+    },
+  ],
+  state: [
+    {
+      name: 'Enabled',
+      value: { type: 'boolean', default: false },
+      writableFromCogs: true,
+    },
+  ],
+  events: {
+    toCogs: [
+      {
+        name: 'Pressed',
+        value: { type: 'boolean' },
+      },
+    ],
+    fromCogs: [
+      {
+        name: 'Explosion',
+      },
+    ],
+  },
+  media: {
+    audio: true,
+    video: true,
+    images: true,
+  },
+});
+```
 
 ### Import the library
 
@@ -56,35 +98,35 @@ import { CogsConnection, CogsAudioPlayer } from '@clockworkdog/cogs-client';
 
 ### Connect to COGS
 
+Initialize a [CogsConnection](https://clockwork-dog.github.io/cogs-client-lib/interfaces/CogsConnection.html) with the manifest you created above.
+
 ```ts
 let connected = false;
 
-const cogsConnection = new CogsConnection();
+import manifest from './cogs-plugin-manifest.js'; // Requires `"allowJs": true` in `tsconfig.json`
+
+const cogsConnection = new CogsConnection(manifest);
 cogsConnection.addEventListener('open', () => {
   connected = true;
 });
 cogsConnection.addEventListener('close', () => {
   connected = false;
 });
-cogsConnection.addEventListener('config', (event) => {
-  const config = event.detail;
-  // Handle new config.
+cogsConnection.addEventListener('config', ({ config }) => {
+  // Handle new config
   // `config` is of type `{ [configKey: string]: number | string | boolean }`
 });
-cogsConnection.addEventListener('updates', (event) => {
-  const updates = event.detail;
-  // Handle input port updates.
-  // `updates` is of type `{ [portName: string]: number | string | boolean }`
+cogsConnection.addEventListener('state', ({ state }) => {
+  // Handle state updates
+  // `state` is of type `{ [portName: string]: number | string | boolean }`
 });
-cogsConnection.addEventListener('event', (event) => {
-  const { key, value } = event.detail;
-  // Handle event. See 'types/Callback.ts`
-  // `key` is the event name.
-  // `value` is the type defined in COGS, one of `number | string | boolean | undefined`
+cogsConnection.addEventListener('event', ({ name, value }) => {
+  // Handle events from COGS
+  // `name` is the event name.
+  // `value` is of the type defined in COGS, one of `number | string | boolean | undefined`.
 });
-cogsConnection.addEventListener('message', (event) => {
-  const message = event.detail;
-  // Handle message. See `types/CogsClientMessage.ts`
+cogsConnection.addEventListener('message', ({ message }) => {
+  // Handle low-lever COGS messages. See `types/CogsClientMessage.ts`
 });
 
 function sendEventToCogs() {
@@ -92,7 +134,7 @@ function sendEventToCogs() {
 }
 
 function sendPortUpdateToCogs() {
-  cogsConnection.setOutputPortValues({ port1: 100 });
+  cogsConnection.setState({ port1: 100 });
 }
 
 const audioPlayer = new CogsAudioPlayer(cogsConnection);
