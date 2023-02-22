@@ -328,7 +328,10 @@ export default class AudioPlayer {
 
                 fadeAudioPlayerVolume(clipPlayer.player, 0, fade * 1000, soundId);
                 // Set callback after starting new fade, otherwise it will fire straight away as the previous fade is cancelled
-                clipPlayer.player.once('fade', (soundId) => clipPlayer.player.stop(soundId), soundId);
+                clipPlayer.player.once('fade', (soundId) => {
+                  clipPlayer.player.loop(false, soundId);
+                  clipPlayer.player.stop(soundId), soundId;
+                });
 
                 log('CLIP -> stopping', { soundId });
                 clip.state = { type: 'stopping' };
