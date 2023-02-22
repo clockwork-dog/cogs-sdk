@@ -7,52 +7,6 @@ import AllMediaClipStatesMessage from './types/AllMediaClipStatesMessage';
 import { PluginManifestJson } from './types/PluginManifestJson';
 import ManifestTypes from './types/ManifestTypes';
 
-export class OpenEvent extends Event {
-  constructor() {
-    super('open');
-  }
-}
-
-export class CloseEvent extends Event {
-  constructor() {
-    super('close');
-  }
-}
-
-export class CogsMessageEvent extends Event {
-  constructor(public readonly message: CogsClientMessage) {
-    super('message');
-  }
-}
-
-export class ConfigChangedEvent<Config> extends Event {
-  constructor(public readonly config: Config) {
-    super('config');
-  }
-}
-export class StateChangedEvent<State> extends Event {
-  constructor(public readonly state: State) {
-    super('state');
-  }
-}
-
-// TODO: Event should have type-checked `name` and `value` properties
-export class IncomingEvent<EventNameValue extends { name: string; value?: unknown }> extends Event {
-  constructor(public readonly name: EventNameValue['name'], public readonly value: EventNameValue['value']) {
-    super('event');
-  }
-}
-
-type CogsConnectionEvent<Manifest extends DeepReadonly<PluginManifestJson>> =
-  | OpenEvent
-  | CloseEvent
-  | CogsMessageEvent
-  | ConfigChangedEvent<ManifestTypes.ConfigAsObject<Manifest>>
-  | StateChangedEvent<Partial<ManifestTypes.StateAsObject<Manifest>>>
-  | IncomingEvent<NonNullable<NonNullable<Manifest['events']>['fromCogs']>[number]>;
-
-export type TimerState = Omit<Extract<CogsClientMessage, { type: 'adjustable_timer_update' }>, 'type'> & { startedAt: number };
-
 export default class CogsConnection<
   Manifest extends DeepReadonly<PluginManifestJson> // `DeepReadonly` allows passing `as const` literal
 > {
@@ -233,16 +187,16 @@ export default class CogsConnection<
   }
 
   // Type-safe wrapper around EventTarget
-  public addEventListener<Event extends CogsConnectionEvent<Manifest>>(
-    type: Event['type'],
-    listener: (event: Event) => void,
+  public addEventListener<EventType extends CogsConnectionEvent<Manifest>['type']>(
+    type: EventType,
+    listener: (event: Extract<CogsConnectionEvent<Manifest>, { type: EventType }>) => void,
     options?: boolean | AddEventListenerOptions
   ): void {
     this.eventTarget.addEventListener(type, listener as EventListener, options);
   }
-  public removeEventListener<Event extends CogsConnectionEvent<Manifest>>(
-    type: Event['type'],
-    listener: (event: Event) => void,
+  public removeEventListener<EventType extends CogsConnectionEvent<Manifest>['type']>(
+    type: EventType,
+    listener: (event: Extract<CogsConnectionEvent<Manifest>, { type: EventType }>) => void,
     options?: boolean | EventListenerOptions
   ): void {
     this.eventTarget.removeEventListener(type, listener as EventListener, options);
@@ -287,6 +241,58 @@ function websocketParametersFromUrl(url: string): { path: string; pathParams?: U
   }
 }
 
+export class OpenEvent extends Event {
+  public readonly type = 'open';
+  constructor() {
+    super('open');
+  }
+}
+
+export class CloseEvent extends Event {
+  public readonly type = 'close';
+  constructor() {
+    super('close');
+  }
+}
+
+export class CogsMessageEvent extends Event {
+  public readonly type = 'message';
+  constructor(public readonly message: CogsClientMessage) {
+    super('message');
+  }
+}
+
+export class ConfigChangedEvent<Config> extends Event {
+  public readonly type = 'config';
+  constructor(public readonly config: Config) {
+    super('config');
+  }
+}
+export class StateChangedEvent<State> extends Event {
+  public readonly type = 'state';
+  constructor(public readonly state: State) {
+    super('state');
+  }
+}
+
+// TODO: Event should have type-checked `name` and `value` properties
+export class IncomingEvent<EventNameValue extends { name: string; value?: unknown }> extends Event {
+  public readonly type = 'event';
+  constructor(public readonly name: EventNameValue['name'], public readonly value: EventNameValue['value']) {
+    super('event');
+  }
+}
+
+type CogsConnectionEvent<Manifest extends DeepReadonly<PluginManifestJson>> =
+  | OpenEvent
+  | CloseEvent
+  | CogsMessageEvent
+  | ConfigChangedEvent<ManifestTypes.ConfigAsObject<Manifest>>
+  | StateChangedEvent<Partial<ManifestTypes.StateAsObject<Manifest>>>
+  | IncomingEvent<NonNullable<NonNullable<Manifest['events']>['fromCogs']>[number]>;
+
+export type TimerState = Omit<Extract<CogsClientMessage, { type: 'adjustable_timer_update' }>, 'type'> & { startedAt: number };
+
 import manifest from './cogs-plugin-manifest.js';
 import { DeepReadonly } from './types/utils';
 const connection = new CogsConnection(manifest);
@@ -296,6 +302,9 @@ connection.config.Bar;
 connection.state.Count;
 connection.setState({});
 connection.sendEvent('Here is a number', 746);
+connection.addEventListener('state', (event) => {
+  console.log(event.state);
+});
 connection.addEventListener('event', (e) => {
   if (e.name === 'Here is a number') {
     const val = e.value;

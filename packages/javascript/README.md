@@ -34,13 +34,17 @@ yarn add @clockworkdog/cogs-client
 
 See [PluginManifestJson](https://clockwork-dog.github.io/cogs-client-lib/interfaces/PluginManifestJson.html) for details of what to include.
 
+If using Typescript set `"allowJs": true` in your `tsconfig.json`.
+
+Use the `/** @type {const} */` JSDoc annotation to allow the manifest to be imported as a literal type.
+
 e.g.
 
 ```js
 export default /** @type {const} */ ({
-  name: 'My Custom Screen',
-  icon: '',
-  description: 'A big button',
+  name: 'Big Button',
+  icon: 'bullseye-pointer',
+  description: 'A big, colorful touchscreen button',
   version: '1',
   config: [
     {
