@@ -1,4 +1,4 @@
-import { EventKeyValue, ShowPhase } from './types/valueTypes';
+import ShowPhase from './types/ShowPhase';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import CogsClientMessage from './types/CogsClientMessage';
 import { COGS_SERVER_PORT } from './helpers/urls';
@@ -25,15 +25,14 @@ export class CogsMessageEvent extends Event {
   }
 }
 
-export class StateChangedEvent<State> extends Event {
-  constructor(public readonly state: State) {
-    super('state');
-  }
-}
-
 export class ConfigChangedEvent<Config> extends Event {
   constructor(public readonly config: Config) {
     super('config');
+  }
+}
+export class StateChangedEvent<State> extends Event {
+  constructor(public readonly state: State) {
+    super('state');
   }
 }
 
@@ -44,14 +43,13 @@ export class IncomingEvent<EventNameValue extends { name: string; value?: unknow
   }
 }
 
-interface ConnectionEventListeners<Manifest extends DeepReadonly<PluginManifestJson>> {
-  open: OpenEvent;
-  close: CloseEvent;
-  message: CogsMessageEvent;
-  config: ConfigChangedEvent<ManifestTypes.ConfigAsObject<Manifest>>;
-  state: StateChangedEvent<Partial<ManifestTypes.StateAsObject<Manifest>>>;
-  event: IncomingEvent<NonNullable<NonNullable<Manifest['events']>['fromCogs']>[number]>;
-}
+type CogsConnectionEvent<Manifest extends DeepReadonly<PluginManifestJson>> =
+  | OpenEvent
+  | CloseEvent
+  | CogsMessageEvent
+  | ConfigChangedEvent<ManifestTypes.ConfigAsObject<Manifest>>
+  | StateChangedEvent<Partial<ManifestTypes.StateAsObject<Manifest>>>
+  | IncomingEvent<NonNullable<NonNullable<Manifest['events']>['fromCogs']>[number]>;
 
 export type TimerState = Omit<Extract<CogsClientMessage, { type: 'adjustable_timer_update' }>, 'type'> & { startedAt: number };
 
@@ -235,19 +233,21 @@ export default class CogsConnection<
   }
 
   // Type-safe wrapper around EventTarget
-  public addEventListener<
-    EventName extends keyof ConnectionEventListeners<Manifest>,
-    EventValue extends ConnectionEventListeners<Manifest>[EventName]
-  >(type: EventName, listener: (ev: EventValue) => void, options?: boolean | AddEventListenerOptions): void {
+  public addEventListener<Event extends CogsConnectionEvent<Manifest>>(
+    type: Event['type'],
+    listener: (event: Event) => void,
+    options?: boolean | AddEventListenerOptions
+  ): void {
     this.eventTarget.addEventListener(type, listener as EventListener, options);
   }
-  public removeEventListener<
-    EventName extends keyof ConnectionEventListeners<Manifest>,
-    EventValue extends ConnectionEventListeners<Manifest>[EventName]
-  >(type: EventName, listener: (ev: EventValue) => void, options?: boolean | EventListenerOptions): void {
+  public removeEventListener<Event extends CogsConnectionEvent<Manifest>>(
+    type: Event['type'],
+    listener: (event: Event) => void,
+    options?: boolean | EventListenerOptions
+  ): void {
     this.eventTarget.removeEventListener(type, listener as EventListener, options);
   }
-  private dispatchEvent<EventName extends keyof ConnectionEventListeners<Manifest>>(event: ConnectionEventListeners<Manifest>[EventName]): void {
+  private dispatchEvent<Event extends CogsConnectionEvent<Manifest>>(event: Event): void {
     this.eventTarget.dispatchEvent(event);
   }
 }

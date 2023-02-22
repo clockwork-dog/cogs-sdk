@@ -1,5 +1,5 @@
 import MediaObjectFit from './MediaObjectFit';
-import { ShowPhase } from './valueTypes';
+import { ShowPhase } from './ShowPhase';
 
 // COGS updates/events
 
