@@ -23,13 +23,13 @@
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
-"@clockworkdog/cogs-client@^1.5.5":
-  version "1.5.5"
-  resolved "https://registry.yarnpkg.com/@clockworkdog/cogs-client/-/cogs-client-1.5.5.tgz#947431bac47be12a9a5c25e115762558ecfebcad"
-  integrity sha512-xGrUPdBS/8Lf9wEblqlpDWMwd1wWT3/LGIsTbVOgmX8zGZsDqiNN9I7YRwlbU+ebZtQCA6l7eMmZpIXmTmjsgw==
+"@clockworkdog/cogs-client@^1.5.6":
+  version "1.5.6"
+  resolved "https://registry.yarnpkg.com/@clockworkdog/cogs-client/-/cogs-client-1.5.6.tgz#8802fe314f56b43ae1c6fac76e6db09e6e27fab4"
+  integrity sha512-R7IraX5urVTtlsh45HmBnqKfxch3zk6C5dTUAmBGgMoVFoFTPgsqEhBlPGzc8NszovTa5toSC9+CesrfBJSzSw==
   dependencies:
     "@clockworkdog/media-stream-library-browser" "^11.1.1-fixes.6"
-    howler "2.2.1"
+    howler clockwork-dog/howler.js#fix-looping-clips
     reconnecting-websocket "^4.4.0"
 
 "@clockworkdog/media-stream-library-browser@^11.1.1-fixes.6":
@@ -817,10 +817,9 @@ has@^1.0.3:
   dependencies:
     function-bind "^1.1.1"
 
-howler@2.2.1:
+howler@clockwork-dog/howler.js#fix-looping-clips:
   version "2.2.1"
-  resolved "https://registry.yarnpkg.com/howler/-/howler-2.2.1.tgz#a521a9b495841e8bb9aa12e651bebba0affc179e"
-  integrity sha512-0iIXvuBO/81CcrQ/HSSweYmbT50fT2mIc9XMFb+kxIfk2pW/iKzDbX1n3fZmDXMEIpYvyyfrB+gXwPYSDqUxIQ==
+  resolved "https://codeload.github.com/clockwork-dog/howler.js/tar.gz/63acd807dfc232129bfaa2da57af7fb2d33d57a3"
 
 ieee754@^1.2.1:
   version "1.2.1"
