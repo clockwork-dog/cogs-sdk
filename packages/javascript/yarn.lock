@@ -1160,10 +1160,9 @@ hmac-drbg@^1.0.1:
     minimalistic-assert "^1.0.0"
     minimalistic-crypto-utils "^1.0.1"
 
-howler@2.2.1:
+howler@clockwork-dog/howler.js#fix-looping-clips:
   version "2.2.1"
-  resolved "https://registry.yarnpkg.com/howler/-/howler-2.2.1.tgz#a521a9b495841e8bb9aa12e651bebba0affc179e"
-  integrity sha512-0iIXvuBO/81CcrQ/HSSweYmbT50fT2mIc9XMFb+kxIfk2pW/iKzDbX1n3fZmDXMEIpYvyyfrB+gXwPYSDqUxIQ==
+  resolved "https://codeload.github.com/clockwork-dog/howler.js/tar.gz/63acd807dfc232129bfaa2da57af7fb2d33d57a3"
 
 htmlescape@^1.1.0:
   version "1.1.1"

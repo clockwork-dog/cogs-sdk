@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@clockworkdog/media-stream-library-browser": "^11.1.1-fixes.6",
-    "howler": "2.2.1",
+    "howler": "clockwork-dog/howler.js#fix-looping-clips",
     "reconnecting-websocket": "^4.4.0"
   },
   "description": "Connect to COGS to build a custom Media Master",
