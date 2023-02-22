@@ -589,9 +589,8 @@ function setAudioPlayerVolume(howl: HowlWithHTMLSounds, volume: number, soundId:
 /**
  * Fade to audio volume
  *
- * This doesn't work on iOS (volume is read-only) so at least mute it if the volume is zero
+ * Note: This doesn't work on iOS (volume is read-only)
  */
 function fadeAudioPlayerVolume(howl: HowlWithHTMLSounds, volume: number, fade: number, soundId: number) {
-  howl.mute(false, soundId);
   howl.fade(howl.volume(soundId) as number, volume, fade, soundId);
 }
