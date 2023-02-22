@@ -1,14 +1,17 @@
-import { ConfigValue, EventKeyValue, EventValue, PortValue, ShowPhase } from './types/valueTypes';
+import { ConfigValue, EventKeyValue, EventValue, StateValue, ShowPhase } from './types/valueTypes';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import CogsClientMessage from './types/CogsClientMessage';
 import { COGS_SERVER_PORT } from './helpers/urls';
 import MediaClipStateMessage from './types/MediaClipStateMessage';
 import AllMediaClipStatesMessage from './types/AllMediaClipStatesMessage';
+import { PluginManifestJson } from './types/PluginManifestJson';
+import ManifestTypes from './types/ManifestTypes';
 
 interface ConnectionEventListeners<
+  // TODO: convert to manifest generic type
   CustomTypes extends {
     config?: { [configKey: string]: ConfigValue };
-    inputPorts?: { [port: string]: PortValue };
+    inputPorts?: { [port: string]: StateValue };
     inputEvents?: { [key: string]: EventValue | null };
   }
 > {
@@ -16,37 +19,34 @@ interface ConnectionEventListeners<
   close: undefined;
   message: CogsClientMessage;
   config: CustomTypes['config'];
-  updates: Partial<CustomTypes['inputPorts']>;
+  updates: Partial<CustomTypes['state']>; // TODO: rename to "state"
   event: CustomTypes['inputEvents'] extends { [key: string]: EventValue | null } ? EventKeyValue<CustomTypes['inputEvents']> : Record<string, never>;
 }
 
 export type TimerState = Omit<Extract<CogsClientMessage, { type: 'adjustable_timer_update' }>, 'type'> & { startedAt: number };
 
+// TODO: remove this
+type CustomTypes = {
+  config?: { [configKey: string]: ConfigValue };
+  state?: { [stateKey: string]: StateValue };
+  inputEvents?: { [key: string]: EventValue | null };
+  outputEvents?: { [key: string]: EventValue | null };
+};
+
 export default class CogsConnection<
-  CustomTypes extends {
-    config?: { [configKey: string]: ConfigValue };
-    inputPorts?: { [port: string]: PortValue };
-    outputPorts?: { [port: string]: PortValue };
-    inputEvents?: { [key: string]: EventValue | null };
-    outputEvents?: { [key: string]: EventValue | null };
-  } = Record<never, never>
+  Manifest extends DeepReadonly<PluginManifestJson> // `DeepReadonly` allows passing `as const` literal
 > {
   private websocket: WebSocket | ReconnectingWebSocket;
   private eventTarget = new EventTarget();
 
-  private currentConfig: CustomTypes['config'] = {} as NonNullable<CustomTypes['config']>; // Received on open connection
-  public get config(): CustomTypes['config'] {
+  private currentConfig: ManifestTypes.ConfigAsObject<Manifest> = {} as ManifestTypes.ConfigAsObject<Manifest>; // Received on open connection
+  public get config(): ManifestTypes.ConfigAsObject<Manifest> {
     return { ...this.currentConfig };
   }
 
-  private currentInputPortValues: CustomTypes['inputPorts'] = {} as NonNullable<CustomTypes['inputPorts']>; // Received on open connection
-  public get inputPortValues(): CustomTypes['inputPorts'] {
-    return { ...this.currentInputPortValues };
-  }
-
-  private currentOutputPortValues: CustomTypes['outputPorts'] = {} as NonNullable<CustomTypes['outputPorts']>; // Sent on open connection
-  public get outputPortValues(): CustomTypes['outputPorts'] {
-    return { ...this.currentOutputPortValues };
+  private currentState: ManifestTypes.StateAsObject<Manifest> = {} as ManifestTypes.StateAsObject<Manifest>; // Received on open connection - TODO: set initial state from manifest?
+  public get state(): ManifestTypes.StateAsObject<Manifest> {
+    return { ...this.currentState };
   }
 
   private _showPhase: ShowPhase = ShowPhase.Setup;
@@ -70,20 +70,21 @@ export default class CogsConnection<
   }
 
   constructor(
+    readonly manifest: Manifest,
     { hostname = document.location.hostname, port = COGS_SERVER_PORT }: { hostname?: string; port?: number } = {},
-    outputPortValues: CustomTypes['outputPorts'] = undefined
+    initialClientState: Partial<ManifestTypes.StateAsObject<Manifest, { writableFromClient: true }>> | undefined = undefined
   ) {
-    this.currentOutputPortValues = { ...outputPortValues };
+    this.currentState = { ...(initialClientState as ManifestTypes.StateAsObject<Manifest, { writableFromClient: true }>) };
     const { useReconnectingWebsocket, path, pathParams } = websocketParametersFromUrl(document.location.href);
     const socketUrl = `ws://${hostname}:${port}${path}${pathParams ? '?' + pathParams : ''}`;
     this.websocket = useReconnectingWebsocket ? new ReconnectingWebSocket(socketUrl) : new WebSocket(socketUrl);
 
     this.websocket.onopen = () => {
-      this.currentConfig = {} as CustomTypes['config']; // Received on open connection
-      this.currentInputPortValues = {} as CustomTypes['inputPorts']; // Received on open connection
+      this.currentConfig = {} as ManifestTypes.ConfigAsObject<Manifest>; // Received on open connection
+      this.currentState = {} as ManifestTypes.StateAsObject<Manifest>; // Received on open connection
 
       this.dispatchEvent('open', undefined);
-      this.setOutputPortValues(this.currentOutputPortValues as NonNullable<CustomTypes['outputPorts']>);
+      this.setState(this.currentState); // TODO: Remove this because you should set it manually...??
     };
 
     this.websocket.onclose = () => {
@@ -99,7 +100,7 @@ export default class CogsConnection<
             this.currentConfig = parsed.config;
             this.dispatchEvent('config', this.currentConfig);
           } else if (parsed.updates) {
-            this.currentInputPortValues = { ...this.currentInputPortValues, ...parsed.updates };
+            this.currentState = { ...this.currentState, ...parsed.updates };
             this.dispatchEvent('updates', parsed.updates);
           } else if (parsed.event && parsed.event.key) {
             this.dispatchEvent('event', parsed.event);
@@ -152,9 +153,11 @@ export default class CogsConnection<
     this.websocket.close();
   }
 
-  public sendEvent<EventName extends keyof CustomTypes['outputEvents']>(
+  public sendEvent<EventName extends ManifestTypes.EventFromCogsKey<Manifest>>(
     eventName: EventName,
-    ...[eventValue]: CustomTypes['outputEvents'][EventName] extends null ? [] : [CustomTypes['outputEvents'][EventName]]
+    ...[eventValue]: ManifestTypes.EventFromCogsAsObject<Manifest>[EventName] extends undefined
+      ? []
+      : [ManifestTypes.EventFromCogsAsObject<Manifest>[EventName]]
   ): void {
     if (this.isConnected) {
       this.websocket.send(
@@ -168,8 +171,8 @@ export default class CogsConnection<
     }
   }
 
-  public setOutputPortValues(values: Partial<CustomTypes['outputPorts']>): void {
-    this.currentOutputPortValues = { ...this.currentOutputPortValues, ...values };
+  public setState(values: Partial<ManifestTypes.StateAsObject<Manifest, { writableFromClient: true }>>): void {
+    this.currentState = { ...this.currentState, ...values };
     if (this.isConnected) {
       this.websocket.send(JSON.stringify({ updates: values }));
     }
@@ -263,3 +266,13 @@ function websocketParametersFromUrl(url: string): { path: string; pathParams?: U
     return { path: `/client/${encodeURIComponent(serial)}`, pathParams };
   }
 }
+
+import manifest from './cogs-plugin-manifest.js';
+import { DeepReadonly } from './types/utils';
+const connection = new CogsConnection(manifest);
+//
+//
+connection.config.Bar;
+connection.state.Count;
+connection.setState({});
+connection.sendEvent('Here is a number', 746);

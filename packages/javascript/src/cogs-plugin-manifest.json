@@ -1,0 +1,73 @@
+{
+  "name": "Some Custom Content",
+  "icon": "",
+  "description": "",
+  "version": "1",
+  "config": [
+    {
+      "name": "foo",
+      "value": {
+        "type": "number",
+        "default": 0
+      }
+    },
+    {
+      "name": "Camera Feed 1",
+      "value": {
+        "type": "string",
+        "default": "rtsp://"
+      }
+    },
+    {
+      "name": "Bar",
+      "value": {
+        "type": "string",
+        "default": "This is the default value"
+      }
+    }
+  ],
+  "events": {
+    "fromCogs": [
+      {
+        "name": "Here is a number",
+        "value": {
+          "type": "number"
+        }
+      }
+    ],
+    "toCogs": [
+      {
+        "name": "Button Press",
+        "value": {
+          "type": "boolean"
+        }
+      }
+    ]
+  },
+  "state": [
+    {
+      "name": "Count",
+      "value": {
+        "type": "number",
+        "default": 123
+      },
+      "writableFromCogs": true
+    },
+    {
+      "name": "Text entered",
+      "value": {
+        "type": "string",
+        "default": ""
+      },
+      "writableFromCogs": true
+    },
+    {
+      "name": "Text entered 2",
+      "value": {
+        "type": "string",
+        "default": ""
+      },
+      "writableFromCogs": true
+    }
+  ]
+}
