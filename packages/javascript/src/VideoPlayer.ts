@@ -32,7 +32,7 @@ export default class VideoPlayer {
   private parentElement: HTMLElement;
   private sinkId = '';
 
-  constructor(cogsConnection: CogsConnection, parentElement: HTMLElement = DEFAULT_PARENT_ELEMENT) {
+  constructor(cogsConnection: CogsConnection<any>, parentElement: HTMLElement = DEFAULT_PARENT_ELEMENT) {
     this.parentElement = parentElement;
 
     // Send the current status of each clip to COGS
@@ -41,8 +41,7 @@ export default class VideoPlayer {
     });
 
     // Listen for video control messages
-    cogsConnection.addEventListener('message', (event) => {
-      const message = event.detail;
+    cogsConnection.addEventListener('message', ({ message }) => {
       switch (message.type) {
         case 'media_config_update':
           this.setGlobalVolume(message.globalVolume);

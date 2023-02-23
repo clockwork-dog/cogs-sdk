@@ -35,15 +35,14 @@ export default class AudioPlayer {
   private audioClipPlayers: { [path: string]: InternalClipPlayer } = {};
   private sinkId = '';
 
-  constructor(cogsConnection: CogsConnection) {
+  constructor(cogsConnection: CogsConnection<any>) {
     // Send the current status of each clip to COGS
     this.addEventListener('audioClipState', ({ detail }) => {
       cogsConnection.sendMediaClipState(detail);
     });
 
     // Listen for audio control messages
-    cogsConnection.addEventListener('message', (event) => {
-      const message = event.detail;
+    cogsConnection.addEventListener('message', ({ message }) => {
       switch (message.type) {
         case 'media_config_update':
           if (this.globalVolume !== message.globalVolume) {
