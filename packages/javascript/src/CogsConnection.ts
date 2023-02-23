@@ -4,8 +4,16 @@ import CogsClientMessage from './types/CogsClientMessage';
 import { COGS_SERVER_PORT } from './helpers/urls';
 import MediaClipStateMessage from './types/MediaClipStateMessage';
 import AllMediaClipStatesMessage from './types/AllMediaClipStatesMessage';
-import { PluginManifestJson } from './types/PluginManifestJson';
-import ManifestTypes from './types/ManifestTypes';
+import {
+  CogsValueTypeBoolean,
+  CogsValueTypeNumber,
+  CogsValueTypeOption,
+  CogsValueTypeString,
+  PluginManifestEventJson,
+  PluginManifestJson,
+} from './types/PluginManifestJson';
+import ManifestTypes, { EventsFromCogs } from './types/ManifestTypes';
+import { DeepReadonly } from './types/utils';
 
 export default class CogsConnection<
   Manifest extends DeepReadonly<PluginManifestJson> // `DeepReadonly` allows passing `as const` literal
@@ -57,12 +65,12 @@ export default class CogsConnection<
       this.currentConfig = {} as ManifestTypes.ConfigAsObject<Manifest>; // Received on open connection
       this.currentState = {} as ManifestTypes.StateAsObject<Manifest>; // Received on open connection
 
-      this.dispatchEvent(new OpenEvent());
+      this.dispatchEvent(new CogsConnectionOpenEvent());
       this.setState(this.currentState); // TODO: Remove this because you should set it manually...??
     };
 
     this.websocket.onclose = () => {
-      this.dispatchEvent(new CloseEvent());
+      this.dispatchEvent(new CogsConnectionCloseEvent());
     };
 
     this.websocket.onmessage = ({ data }) => {
@@ -72,12 +80,14 @@ export default class CogsConnection<
         try {
           if (parsed.config) {
             this.currentConfig = parsed.config;
-            this.dispatchEvent(new ConfigChangedEvent(this.currentConfig));
+            this.dispatchEvent(new CogsConfigChangedEvent(this.currentConfig));
           } else if (parsed.updates) {
             this.currentState = { ...this.currentState, ...parsed.updates };
-            this.dispatchEvent(new StateChangedEvent(parsed.updates));
+            this.dispatchEvent(new CogsStateChangedEvent(parsed.updates));
           } else if (parsed.event && parsed.event.key) {
-            this.dispatchEvent(new IncomingEvent(parsed.event.key, parsed.event.value));
+            this.dispatchEvent(
+              new CogsIncomingEvent(parsed.event.key, parsed.event.value) as CogsIncomingEventTypes<ManifestTypes.EventsFromCogs<Manifest>>
+            );
           } else if (typeof parsed.message === 'object') {
             const message: CogsClientMessage = parsed.message;
             switch (message.type) {
@@ -128,11 +138,11 @@ export default class CogsConnection<
     this.websocket.close();
   }
 
-  public sendEvent<EventName extends ManifestTypes.EventFromCogsKey<Manifest>>(
+  public sendEvent<EventName extends ManifestTypes.EventToCogsKey<Manifest>>(
     eventName: EventName,
-    ...[eventValue]: ManifestTypes.EventFromCogsAsObject<Manifest>[EventName] extends undefined
+    ...[eventValue]: ManifestTypes.EventToCogsAsObject<Manifest>[EventName] extends undefined
       ? []
-      : [ManifestTypes.EventFromCogsAsObject<Manifest>[EventName]]
+      : [ManifestTypes.EventToCogsAsObject<Manifest>[EventName]]
   ): void {
     if (this.isConnected) {
       this.websocket.send(
@@ -241,14 +251,16 @@ function websocketParametersFromUrl(url: string): { path: string; pathParams?: U
   }
 }
 
-export class OpenEvent extends Event {
+export type TimerState = Omit<Extract<CogsClientMessage, { type: 'adjustable_timer_update' }>, 'type'> & { startedAt: number };
+
+export class CogsConnectionOpenEvent extends Event {
   public readonly type = 'open';
   constructor() {
     super('open');
   }
 }
 
-export class CloseEvent extends Event {
+export class CogsConnectionCloseEvent extends Event {
   public readonly type = 'close';
   constructor() {
     super('close');
@@ -262,51 +274,40 @@ export class CogsMessageEvent extends Event {
   }
 }
 
-export class ConfigChangedEvent<Config> extends Event {
+export class CogsConfigChangedEvent<CogsConfig> extends Event {
   public readonly type = 'config';
-  constructor(public readonly config: Config) {
+  constructor(public readonly config: CogsConfig) {
     super('config');
   }
 }
-export class StateChangedEvent<State> extends Event {
+export class CogsStateChangedEvent<CogsState> extends Event {
   public readonly type = 'state';
-  constructor(public readonly state: State) {
+  constructor(public readonly state: CogsState) {
     super('state');
   }
 }
 
-// TODO: Event should have type-checked `name` and `value` properties
-export class IncomingEvent<EventNameValue extends { name: string; value?: unknown }> extends Event {
+export class CogsIncomingEvent<CogsEvent extends DeepReadonly<PluginManifestEventJson>> extends Event {
   public readonly type = 'event';
-  constructor(public readonly name: EventNameValue['name'], public readonly value: EventNameValue['value']) {
+  constructor(public readonly name: CogsEvent['name'], public readonly value: ManifestTypes.TypeFromCogsValueType<CogsEvent['value']>) {
     super('event');
   }
 }
 
-type CogsConnectionEvent<Manifest extends DeepReadonly<PluginManifestJson>> =
-  | OpenEvent
-  | CloseEvent
+/**
+ * Allows CogsIncomingEvent of each supported value type
+ */
+export type CogsIncomingEventTypes<CogsEvent extends DeepReadonly<PluginManifestEventJson>> =
+  | CogsIncomingEvent<Exclude<CogsEvent, { value: unknown }>>
+  | CogsIncomingEvent<Extract<CogsEvent, { value: DeepReadonly<CogsValueTypeString> }>>
+  | CogsIncomingEvent<Extract<CogsEvent, { value: DeepReadonly<CogsValueTypeBoolean> }>>
+  | CogsIncomingEvent<Extract<CogsEvent, { value: DeepReadonly<CogsValueTypeOption<string[]>> }>>
+  | CogsIncomingEvent<Extract<CogsEvent, { value: DeepReadonly<CogsValueTypeNumber> }>>;
+
+export type CogsConnectionEvent<Manifest extends DeepReadonly<PluginManifestJson>> =
+  | CogsConnectionOpenEvent
+  | CogsConnectionCloseEvent
   | CogsMessageEvent
-  | ConfigChangedEvent<ManifestTypes.ConfigAsObject<Manifest>>
-  | StateChangedEvent<Partial<ManifestTypes.StateAsObject<Manifest>>>
-  | IncomingEvent<NonNullable<NonNullable<Manifest['events']>['fromCogs']>[number]>;
-
-export type TimerState = Omit<Extract<CogsClientMessage, { type: 'adjustable_timer_update' }>, 'type'> & { startedAt: number };
-
-import manifest from './cogs-plugin-manifest.js';
-import { DeepReadonly } from './types/utils';
-const connection = new CogsConnection(manifest);
-//
-//
-connection.config.Bar;
-connection.state.Count;
-connection.setState({});
-connection.sendEvent('Here is a number', 746);
-connection.addEventListener('state', (event) => {
-  console.log(event.state);
-});
-connection.addEventListener('event', (e) => {
-  if (e.name === 'Here is a number') {
-    const val = e.value;
-  }
-});
+  | CogsConfigChangedEvent<ManifestTypes.ConfigAsObject<Manifest>>
+  | CogsStateChangedEvent<Partial<ManifestTypes.StateAsObject<Manifest>>>
+  | CogsIncomingEventTypes<EventsFromCogs<Manifest>>;

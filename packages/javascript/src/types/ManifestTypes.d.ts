@@ -43,18 +43,22 @@ export type EventFromCogsKey<Manifest extends DeepReadonly<Pick<PluginManifestJs
   NonNullable<Manifest['events']>['fromCogs']
 >[number]['name'];
 
+export type EventsFromCogs<Manifest extends DeepReadonly<Pick<PluginManifestJson, 'events'>>> = NonNullable<
+  NonNullable<Manifest['events']>['fromCogs']
+>[number];
+
 export type EventFromCogsAsObject<Manifest extends DeepReadonly<Pick<PluginManifestJson, 'events'>>> = {
-  [Key in EventFromCogsKey<Manifest>]: TypeFromCogsValueType<
-    Extract<NonNullable<NonNullable<Manifest['events']>['fromCogs']>[number], { name: Key }>['value']
-  >;
+  [Key in EventFromCogsKey<Manifest>]: TypeFromCogsValueType<Extract<EventsFromCogs<Manifest>, { name: Key }>['value']>;
 };
 
 export type EventToCogsKey<Manifest extends DeepReadonly<Pick<PluginManifestJson, 'events'>>> = NonNullable<
   NonNullable<Manifest['events']>['toCogs']
 >[number]['name'];
 
+export type EventsToCogs<Manifest extends DeepReadonly<Pick<PluginManifestJson, 'events'>>> = NonNullable<
+  NonNullable<Manifest['events']>['toCogs']
+>[number];
+
 export type EventToCogsAsObject<Manifest extends DeepReadonly<Pick<PluginManifestJson, 'events'>>> = {
-  [Key in EventToCogsKey<Manifest>]: TypeFromCogsValueType<
-    Extract<NonNullable<NonNullable<Manifest['events']>['toCogs']>[number], { name: Key }>['value']
-  >;
+  [Key in EventToCogsKey<Manifest>]: TypeFromCogsValueType<Extract<EventsToCogs<Manifest>, { name: Key }>['value']>;
 };

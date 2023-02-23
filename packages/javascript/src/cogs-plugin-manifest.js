@@ -42,6 +42,13 @@ export default /** @type {const} */ ({
         },
       },
       {
+        name: 'Here is an option',
+        value: {
+          type: 'option',
+          options: ['EFF', 'OFF'],
+        },
+      },
+      {
         name: 'Here is no value',
       },
     ],

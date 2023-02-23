@@ -1,4 +1,5 @@
 export { default as CogsConnection } from './CogsConnection';
+export * from './CogsConnection';
 export { default as CogsClientMessage } from './types/CogsClientMessage';
 export { default as MediaClipStateMessage } from './types/MediaClipStateMessage';
 export * from './types/ShowPhase';
