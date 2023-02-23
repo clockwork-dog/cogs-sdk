@@ -118,19 +118,19 @@ cogsConnection.addEventListener('close', () => {
 });
 cogsConnection.addEventListener('config', ({ config }) => {
   // Handle new config
-  // `config` is of type `{ [configKey: string]: number | string | boolean }`
+  // `config` is of type `{ [name: string]: number | string | boolean }`
 });
 cogsConnection.addEventListener('state', ({ state }) => {
   // Handle state updates
-  // `state` is of type `{ [portName: string]: number | string | boolean }`
+  // `state` is of type `{ [name: string]: number | string | boolean }`
 });
 cogsConnection.addEventListener('event', ({ name, value }) => {
   // Handle events from COGS
   // `name` is the event name.
-  // `value` is of the type defined in COGS, one of `number | string | boolean | undefined`.
+  // `value` is of the type defined in manifest, one of `number | string | boolean | undefined`.
 });
 cogsConnection.addEventListener('message', ({ message }) => {
-  // Handle low-lever COGS messages. See `types/CogsClientMessage.ts`
+  // Handle low-level COGS messages. See `types/CogsClientMessage.ts`
 });
 
 function sendEventToCogs() {
@@ -140,10 +140,28 @@ function sendEventToCogs() {
 function sendPortUpdateToCogs() {
   cogsConnection.setState({ port1: 100 });
 }
+```
 
+### Support audio actions
+
+Add `audio` to `cogs-plugin-manifest.js`:
+
+```js
+{
+  media: {
+    audio: true;
+  }
+}
+```
+
+Add [CogsAudioPlayer](https://clockwork-dog.github.io/cogs-client-lib/classes/CogsAudioPlayer.html) to your page:
+
+```ts
 const audioPlayer = new CogsAudioPlayer(cogsConnection);
+
+// Optional
 audioPlayer.addEventListener('state', (audioState) => {
-  // Handle audio state. See `types/AudioState.ts`
+  // Handle audio state changes. See `types/AudioState.ts`
 });
 ```
 
