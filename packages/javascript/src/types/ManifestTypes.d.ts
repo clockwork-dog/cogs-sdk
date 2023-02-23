@@ -9,13 +9,15 @@ import {
 } from './PluginManifestJson';
 import { DeepReadonly } from './utils';
 
-export type TypeFromCogsValueType<ValueType extends DeepReadonly<CogsValueType> | undefined> = ValueType extends CogsValueTypeOption<string[]>
+export type TypeFromCogsValueType<ValueType extends DeepReadonly<CogsValueType> | undefined> = ValueType extends DeepReadonly<
+  CogsValueTypeOption<string[]>
+>
   ? ValueType['options'][number]
-  : ValueType extends CogsValueTypeString
+  : ValueType extends DeepReadonly<CogsValueTypeString>
   ? Readonly<string>
-  : ValueType extends CogsValueTypeNumber
+  : ValueType extends DeepReadonly<CogsValueTypeNumber>
   ? number
-  : ValueType extends CogsValueTypeBoolean
+  : ValueType extends DeepReadonly<CogsValueTypeBoolean>
   ? boolean
   : undefined;
 
