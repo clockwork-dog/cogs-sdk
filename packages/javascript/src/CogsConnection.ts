@@ -4,14 +4,7 @@ import CogsClientMessage from './types/CogsClientMessage';
 import { COGS_SERVER_PORT } from './helpers/urls';
 import MediaClipStateMessage from './types/MediaClipStateMessage';
 import AllMediaClipStatesMessage from './types/AllMediaClipStatesMessage';
-import {
-  CogsValueTypeBoolean,
-  CogsValueTypeNumber,
-  CogsValueTypeOption,
-  CogsValueTypeString,
-  PluginManifestEventJson,
-  PluginManifestJson,
-} from './types/PluginManifestJson';
+import { PluginManifestEventJson, PluginManifestJson } from './types/PluginManifestJson';
 import ManifestTypes, { EventsFromCogs } from './types/ManifestTypes';
 import { DeepReadonly } from './types/utils';
 
@@ -124,7 +117,7 @@ export default class CogsConnection<
         }
       };
 
-      this.addEventListener('open', refreshAudioOutputs);
+      this.eventTarget.addEventListener('open', refreshAudioOutputs);
       navigator.mediaDevices?.addEventListener('devicechange', refreshAudioOutputs);
       refreshAudioOutputs();
     }
@@ -297,12 +290,9 @@ export class CogsIncomingEvent<CogsEvent extends DeepReadonly<PluginManifestEven
 /**
  * Allows CogsIncomingEvent of each supported value type
  */
-export type CogsIncomingEventTypes<CogsEvent extends DeepReadonly<PluginManifestEventJson>> =
-  | CogsIncomingEvent<Exclude<CogsEvent, { value: unknown }>>
-  | CogsIncomingEvent<Extract<CogsEvent, { value: DeepReadonly<CogsValueTypeString> }>>
-  | CogsIncomingEvent<Extract<CogsEvent, { value: DeepReadonly<CogsValueTypeBoolean> }>>
-  | CogsIncomingEvent<Extract<CogsEvent, { value: DeepReadonly<CogsValueTypeOption<string[]>> }>>
-  | CogsIncomingEvent<Extract<CogsEvent, { value: DeepReadonly<CogsValueTypeNumber> }>>;
+export type CogsIncomingEventTypes<CogsEvent extends DeepReadonly<PluginManifestEventJson>> = CogsEvent extends unknown
+  ? CogsIncomingEvent<CogsEvent>
+  : never;
 
 export type CogsConnectionEvent<Manifest extends DeepReadonly<PluginManifestJson>> =
   | CogsConnectionOpenEvent
