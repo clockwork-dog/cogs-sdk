@@ -48,7 +48,7 @@ const { CogsConnection, CogsAudioPlayer } = COGS;
 const { CogsConnection, CogsAudioPlayer } = require('@clockworkdog/cogs-client');
 ```
 
-#### Typesript / ES6
+#### Typescript / ES6
 
 ```ts
 import { CogsConnection, CogsAudioPlayer } from '@clockworkdog/cogs-client';

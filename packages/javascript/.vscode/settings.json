@@ -17,7 +17,5 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },
-  "cSpell.words": [
-    "RTSP"
-  ]
+  "cSpell.words": ["clockworkdog", "RTSP"]
 }
