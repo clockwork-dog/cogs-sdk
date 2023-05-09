@@ -1,5 +1,3 @@
-export type FontAwesomeIconId = string;
-
 export interface CogsValueTypeBase<Id extends string> {
   type: Id;
 }
@@ -79,9 +77,15 @@ export interface PluginManifestJson {
   description?: string;
 
   /**
-   * A FontAwesome 5.X icon shown alongside `name`, in the COGS navigation bar, and in the [COGS plugins directory](/plugins)
+   * An icon shown alongside `name`, in the COGS navigation bar, and in the [COGS plugins directory](/plugins)
+   *
+   * The icon can be either:
+   * - A FontAwesome 5 icon
+   * - The relative path to an image in your plugin folder (Requires COGS 4.13 or later)
+   *   - Must start with `./`
+   *   - Alpha channel is used as a mask
    */
-  icon?: FontAwesomeIconId;
+  icon?: string;
 
   /**
    * The HTML entrypoint for the plugin
