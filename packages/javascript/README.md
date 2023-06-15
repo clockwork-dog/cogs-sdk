@@ -41,7 +41,11 @@ Use the `/** @type {const} */` JSDoc annotation to allow the manifest to be impo
 e.g.
 
 ```js
-export default /** @type {const} */ ({
+export default /**
+ * @type {const}
+ * @satisfies {import("@clockworkdog/cogs-client").PluginManifestJson}
+ */
+({
   name: 'Big Button',
   icon: 'bullseye-pointer',
   description: 'A big, colorful touchscreen button',
