@@ -4,7 +4,7 @@ import CogsClientMessage from './types/CogsClientMessage';
 import { COGS_SERVER_PORT } from './helpers/urls';
 import MediaClipStateMessage from './types/MediaClipStateMessage';
 import AllMediaClipStatesMessage from './types/AllMediaClipStatesMessage';
-import { PluginManifestEventJson, PluginManifestJson } from './types/PluginManifestJson';
+import { PluginManifestEventJson } from './types/PluginManifestJson';
 import * as ManifestTypes from './types/ManifestTypes';
 import { DeepReadonly } from './types/utils';
 
@@ -190,7 +190,7 @@ export default class CogsConnection<Manifest extends ManifestTypes.PluginManifes
   // Type-safe wrapper around EventTarget
   public addEventListener<EventType extends CogsConnectionEvent<Manifest>['type']>(
     type: EventType,
-    listener: (event: Extract<CogsConnectionEvent<Manifest>, { type: EventType }>) => void,
+    listener: (event: CogsConnectionEvent<Manifest> & { type: EventType }) => void,
     options?: boolean | AddEventListenerOptions
   ): void {
     this.eventTarget.addEventListener(type, listener as EventListener, options);
@@ -292,7 +292,7 @@ export type CogsIncomingEventTypes<CogsEvent extends DeepReadonly<PluginManifest
   ? CogsIncomingEvent<CogsEvent>
   : never;
 
-export type CogsConnectionEvent<Manifest extends DeepReadonly<PluginManifestJson>> =
+export type CogsConnectionEvent<Manifest extends ManifestTypes.PluginManifest> =
   | CogsConnectionOpenEvent
   | CogsConnectionCloseEvent
   | CogsMessageEvent
