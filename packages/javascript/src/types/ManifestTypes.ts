@@ -7,36 +7,36 @@ import {
   PluginManifestJson,
   PluginManifestStateJson,
 } from './PluginManifestJson';
-import { DeepReadonly } from './utils';
+import { DeepMutable, DeepReadonly } from './utils';
 
-export type TypeFromCogsValueType<ValueType extends DeepReadonly<CogsValueType> | undefined> = ValueType extends DeepReadonly<
-  CogsValueTypeOption<string[]>
->
+export type TypeFromCogsValueType<ValueType extends Pick<CogsValueType, 'type'> | undefined> = ValueType extends CogsValueTypeOption<string[]>
   ? ValueType['options'][number]
-  : ValueType extends DeepReadonly<CogsValueTypeString>
+  : ValueType extends CogsValueTypeString
   ? Readonly<string>
-  : ValueType extends DeepReadonly<CogsValueTypeNumber>
+  : ValueType extends CogsValueTypeNumber
   ? number
-  : ValueType extends DeepReadonly<CogsValueTypeBoolean>
+  : ValueType extends CogsValueTypeBoolean
   ? boolean
   : undefined;
 
 export type ConfigKey<Manifest extends DeepReadonly<Pick<PluginManifestJson, 'config'>>> = NonNullable<Manifest['config']>[number]['name'];
 
 export type ConfigAsObject<Manifest extends DeepReadonly<Pick<PluginManifestJson, 'config'>>> = {
-  [Key in ConfigKey<Manifest>]: TypeFromCogsValueType<Extract<NonNullable<Manifest['config']>[number], { name: Key }>['value']>;
+  [Key in ConfigKey<Manifest>]: TypeFromCogsValueType<Extract<DeepMutable<NonNullable<Manifest['config']>[number]>, { name: Key }>['value']>;
 };
 
 export type StateKey<
   Manifest extends DeepReadonly<Pick<PluginManifestJson, 'state'>>,
   Constraints extends Partial<DeepReadonly<PluginManifestStateJson>> = Record<never, never>
-> = Extract<NonNullable<Manifest['state']>[number], Constraints>['name'];
+> = Extract<DeepMutable<NonNullable<Manifest['state']>[number]>, Constraints>['name'];
 
 export type StateAsObject<
   Manifest extends DeepReadonly<Pick<PluginManifestJson, 'state'>>,
   Constraints extends Partial<DeepReadonly<PluginManifestStateJson>> = Record<never, never>
 > = {
-  [Key in StateKey<Manifest, Constraints>]: TypeFromCogsValueType<Extract<NonNullable<Manifest['state']>[number], { name: Key }>['value']>;
+  [Key in StateKey<Manifest, Constraints>]: TypeFromCogsValueType<
+    Extract<DeepMutable<NonNullable<Manifest['state']>[number]>, { name: Key }>['value']
+  >;
 };
 
 export type EventFromCogsKey<Manifest extends DeepReadonly<Pick<PluginManifestJson, 'events'>>> = NonNullable<
@@ -48,7 +48,7 @@ export type EventsFromCogs<Manifest extends DeepReadonly<Pick<PluginManifestJson
 >[number];
 
 export type EventFromCogsAsObject<Manifest extends DeepReadonly<Pick<PluginManifestJson, 'events'>>> = {
-  [Key in EventFromCogsKey<Manifest>]: TypeFromCogsValueType<Extract<EventsFromCogs<Manifest>, { name: Key }>['value']>;
+  [Key in EventFromCogsKey<Manifest>]: TypeFromCogsValueType<Extract<DeepMutable<EventsFromCogs<Manifest>>, { name: Key }>['value']>;
 };
 
 export type EventToCogsKey<Manifest extends DeepReadonly<Pick<PluginManifestJson, 'events'>>> = NonNullable<
@@ -60,5 +60,5 @@ export type EventsToCogs<Manifest extends DeepReadonly<Pick<PluginManifestJson, 
 >[number];
 
 export type EventToCogsAsObject<Manifest extends DeepReadonly<Pick<PluginManifestJson, 'events'>>> = {
-  [Key in EventToCogsKey<Manifest>]: TypeFromCogsValueType<Extract<EventsToCogs<Manifest>, { name: Key }>['value']>;
+  [Key in EventToCogsKey<Manifest>]: TypeFromCogsValueType<Extract<DeepMutable<EventsToCogs<Manifest>>, { name: Key }>['value']>;
 };
