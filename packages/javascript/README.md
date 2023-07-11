@@ -44,7 +44,7 @@ e.g.
 module.exports =
   /**
    * @type {const}
-   * @satisfies {import("@clockworkdog/cogs-client").PluginManifestJson}
+   * @satisfies {import("@clockworkdog/cogs-client").PluginManifestJsonReadonly}
    */
   ({
     name: 'Big Button',

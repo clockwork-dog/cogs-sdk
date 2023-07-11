@@ -1,3 +1,7 @@
+import { DeepReadonly } from './utils';
+
+export type FontAwesomeIconId = string;
+
 export interface CogsValueTypeBase<Id extends string> {
   type: Id;
 }
@@ -133,3 +137,10 @@ export interface PluginManifestJson {
     images?: true;
   };
 }
+
+/**
+ * A readonly version of `PluginManifestJson`
+ * to help editors and IDEs provide autocomplete and type checking
+ * with `@type {const}` enabled
+ */
+export type PluginManifestJsonReadonly = DeepReadonly<PluginManifestJson>;
