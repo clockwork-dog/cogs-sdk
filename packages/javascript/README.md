@@ -36,52 +36,53 @@ See [PluginManifestJson](https://clockwork-dog.github.io/cogs-client-lib/interfa
 
 If using Typescript set `"allowJs": true` in your `tsconfig.json`.
 
-Use the `/** @type {const} */` JSDoc annotation to allow the manifest to be imported as a literal type.
+Use the `@type {const}` JSDoc annotation to allow the manifest to be imported as a literal type and `@satisfies {import("@clockworkdog/cogs-client").PluginManifestJson}` to allow your editor to check the validity of the manifest.
 
 e.g.
 
 ```js
-export default /**
- * @type {const}
- * @satisfies {import("@clockworkdog/cogs-client").PluginManifestJson}
- */
-({
-  name: 'Big Button',
-  icon: 'bullseye-pointer',
-  description: 'A big, colorful touchscreen button',
-  version: '1',
-  config: [
-    {
-      name: 'Color',
-      value: { type: 'string', default: 'red' },
-    },
-  ],
-  state: [
-    {
-      name: 'Enabled',
-      value: { type: 'boolean', default: false },
-      writableFromCogs: true,
-    },
-  ],
-  events: {
-    toCogs: [
+module.exports =
+  /**
+   * @type {const}
+   * @satisfies {import("@clockworkdog/cogs-client").PluginManifestJson}
+   */
+  ({
+    name: 'Big Button',
+    icon: 'bullseye-pointer',
+    description: 'A big, colorful touchscreen button',
+    version: '1',
+    config: [
       {
-        name: 'Pressed',
-        value: { type: 'boolean' },
+        name: 'Color',
+        value: { type: 'string', default: 'red' },
       },
     ],
-    fromCogs: [
+    state: [
       {
-        name: 'Explosion',
+        name: 'Enabled',
+        value: { type: 'boolean', default: false },
+        writableFromCogs: true,
       },
     ],
-  },
-  media: {
-    audio: true,
-    video: true,
-    images: true,
-  },
-});
+    events: {
+      toCogs: [
+        {
+          name: 'Pressed',
+          value: { type: 'boolean' },
+        },
+      ],
+      fromCogs: [
+        {
+          name: 'Explosion',
+        },
+      ],
+    },
+    media: {
+      audio: true,
+      video: true,
+      images: true,
+    },
+  });
 ```
 
 ### Import the library
