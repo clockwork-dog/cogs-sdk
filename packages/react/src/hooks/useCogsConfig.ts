@@ -10,6 +10,7 @@ export default function useCogsConfig<Connection extends CogsConnection<any>>(co
   useEffect(() => {
     const listener = (event: CustomEvent<ConfigType<Connection>>) => setConfig(event.detail);
     connection.addEventListener('config', listener);
+    setConfig(connection.config); // Use the latest config in case is has changed before this useEffect ran
     return () => connection.removeEventListener('config', listener);
   }, [connection]);
 
