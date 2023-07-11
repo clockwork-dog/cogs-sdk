@@ -8,9 +8,7 @@ import { PluginManifestEventJson, PluginManifestJson } from './types/PluginManif
 import * as ManifestTypes from './types/ManifestTypes';
 import { DeepReadonly } from './types/utils';
 
-export default class CogsConnection<
-  Manifest extends DeepReadonly<PluginManifestJson> // `DeepReadonly` allows passing `as const` literal
-> {
+export default class CogsConnection<Manifest extends ManifestTypes.PluginManifest> {
   private websocket: WebSocket | ReconnectingWebSocket;
   private eventTarget = new EventTarget();
 
@@ -280,7 +278,7 @@ export class CogsStateChangedEvent<CogsState> extends Event {
   }
 }
 
-export class CogsIncomingEvent<CogsEvent extends DeepReadonly<PluginManifestEventJson>> extends Event {
+export class CogsIncomingEvent<CogsEvent extends DeepReadonly<PluginManifestEventJson> | PluginManifestEventJson> extends Event {
   public readonly type = 'event';
   constructor(public readonly name: CogsEvent['name'], public readonly value: ManifestTypes.TypeFromCogsValueType<CogsEvent['value']>) {
     super('event');
@@ -290,7 +288,7 @@ export class CogsIncomingEvent<CogsEvent extends DeepReadonly<PluginManifestEven
 /**
  * Allows CogsIncomingEvent of each supported value type
  */
-export type CogsIncomingEventTypes<CogsEvent extends DeepReadonly<PluginManifestEventJson>> = CogsEvent extends unknown
+export type CogsIncomingEventTypes<CogsEvent extends DeepReadonly<PluginManifestEventJson> | PluginManifestEventJson> = CogsEvent extends unknown
   ? CogsIncomingEvent<CogsEvent>
   : never;
 
