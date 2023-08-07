@@ -32,14 +32,16 @@ export type StateName<
   Constraints extends Partial<PluginManifestStateJson> = Record<never, never>
 > = Extract<DeepMutable<NonNullable<Manifest['state']>[number]>, Constraints>['name'];
 
+export type StateValue<Manifest extends Pick<CogsPluginManifest, 'state'>, Name extends StateName<Manifest>> = TypeFromCogsValueType<
+  Extract<DeepMutable<NonNullable<Manifest['state']>[number]>, { name: Name }>['value']
+>;
+
 export type StateAsObject<
   Manifest extends Pick<CogsPluginManifest, 'state'>,
   Constraints extends Partial<PluginManifestStateJson> = Record<never, never>
 > = DistributeObject<
   {
-    [Name in StateName<Manifest, Constraints>]: TypeFromCogsValueType<
-      Extract<DeepMutable<NonNullable<Manifest['state']>[number]>, { name: Name }>['value']
-    >;
+    [Name in StateName<Manifest, Constraints>]: StateValue<Manifest, Name>;
   }
 >;
 
