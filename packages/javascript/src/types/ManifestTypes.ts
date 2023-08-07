@@ -45,20 +45,20 @@ export type StateAsObject<
 
 export type EventNameFromCogs<Manifest extends CogsPluginManifest> = NonNullable<NonNullable<Manifest['events']>['fromCogs']>[number]['name'];
 
-export type EventsFromCogs<Manifest extends CogsPluginManifest> = NonNullable<NonNullable<Manifest['events']>['fromCogs']>[number];
+export type EventFromCogs<Manifest extends CogsPluginManifest> = NonNullable<NonNullable<Manifest['events']>['fromCogs']>[number];
 
 export type EventFromCogsAsObject<Manifest extends CogsPluginManifest> = DistributeObject<
   {
-    [Name in EventNameFromCogs<Manifest>]: TypeFromCogsValueType<Extract<DeepMutable<EventsFromCogs<Manifest>>, { name: Name }>['value']>;
+    [Name in EventNameFromCogs<Manifest>]: TypeFromCogsValueType<Extract<DeepMutable<EventFromCogs<Manifest>>, { name: Name }>['value']>;
   }
 >;
 
 export type EventNameToCogs<Manifest extends CogsPluginManifest> = NonNullable<NonNullable<Manifest['events']>['toCogs']>[number]['name'];
 
-export type EventsToCogs<Manifest extends CogsPluginManifest> = NonNullable<NonNullable<Manifest['events']>['toCogs']>[number];
+export type EventToCogs<Manifest extends CogsPluginManifest> = NonNullable<NonNullable<Manifest['events']>['toCogs']>[number];
 
 export type EventToCogsAsObject<Manifest extends CogsPluginManifest> = DistributeObject<
   {
-    [Name in EventNameToCogs<Manifest>]: TypeFromCogsValueType<Extract<DeepMutable<EventsToCogs<Manifest>>, { name: Name }>['value']>;
+    [Name in EventNameToCogs<Manifest>]: TypeFromCogsValueType<Extract<DeepMutable<EventToCogs<Manifest>>, { name: Name }>['value']>;
   }
 >;

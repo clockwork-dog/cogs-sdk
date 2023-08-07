@@ -77,7 +77,7 @@ export default class CogsConnection<Manifest extends CogsPluginManifest> {
             this.dispatchEvent(new CogsStateChangedEvent(parsed.updates));
           } else if (parsed.event && parsed.event.key) {
             this.dispatchEvent(
-              new CogsIncomingEvent(parsed.event.key, parsed.event.value) as CogsIncomingEventTypes<ManifestTypes.EventsFromCogs<Manifest>>
+              new CogsIncomingEvent(parsed.event.key, parsed.event.value) as CogsIncomingEventTypes<ManifestTypes.EventFromCogs<Manifest>>
             );
           } else if (typeof parsed.message === 'object') {
             const message: CogsClientMessage = parsed.message;
@@ -298,4 +298,4 @@ export type CogsConnectionEvent<Manifest extends CogsPluginManifest> =
   | CogsMessageEvent
   | CogsConfigChangedEvent<ManifestTypes.ConfigAsObject<Manifest>>
   | CogsStateChangedEvent<Partial<ManifestTypes.StateAsObject<Manifest>>>
-  | CogsIncomingEventTypes<ManifestTypes.EventsFromCogs<Manifest>>;
+  | CogsIncomingEventTypes<ManifestTypes.EventFromCogs<Manifest>>;
