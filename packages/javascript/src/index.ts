@@ -11,3 +11,4 @@ export * from './types/AudioState';
 export { assetUrl } from './helpers/urls';
 export { preloadUrl } from './helpers/urls';
 export * from './types/CogsPluginManifestJson';
+export * as ManifestTypes from './types/ManifestTypes';
