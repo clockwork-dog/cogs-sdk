@@ -2,7 +2,7 @@ export { default as CogsConnection } from './CogsConnection';
 export * from './CogsConnection';
 export { default as CogsClientMessage } from './types/CogsClientMessage';
 export { default as MediaClipStateMessage } from './types/MediaClipStateMessage';
-export * from './types/ShowPhase';
+export { default as ShowPhase } from './types/ShowPhase';
 export { default as MediaObjectFit } from './types/MediaObjectFit';
 export { default as CogsAudioPlayer } from './AudioPlayer';
 export { default as CogsRtspStreamer, LIVE_VIDEO_PLAYBACK_RATE } from './RtspStreamer';
