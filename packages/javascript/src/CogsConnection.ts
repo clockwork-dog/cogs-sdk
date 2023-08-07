@@ -129,7 +129,7 @@ export default class CogsConnection<Manifest extends CogsPluginManifest> {
     this.websocket.close();
   }
 
-  public sendEvent<EventName extends ManifestTypes.EventToCogsKey<Manifest>>(
+  public sendEvent<EventName extends ManifestTypes.EventNameToCogs<Manifest>>(
     eventName: EventName,
     ...[eventValue]: ManifestTypes.EventToCogsAsObject<Manifest>[EventName] extends undefined
       ? []
