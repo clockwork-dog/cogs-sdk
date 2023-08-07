@@ -56,7 +56,7 @@ export type PluginManifestStateJson = {
  *
  * The [COGS plugins directory](/plugins) contains a number of plugins you can use out of the box
  */
-export interface PluginManifestJson {
+export interface CogsPluginManifestJson {
   /**
    * e.g. `1.0.0`
    */
@@ -143,4 +143,9 @@ export interface PluginManifestJson {
  * to help editors and IDEs provide autocomplete and type checking
  * with `@type {const}` enabled
  */
-export type PluginManifestJsonReadonly = DeepReadonly<PluginManifestJson>;
+export type CogsPluginManifestJsonReadonly = DeepReadonly<CogsPluginManifestJson>;
+
+/**
+ * Allow readonly (i.e. `const`) versions of a manifest as well as a regular PluginManifestJson
+ */
+export type CogsPluginManifest = CogsPluginManifestJson | CogsPluginManifestJsonReadonly;

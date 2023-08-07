@@ -10,4 +10,4 @@ export { default as CogsVideoPlayer } from './VideoPlayer';
 export * from './types/AudioState';
 export { assetUrl } from './helpers/urls';
 export { preloadUrl } from './helpers/urls';
-export * from './types/PluginManifestJson';
+export * from './types/CogsPluginManifestJson';

@@ -4,11 +4,11 @@ import CogsClientMessage from './types/CogsClientMessage';
 import { COGS_SERVER_PORT } from './helpers/urls';
 import MediaClipStateMessage from './types/MediaClipStateMessage';
 import AllMediaClipStatesMessage from './types/AllMediaClipStatesMessage';
-import { PluginManifestEventJson } from './types/PluginManifestJson';
+import { CogsPluginManifest, PluginManifestEventJson } from './types/CogsPluginManifestJson';
 import * as ManifestTypes from './types/ManifestTypes';
 import { DeepReadonly } from './types/utils';
 
-export default class CogsConnection<Manifest extends ManifestTypes.PluginManifest> {
+export default class CogsConnection<Manifest extends CogsPluginManifest> {
   private websocket: WebSocket | ReconnectingWebSocket;
   private eventTarget = new EventTarget();
 
@@ -292,7 +292,7 @@ export type CogsIncomingEventTypes<CogsEvent extends DeepReadonly<PluginManifest
   ? CogsIncomingEvent<CogsEvent>
   : never;
 
-export type CogsConnectionEvent<Manifest extends ManifestTypes.PluginManifest> =
+export type CogsConnectionEvent<Manifest extends CogsPluginManifest> =
   | CogsConnectionOpenEvent
   | CogsConnectionCloseEvent
   | CogsMessageEvent
