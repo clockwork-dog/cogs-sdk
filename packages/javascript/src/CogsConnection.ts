@@ -188,16 +188,16 @@ export default class CogsConnection<Manifest extends CogsPluginManifest> {
   }
 
   // Type-safe wrapper around EventTarget
-  public addEventListener<EventType extends CogsConnectionEvent<Manifest>['type']>(
+  public addEventListener<EventType extends CogsConnectionEvent<Manifest>['_cogsConnectionEventType']>(
     type: EventType,
-    listener: (event: CogsConnectionEvent<Manifest> & { type: EventType }) => void,
+    listener: (event: CogsConnectionEvent<Manifest> & { _cogsConnectionEventType: EventType }) => void,
     options?: boolean | AddEventListenerOptions
   ): void {
     this.eventTarget.addEventListener(type, listener as EventListener, options);
   }
-  public removeEventListener<EventType extends CogsConnectionEvent<Manifest>['type']>(
+  public removeEventListener<EventType extends CogsConnectionEvent<Manifest>['_cogsConnectionEventType']>(
     type: EventType,
-    listener: (event: Extract<CogsConnectionEvent<Manifest>, { type: EventType }>) => void,
+    listener: (event: Extract<CogsConnectionEvent<Manifest>, { _cogsConnectionEventType: EventType }>) => void,
     options?: boolean | EventListenerOptions
   ): void {
     this.eventTarget.removeEventListener(type, listener as EventListener, options);
@@ -245,41 +245,42 @@ function websocketParametersFromUrl(url: string): { path: string; pathParams?: U
 export type TimerState = Omit<Extract<CogsClientMessage, { type: 'adjustable_timer_update' }>, 'type'> & { startedAt: number };
 
 export class CogsConnectionOpenEvent extends Event {
-  public readonly type = 'open';
+  public readonly _cogsConnectionEventType = 'open';
   constructor() {
     super('open');
   }
 }
 
 export class CogsConnectionCloseEvent extends Event {
-  public readonly type = 'close';
+  public readonly _cogsConnectionEventType = 'close';
   constructor() {
     super('close');
   }
 }
 
 export class CogsMessageEvent extends Event {
-  public readonly type = 'message';
+  public readonly _cogsConnectionEventType = 'message';
   constructor(public readonly message: CogsClientMessage) {
     super('message');
   }
 }
 
 export class CogsConfigChangedEvent<CogsConfig> extends Event {
-  public readonly type = 'config';
+  public readonly _cogsConnectionEventType = 'config';
   constructor(public readonly config: CogsConfig) {
     super('config');
   }
 }
+
 export class CogsStateChangedEvent<CogsState> extends Event {
-  public readonly type = 'state';
+  public readonly _cogsConnectionEventType = 'state';
   constructor(public readonly state: CogsState) {
     super('state');
   }
 }
 
 export class CogsIncomingEvent<CogsEvent extends DeepReadonly<PluginManifestEventJson> | PluginManifestEventJson> extends Event {
-  public readonly type = 'event';
+  public readonly _cogsConnectionEventType = 'event';
   constructor(public readonly name: CogsEvent['name'], public readonly value: ManifestTypes.TypeFromCogsValueType<CogsEvent['value']>) {
     super('event');
   }
