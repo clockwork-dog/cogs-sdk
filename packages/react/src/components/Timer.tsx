@@ -1,4 +1,4 @@
-import { CogsClientMessage, CogsConnection } from '@clockworkdog/cogs-client';
+import { CogsClientMessage, CogsConnection, CogsPluginManifestJson, CogsPluginManifestJsonReadonly } from '@clockworkdog/cogs-client';
 import { TimerState } from '@clockworkdog/cogs-client/dist/CogsConnection';
 import React, { useCallback, useEffect, useState } from 'react';
 import useCogsMessage from '../hooks/useCogsMessage';
@@ -30,7 +30,8 @@ export default function Timer({
 }: {
   className?: string;
   style?: React.CSSProperties;
-  connection: CogsConnection;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  connection: CogsConnection<any>;
   separator?: string;
   center?: boolean;
 }): JSX.Element {

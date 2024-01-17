@@ -1,4 +1,4 @@
-import { assetUrl, CogsConnection } from '@clockworkdog/cogs-client';
+import { assetUrl, CogsConnection, CogsPluginManifestJson, CogsPluginManifestJsonReadonly } from '@clockworkdog/cogs-client';
 import React from 'react';
 import useImages from '../hooks/useImages';
 import { useCogsConnection } from '../providers/CogsConnectionProvider';
@@ -11,7 +11,8 @@ export default function Images({
 }: {
   className?: string;
   style?: React.CSSProperties;
-  connection: CogsConnection;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  connection: CogsConnection<any>;
   fullscreen?: boolean | { style: React.CSSProperties };
 }): JSX.Element | null {
   const providerConnection = useCogsConnection();

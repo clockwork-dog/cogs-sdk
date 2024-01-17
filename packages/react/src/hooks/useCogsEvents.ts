@@ -1,15 +1,13 @@
-import { CogsConnection, EventKeyValue } from '@clockworkdog/cogs-client';
+import { CogsConnection, CogsIncomingEvent, ManifestTypes } from '@clockworkdog/cogs-client';
 import { useEffect } from 'react';
+import { ManifestFromConnection } from '../utils/types';
 
-type InputEventType<Connection> = Connection extends CogsConnection<infer Types> ? NonNullable<Types['inputEvents']> : never;
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function useCogsEvents<Connection extends CogsConnection<any>, Event extends EventKeyValue<InputEventType<Connection>>>(
+export default function useCogsEvents<Connection extends CogsConnection<any>>(
   connection: Connection,
-  handleEvent: (event: Event) => void
+  handleEvent: (event: CogsIncomingEvent<ManifestTypes.EventFromCogs<ManifestFromConnection<Connection>>>) => void
 ): void {
   useEffect(() => {
-    const listener = (event: CustomEvent<Event>) => handleEvent(event.detail);
+    const listener = (event: CogsIncomingEvent<ManifestTypes.EventFromCogs<ManifestFromConnection<Connection>>>) => handleEvent(event);
     connection.addEventListener('event', listener);
     return () => connection.removeEventListener('event', listener);
   }, [connection, handleEvent]);

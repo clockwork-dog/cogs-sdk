@@ -1,6 +1,8 @@
 # COGS Client React library
 
-Create content for your COGS Media Master
+Use this library to create custom content for your COGS Media Master or COGS Plugin
+
+We recommend using the [`cogs-client` Create React App template](https://github.com/clockwork-dog/cra-template-cogs-client) to get started or follow this guide to add `@clockworkdog/cogs-client-react` to your existing project.
 
 ## [Documentation](https://clockwork-dog.github.io/cogs-client-react-lib/)
 
@@ -18,7 +20,27 @@ yarn add @clockworkdog/cogs-client-react
 
 ## Usage
 
-Import the library
+1. Create a `cogs-plugin-manifest.js` file in the public folder of your project.
+
+See the [CogsPluginManifestJson documentation](https://clockwork-dog.github.io/cogs-client-lib/interfaces/CogsPluginManifestJson.html) for more information on the manifest format.
+
+e.g.
+
+```js
+module.exports =
+  /**
+   * @type {const}
+   * @satisfies {import("@clockworkdog/cogs-client").CogsPluginManifest}
+   */
+  ({
+    name: 'My Plugin',
+    description: 'My Plugin description',
+    version: '1.0.0',
+    // etc.
+  });
+```
+
+2. Import the library
 
 ```ts
 import {
@@ -46,19 +68,21 @@ const {
 } = require('@clockworkdog/cogs-client-react');
 ```
 
-then
+3. Instantiate `<CogsConnectionProvider>` with the manifest
 
 ```tsx
+import manifest from './public/cogs-plugin-manifest.js'; // For Typescript requires `"allowJs": true` in `tsconfig.json`
+
 function App() {
   return (
-    <CogsConnectionProvider audioPlayer videoPlayer>
+    <CogsConnectionProvider manifest={manifest} audioPlayer videoPlayer>
       <MyComponent />
     </CogsConnectionProvider>
   );
 }
 
 function MyComponent() {
-  const cogsConnection = useCogsConnection();
+  const cogsConnection = useCogsConnection<typeof manifest>();
   const isConnected = useIsConnected(cogsConnection);
 
   const audioPlayer = useAudioPlayer();

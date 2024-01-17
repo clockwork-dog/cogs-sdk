@@ -4,7 +4,10 @@ import useCogsMessage from './useCogsMessage';
 
 export type Image = { file: string; fit: MediaObjectFit };
 
-export default function useImages(connection: CogsConnection): Image[] {
+export default function useImages<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Connection extends CogsConnection<any>
+>(connection: Connection): Image[] {
   const [images, setImages] = useState<Image[]>([]);
 
   useCogsMessage(
