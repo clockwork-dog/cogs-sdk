@@ -27,7 +27,7 @@
     "eslint-plugin-react": "^7.22.0",
     "eslint-plugin-react-hooks": "^4.2.0",
     "prettier": "^2.2.1",
-    "typedoc": "^0.21.4",
+    "typedoc": "^0.25.7",
     "typescript": "^5.1.6"
   },
   "dependencies": {
