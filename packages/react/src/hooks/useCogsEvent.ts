@@ -9,12 +9,15 @@ export default function useCogsEvent<
 >(
   connection: Connection,
   eventName: EventName,
-  handleEvent: (event: Extract<CogsIncomingEventTypes<ManifestTypes.EventFromCogs<ManifestFromConnection<Connection>>>, { name: EventName }>) => void
+  handleEvent: (
+    value: Extract<CogsIncomingEventTypes<ManifestTypes.EventFromCogs<ManifestFromConnection<Connection>>>, { name: EventName }>['value'],
+    name: EventName
+  ) => void
 ): void {
   useEffect(() => {
     const listener = (event: ManifestTypes.EventFromCogs<ManifestFromConnection<Connection>>) => {
       if (event.name === eventName) {
-        handleEvent(event.value);
+        handleEvent(event.value, eventName);
       }
     };
 
