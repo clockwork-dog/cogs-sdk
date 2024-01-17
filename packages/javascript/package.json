@@ -10,6 +10,7 @@
     "lint:ts": "eslint --ext .js,.ts --ignore-path .gitignore .",
     "build": "tsc && browserify --debug --standalone COGS dist/index.js -o dist/browser/index.js",
     "watch-build": "tsc -w",
+    "build-docs": "typedoc --out docs --name @clockworkdog/cogs-client src/index.ts",
     "release": "yarn publish --access public"
   },
   "keywords": [],
@@ -25,6 +26,7 @@
     "eslint-config-prettier": "^7.1.0",
     "eslint-plugin-prettier": "^3.3.1",
     "prettier": "^2.2.1",
+    "typedoc": "^0.25.7",
     "typescript": "^5.1.6"
   },
   "dependencies": {
