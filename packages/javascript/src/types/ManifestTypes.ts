@@ -6,7 +6,7 @@ import {
   CogsValueTypeString,
   CogsPluginManifest,
   PluginManifestStateJson,
-} from './CogsPluginManifestJson';
+} from './CogsPluginManifest';
 import { DeepMutable, DistributeObject } from './utils';
 
 export type TypeFromCogsValueType<ValueType extends Pick<CogsValueType, 'type'> | undefined> = ValueType extends CogsValueTypeOption<any>

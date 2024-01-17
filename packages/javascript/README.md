@@ -36,7 +36,7 @@ See [PluginManifestJson](https://clockwork-dog.github.io/cogs-client-lib/interfa
 
 If using Typescript set `"allowJs": true` in your `tsconfig.json`.
 
-Use the `@type {const}` JSDoc annotation to allow the manifest to be imported as a literal type and `@satisfies {import("@clockworkdog/cogs-client").PluginManifestJson}` to allow your editor to check the validity of the manifest.
+Use the `@type {const}` JSDoc annotation to allow the manifest to be imported as a literal type and `@satisfies {import("@clockworkdog/cogs-client").CogsPluginManifest}` to allow your editor to check the validity of the manifest.
 
 e.g.
 
@@ -44,7 +44,7 @@ e.g.
 module.exports =
   /**
    * @type {const}
-   * @satisfies {import("@clockworkdog/cogs-client").PluginManifestJsonReadonly}
+   * @satisfies {import("@clockworkdog/cogs-client").CogsPluginManifest}
    */
   ({
     name: 'Big Button',

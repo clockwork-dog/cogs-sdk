@@ -4,7 +4,7 @@ import CogsClientMessage from './types/CogsClientMessage';
 import { COGS_SERVER_PORT } from './helpers/urls';
 import MediaClipStateMessage from './types/MediaClipStateMessage';
 import AllMediaClipStatesMessage from './types/AllMediaClipStatesMessage';
-import { CogsPluginManifest, PluginManifestEventJson } from './types/CogsPluginManifestJson';
+import { CogsPluginManifest, PluginManifestEventJson } from './types/CogsPluginManifest';
 import * as ManifestTypes from './types/ManifestTypes';
 import { DeepReadonly } from './types/utils';
 

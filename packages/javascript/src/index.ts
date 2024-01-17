@@ -10,5 +10,5 @@ export { default as CogsVideoPlayer } from './VideoPlayer';
 export * from './types/AudioState';
 export { assetUrl } from './helpers/urls';
 export { preloadUrl } from './helpers/urls';
-export * from './types/CogsPluginManifestJson';
+export * from './types/CogsPluginManifest';
 export * as ManifestTypes from './types/ManifestTypes';
