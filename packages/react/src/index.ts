@@ -10,6 +10,7 @@ export { default as useCogsMessage } from './hooks/useCogsMessage';
 export { default as usePreloadedUrl } from './hooks/usePreloadedUrl';
 export { default as useShowPhase } from './hooks/useShowPhase';
 export { default as useWhenShowReset } from './hooks/useWhenShowReset';
+export * from './utils/types';
 
 // Audio
 export { default as useAudioClips } from './hooks/useAudioClips';
@@ -29,5 +30,5 @@ export { default as Hint } from './components/Hint';
 export { default as Timer } from './components/Timer';
 
 // Images
-export { default as useImages } from './hooks/useImages';
+export { default as useImages, Image } from './hooks/useImages';
 export { default as Images } from './components/Images';

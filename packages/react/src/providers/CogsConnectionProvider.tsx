@@ -139,7 +139,7 @@ export function useAudioPlayer<Manifest extends CogsPluginManifest>(): CogsAudio
 }
 
 /**
- * Get the video player from `<CogsConnectionProvider audioPlayer>`
+ * Get the video player from `<CogsConnectionProvider videoPlayer>`
  */
 export function useVideoPlayer<Manifest extends CogsPluginManifest>(): CogsVideoPlayer | null {
   return useContext(CogsConnectionContext as React.Context<CogsConnectionContextValue<Manifest>>).useVideoPlayer();
