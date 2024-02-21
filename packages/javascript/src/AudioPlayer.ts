@@ -1,6 +1,5 @@
 import { Howl, Howler } from 'howler';
 import CogsConnection from './CogsConnection';
-import { assetUrl } from './helpers/urls';
 import { ActiveClip, AudioClip, AudioState } from './types/AudioState';
 import MediaClipStateMessage, { MediaStatus } from './types/MediaClipStateMessage';
 import CogsClientMessage, { Media } from './types/CogsClientMessage';
@@ -35,7 +34,7 @@ export default class AudioPlayer {
   private audioClipPlayers: { [path: string]: InternalClipPlayer } = {};
   private sinkId = '';
 
-  constructor(cogsConnection: CogsConnection<any>) {
+  constructor(private cogsConnection: CogsConnection<any>) {
     // Send the current status of each clip to COGS
     this.addEventListener('audioClipState', ({ detail }) => {
       cogsConnection.sendMediaClipState(detail);
@@ -525,7 +524,7 @@ export default class AudioPlayer {
 
   private createPlayer(path: string, config: { preload: boolean }) {
     const player = new Howl({
-      src: assetUrl(path),
+      src: this.cogsConnection.getAssetUrl(path),
       autoplay: false,
       loop: false,
       volume: 1,

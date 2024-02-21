@@ -1,5 +1,4 @@
 import CogsConnection from './CogsConnection';
-import { assetUrl } from './helpers/urls';
 import { ActiveVideoClipState, VideoClip, VideoState } from './types/VideoState';
 import MediaClipStateMessage, { MediaStatus } from './types/MediaClipStateMessage';
 import CogsClientMessage from './types/CogsClientMessage';
@@ -32,7 +31,7 @@ export default class VideoPlayer {
   private parentElement: HTMLElement;
   private sinkId = '';
 
-  constructor(cogsConnection: CogsConnection<any>, parentElement: HTMLElement = DEFAULT_PARENT_ELEMENT) {
+  constructor(private cogsConnection: CogsConnection<any>, parentElement: HTMLElement = DEFAULT_PARENT_ELEMENT) {
     this.parentElement = parentElement;
 
     // Send the current status of each clip to COGS
@@ -344,7 +343,7 @@ export default class VideoPlayer {
   private createVideoElement(path: string, config: VideoClip['config'], { volume }: { volume: number }) {
     const videoElement = document.createElement('video');
     videoElement.playsInline = true; // Required for iOS
-    videoElement.src = assetUrl(path);
+    videoElement.src = this.cogsConnection.getAssetUrl(path);
     videoElement.autoplay = false;
     videoElement.loop = false;
     setVideoElementVolume(videoElement, volume * this.globalVolume);

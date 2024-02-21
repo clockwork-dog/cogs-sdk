@@ -23,6 +23,12 @@ interface TextHintsUpdateMessage {
   lastSentHint: string;
 }
 
+interface CogsEnvironmentMessage {
+  type: 'cogs_environment';
+  cogsVersion: string;
+  http2AssetsServer: boolean;
+}
+
 // Media
 
 export type Media =
@@ -65,6 +71,7 @@ export type CogsClientMessage<CustomConfig = {}> =
   | AdjustableTimerUpdateMessage
   | TextHintsUpdateMessage
   | (MediaClientConfigMessage & CustomConfig)
+  | CogsEnvironmentMessage
   | MediaClientMessage;
 
 export default CogsClientMessage;

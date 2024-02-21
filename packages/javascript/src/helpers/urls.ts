@@ -1,8 +1,26 @@
+export const COGS_ASSETS_SERVER_PORT = 12094;
 export const COGS_SERVER_PORT = 12095;
 
-export function assetUrl(file: string): string {
+/**
+ * @deprecated Use {@link CogsConnection#getAssetUrl} instead. Or pass a boolean to say if you want a
+ * HTTP/2 asset URL or not.
+ */
+export function assetUrl(file: string): string;
+
+/**
+ * Returns a URL for the asset. This is different based on if HTTP/2 is requested or not
+ */
+export function assetUrl(file: string, useHttp2AssetsServer: boolean): string;
+
+export function assetUrl(file: string, useHttp2AssetsServer?: boolean): string {
   const location = typeof window !== 'undefined' ? window.location : undefined;
-  return `${location?.protocol}//${location?.hostname}:${COGS_SERVER_PORT}/assets/${encodeURIComponent(file)}`;
+  const path = `/assets/${encodeURIComponent(file)}`;
+
+  if (useHttp2AssetsServer) {
+    return `https://${location?.hostname}:${COGS_ASSETS_SERVER_PORT}${path}`;
+  } else {
+    return `${location?.protocol}//${location?.hostname}:${COGS_SERVER_PORT}${path}`;
+  }
 }
 
 export async function preloadUrl(url: string): Promise<string> {
