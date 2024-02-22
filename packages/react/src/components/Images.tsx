@@ -26,7 +26,7 @@ export default function Images({
     <img
       className={className}
       key={index}
-      src={connection.getAssetUrl?.(image.file) ?? assetUrl(image.file)}
+      src={connection.getAssetUrl?.(image.file)}
       alt={image.file}
       style={{
         objectFit: image.fit,
