@@ -10,7 +10,7 @@ export default function VideoContainer({
 }: {
   className?: string;
   style?: React.CSSProperties;
-  videoPlayer?: CogsVideoPlayer;
+  videoPlayer: CogsVideoPlayer | null;
   fullscreen?: boolean | { style: React.CSSProperties };
 }): JSX.Element | null {
   const containerRef = useRef<HTMLDivElement>(null);
