@@ -3,19 +3,25 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 
 type CogsConnectionContextValue<Manifest extends CogsPluginManifest> = {
   useCogsConnection: () => CogsConnection<Manifest>;
-  useAudioPlayer: () => CogsAudioPlayer | null;
-  useVideoPlayer: () => CogsVideoPlayer | null;
+  useAudioPlayer: (customAudioPlayer?: CogsAudioPlayer) => CogsAudioPlayer | null;
+  useVideoPlayer: (customVideoPlayer?: CogsVideoPlayer) => CogsVideoPlayer | null;
 };
 
 const CogsConnectionContext = React.createContext<CogsConnectionContextValue<any>>({
   useCogsConnection: () => {
     throw new Error('Ensure <CogsConnectionProvider> has been added to your React app');
   },
-  useAudioPlayer: () => {
-    throw new Error('Ensure <CogsConnectionProvider> has been added to your React app');
+  useAudioPlayer: (customAudioPlayer) => {
+    if (!customAudioPlayer) {
+      throw new Error('Ensure <CogsConnectionProvider> has been added to your React app');
+    }
+    return null;
   },
-  useVideoPlayer: () => {
-    throw new Error('Ensure <CogsConnectionProvider> has been added to your React app');
+  useVideoPlayer: (customVideoPlayer) => {
+    if (!customVideoPlayer) {
+      throw new Error('Ensure <CogsConnectionProvider> has been added to your React app');
+    }
+    return null;
   },
 });
 
@@ -134,13 +140,13 @@ export function useCogsConnection<Manifest extends CogsPluginManifest>(): CogsCo
 /**
  * Get the audio player from `<CogsConnectionProvider audioPlayer>`
  */
-export function useAudioPlayer<Manifest extends CogsPluginManifest>(): CogsAudioPlayer | null {
-  return useContext(CogsConnectionContext as React.Context<CogsConnectionContextValue<Manifest>>).useAudioPlayer();
+export function useAudioPlayer<Manifest extends CogsPluginManifest>(customAudioPlayer?: CogsAudioPlayer): CogsAudioPlayer | null {
+  return useContext(CogsConnectionContext as React.Context<CogsConnectionContextValue<Manifest>>).useAudioPlayer(customAudioPlayer);
 }
 
 /**
  * Get the video player from `<CogsConnectionProvider videoPlayer>`
  */
-export function useVideoPlayer<Manifest extends CogsPluginManifest>(): CogsVideoPlayer | null {
-  return useContext(CogsConnectionContext as React.Context<CogsConnectionContextValue<Manifest>>).useVideoPlayer();
+export function useVideoPlayer<Manifest extends CogsPluginManifest>(customVideoPlayer?: CogsVideoPlayer): CogsVideoPlayer | null {
+  return useContext(CogsConnectionContext as React.Context<CogsConnectionContextValue<Manifest>>).useVideoPlayer(customVideoPlayer);
 }
