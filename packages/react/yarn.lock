@@ -24,9 +24,9 @@
     js-tokens "^4.0.0"
 
 "@clockworkdog/cogs-client@~2.1":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@clockworkdog/cogs-client/-/cogs-client-2.1.0.tgz#dff658b5f2c50d33f4d290ffea07385d77efe7fe"
-  integrity sha512-gvkT8zZKNrrmUjJT8tu606HBwmAWZtfCwVtfAqOWaQAGCLtWkvpZdHn+ViFR+/erYH2tqWNC04iFPA76/+kQ0A==
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@clockworkdog/cogs-client/-/cogs-client-2.1.1.tgz#936164e4c632ad2036bc466c402699ec59389780"
+  integrity sha512-pxUCgZC3yrX+HS02Kr7fF/hTHWVxjXSOMjH5+8xqTrylMJkfNWCmKsigB/06eZyhoNcm5OtG3XYVMorbW9as/w==
   dependencies:
     "@clockworkdog/media-stream-library-browser" "^11.1.1-fixes.6"
     compare-versions "^6.1.0"
