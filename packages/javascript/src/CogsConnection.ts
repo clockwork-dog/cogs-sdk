@@ -291,8 +291,9 @@ function websocketParametersFromUrl(
     const serial = pathParams.get('serial') ?? '';
     pathParams.delete('serial');
     // Check if cogs-box-av is a version which added support for ignoring HTTP/2 self-signed certificates
-    const version = pathParams.get('v') ?? '';
-    const supportsHttp2Assets = validate(version) && satisfies(version, '>=4.9.0');
+    const firmwareVersion = pathParams.get('v') ?? '';
+    const isCogsBoxAvDevBuild = firmwareVersion === '0.0.0'; // We assume dev firmware builds have HTTP/2 assets support - Added in 2024-03
+    const supportsHttp2Assets = isCogsBoxAvDevBuild || (validate(firmwareVersion) && satisfies(firmwareVersion, '>=4.9.0'));
     return {
       path: `/client/${encodeURIComponent(serial)}`,
       pathParams,
