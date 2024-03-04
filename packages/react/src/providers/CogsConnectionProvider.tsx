@@ -125,9 +125,9 @@ export default function CogsConnectionProvider<Manifest extends CogsPluginManife
 
   const value: CogsConnectionContextValue<Manifest> = {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    useCogsConnection: () => connectionRef.current!,
-    useAudioPlayer: () => audioPlayerRef.current ?? null,
-    useVideoPlayer: () => videoPlayerRef.current ?? null,
+    useCogsConnection: (customConnection) => customConnection ?? connectionRef.current!,
+    useAudioPlayer: (customAudioPlayer) => customAudioPlayer ?? audioPlayerRef.current ?? null,
+    useVideoPlayer: (customVideoPlayer) => customVideoPlayer ?? videoPlayerRef.current ?? null,
   };
 
   return <CogsConnectionContext.Provider value={value}>{children}</CogsConnectionContext.Provider>;
