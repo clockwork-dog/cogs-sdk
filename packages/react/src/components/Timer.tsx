@@ -31,7 +31,7 @@ export default function Timer({
   className?: string;
   style?: React.CSSProperties;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  connection: CogsConnection<any>;
+  connection?: CogsConnection<any>;
   separator?: string;
   center?: boolean;
 }): JSX.Element {

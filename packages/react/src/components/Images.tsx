@@ -12,7 +12,7 @@ export default function Images({
   className?: string;
   style?: React.CSSProperties;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  connection: CogsConnection<any>;
+  connection?: CogsConnection<any>;
   fullscreen?: boolean | { style: React.CSSProperties };
 }): JSX.Element | null {
   const connection = useCogsConnection(customConnection);
