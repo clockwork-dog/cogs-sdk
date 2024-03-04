@@ -2,14 +2,17 @@ import { CogsAudioPlayer, CogsConnection, CogsPluginManifest, CogsVideoPlayer } 
 import React, { useContext, useEffect, useRef, useState } from 'react';
 
 type CogsConnectionContextValue<Manifest extends CogsPluginManifest> = {
-  useCogsConnection: () => CogsConnection<Manifest>;
+  useCogsConnection: (customConnection?: CogsConnection<Manifest>) => CogsConnection<Manifest>;
   useAudioPlayer: (customAudioPlayer?: CogsAudioPlayer) => CogsAudioPlayer | null;
   useVideoPlayer: (customVideoPlayer?: CogsVideoPlayer) => CogsVideoPlayer | null;
 };
 
 const CogsConnectionContext = React.createContext<CogsConnectionContextValue<any>>({
-  useCogsConnection: () => {
-    throw new Error('Ensure <CogsConnectionProvider> has been added to your React app');
+  useCogsConnection: (customConnection) => {
+    if (!customConnection) {
+      throw new Error('Ensure <CogsConnectionProvider> has been added to your React app');
+    }
+    return null as any;
   },
   useAudioPlayer: (customAudioPlayer) => {
     if (!customAudioPlayer) {
@@ -133,8 +136,8 @@ export default function CogsConnectionProvider<Manifest extends CogsPluginManife
 /**
  * Get the connection from `<CogsConnectionProvider>`
  */
-export function useCogsConnection<Manifest extends CogsPluginManifest>(): CogsConnection<Manifest> {
-  return useContext(CogsConnectionContext as React.Context<CogsConnectionContextValue<Manifest>>).useCogsConnection();
+export function useCogsConnection<Manifest extends CogsPluginManifest>(customConnection?: CogsConnection<Manifest>): CogsConnection<Manifest> {
+  return useContext(CogsConnectionContext as React.Context<CogsConnectionContextValue<Manifest>>).useCogsConnection(customConnection);
 }
 
 /**

@@ -35,8 +35,7 @@ export default function Timer({
   separator?: string;
   center?: boolean;
 }): JSX.Element {
-  const providerConnection = useCogsConnection();
-  const connection = customConnection ?? providerConnection;
+  const connection = useCogsConnection(customConnection);
 
   const [timerElapsed, setTimerElapsed] = useState(0);
   const [timerStartedAt, setTimerStartedAt] = useState(connection.timerState?.startedAt ?? 0);
