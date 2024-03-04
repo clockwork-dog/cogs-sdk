@@ -12,19 +12,19 @@ const CogsConnectionContext = React.createContext<CogsConnectionContextValue<any
     if (!customConnection) {
       throw new Error('Ensure <CogsConnectionProvider> has been added to your React app');
     }
-    return null as any;
+    return customConnection;
   },
   useAudioPlayer: (customAudioPlayer) => {
     if (!customAudioPlayer) {
       throw new Error('Ensure <CogsConnectionProvider> has been added to your React app');
     }
-    return null;
+    return customAudioPlayer;
   },
   useVideoPlayer: (customVideoPlayer) => {
     if (!customVideoPlayer) {
       throw new Error('Ensure <CogsConnectionProvider> has been added to your React app');
     }
-    return null;
+    return customVideoPlayer;
   },
 });
 
