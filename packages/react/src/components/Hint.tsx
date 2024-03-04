@@ -7,10 +7,9 @@ export default function Hint({
   connection: customConnection,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  connection: CogsConnection<any>;
+  connection?: CogsConnection<any>;
 }): JSX.Element | null {
-  const providerConnection = useCogsConnection();
-  const connection = customConnection ?? providerConnection;
+  const connection = useCogsConnection(customConnection);
   const hint = useHint(connection);
   return hint ? <>{hint}</> : null;
 }

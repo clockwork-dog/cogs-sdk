@@ -10,12 +10,11 @@ export default function VideoContainer({
 }: {
   className?: string;
   style?: React.CSSProperties;
-  videoPlayer: CogsVideoPlayer | null;
+  videoPlayer?: CogsVideoPlayer | null;
   fullscreen?: boolean | { style: React.CSSProperties };
 }): JSX.Element | null {
   const containerRef = useRef<HTMLDivElement>(null);
-  const providerVideoPlayer = useVideoPlayer();
-  const videoPlayer = customVideoPlayer ?? providerVideoPlayer;
+  const videoPlayer = useVideoPlayer(customVideoPlayer ?? undefined);
 
   useEffect(() => {
     if (videoPlayer && containerRef.current) {

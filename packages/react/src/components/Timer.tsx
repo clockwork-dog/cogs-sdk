@@ -31,12 +31,11 @@ export default function Timer({
   className?: string;
   style?: React.CSSProperties;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  connection: CogsConnection<any>;
+  connection?: CogsConnection<any>;
   separator?: string;
   center?: boolean;
 }): JSX.Element {
-  const providerConnection = useCogsConnection();
-  const connection = customConnection ?? providerConnection;
+  const connection = useCogsConnection(customConnection);
 
   const [timerElapsed, setTimerElapsed] = useState(0);
   const [timerStartedAt, setTimerStartedAt] = useState(connection.timerState?.startedAt ?? 0);
