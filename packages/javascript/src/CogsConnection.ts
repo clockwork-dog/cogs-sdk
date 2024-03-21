@@ -48,7 +48,7 @@ export default class CogsConnection<Manifest extends CogsPluginManifest> {
    * Return asset URLs using the information about the client and server support for HTTP/2
    */
   public getAssetUrl(path: string): string {
-    return assetUrl(path, this.supportsHttp2Assets);
+    return `${assetUrl(path, this.supportsHttp2Assets)}?${this.urlParams?.toString() ?? ''}`;
   }
 
   /**
@@ -61,14 +61,31 @@ export default class CogsConnection<Manifest extends CogsPluginManifest> {
     return this._selectedAudioOutput;
   }
 
+  /**
+   * URL parameters use for the websocket connection and asset URLs
+   */
+  private urlParams: URLSearchParams | null = null;
+
   constructor(
     readonly manifest: Manifest,
     { hostname = document.location.hostname, port = COGS_SERVER_PORT }: { hostname?: string; port?: number } = {},
     initialClientState: Partial<ManifestTypes.StateAsObject<Manifest, { writableFromClient: true }>> | undefined = undefined
   ) {
     this.currentState = { ...(initialClientState as ManifestTypes.StateAsObject<Manifest, { writableFromClient: true }>) };
+
     const { useReconnectingWebsocket, path, pathParams, supportsHttp2Assets } = websocketParametersFromUrl(document.location.href);
-    const socketUrl = `ws://${hostname}:${port}${path}${pathParams ? '?' + pathParams : ''}`;
+
+    // Store the URL parameters for use in asset URLs
+    // and add screen dimensions which COGS can use to determine the best asset quality to serve
+    //
+    // Note that content always runs fullscreen and
+    // we assume the screen resolution will not change while the content is running.
+    this.urlParams = new URLSearchParams(pathParams);
+    this.urlParams.set('screenWidth', window.screen.width.toString());
+    this.urlParams.set('screenHeight', window.screen.height.toString());
+    this.urlParams.set('screenPixelRatio', window.devicePixelRatio.toString());
+
+    const socketUrl = `ws://${hostname}:${port}${path}?${this.urlParams}`;
     this.websocket = useReconnectingWebsocket ? new ReconnectingWebSocket(socketUrl) : new WebSocket(socketUrl);
     this.clientSupportsHttp2Assets = !!supportsHttp2Assets;
 
