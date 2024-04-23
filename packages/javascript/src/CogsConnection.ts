@@ -64,7 +64,7 @@ export default class CogsConnection<Manifest extends CogsPluginManifest> {
   /**
    * URL parameters use for the websocket connection and asset URLs
    */
-  private urlParams: URLSearchParams | null = null;
+  private urlParams = new URLSearchParams();
 
   constructor(
     readonly manifest: Manifest,
@@ -80,7 +80,7 @@ export default class CogsConnection<Manifest extends CogsPluginManifest> {
     //
     // Note that content always runs fullscreen and
     // we assume the screen resolution will not change while the content is running.
-    this.urlParams = new URLSearchParams(pathParams);
+    this.urlParams = new URLSearchParams({ ...Object.fromEntries(this.urlParams), ...(pathParams && Object.fromEntries(pathParams)) });
     this.urlParams.set('screenWidth', window.screen.width.toString());
     this.urlParams.set('screenHeight', window.screen.height.toString());
     this.urlParams.set('screenPixelRatio', window.devicePixelRatio.toString());
@@ -135,6 +135,16 @@ export default class CogsConnection<Manifest extends CogsPluginManifest> {
                 break;
               case 'cogs_environment':
                 this.serverSupportsHttp2Assets = message.http2AssetsServer;
+                break;
+              case 'media_config_update':
+                for (const optionName of ['preferOptimizedAudio', 'preferOptimizedVideo', 'preferOptimizedImages'] as const) {
+                  const optionEnabled: boolean | undefined = message[optionName];
+                  if (optionEnabled) {
+                    this.urlParams.set(optionName, 'true');
+                  } else {
+                    this.urlParams.delete(optionName);
+                  }
+                }
                 break;
             }
 

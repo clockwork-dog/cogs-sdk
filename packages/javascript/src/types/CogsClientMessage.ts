@@ -48,6 +48,9 @@ interface MediaClientConfigMessage {
   files: {
     [path: string]: Media;
   };
+  preferOptimizedAudio?: boolean;
+  preferOptimizedVideo?: boolean;
+  preferOptimizedImages?: boolean;
 }
 
 type MediaClientMessage =
