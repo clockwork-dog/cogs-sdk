@@ -64,7 +64,7 @@ export default class CogsConnection<Manifest extends CogsPluginManifest> {
   /**
    * URL parameters use for the websocket connection and asset URLs
    */
-  private urlParams = new URLSearchParams();
+  private urlParams: URLSearchParams;
 
   constructor(
     readonly manifest: Manifest,
@@ -80,7 +80,7 @@ export default class CogsConnection<Manifest extends CogsPluginManifest> {
     //
     // Note that content always runs fullscreen and
     // we assume the screen resolution will not change while the content is running.
-    this.urlParams = new URLSearchParams({ ...Object.fromEntries(this.urlParams), ...(pathParams && Object.fromEntries(pathParams)) });
+    this.urlParams = new URLSearchParams(pathParams);
     this.urlParams.set('screenWidth', window.screen.width.toString());
     this.urlParams.set('screenHeight', window.screen.height.toString());
     this.urlParams.set('screenPixelRatio', window.devicePixelRatio.toString());
