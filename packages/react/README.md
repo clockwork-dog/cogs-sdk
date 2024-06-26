@@ -71,7 +71,7 @@ const {
 3. Instantiate `<CogsConnectionProvider>` with the manifest
 
 ```tsx
-import manifest from './public/cogs-plugin-manifest.js'; // For Typescript requires `"allowJs": true` in `tsconfig.json`
+import * as manifest from './public/cogs-plugin-manifest.js'; // For Typescript requires `"allowJs": true` in `tsconfig.json`
 
 function App() {
   return (
