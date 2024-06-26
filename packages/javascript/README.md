@@ -112,7 +112,7 @@ Initialize a [CogsConnection](https://clockwork-dog.github.io/cogs-client-lib/in
 ```ts
 let connected = false;
 
-import manifest from './cogs-plugin-manifest.js'; // Requires `"allowJs": true` in `tsconfig.json`
+import * as manifest from './cogs-plugin-manifest.js'; // Requires `"allowJs": true` in `tsconfig.json`
 
 const cogsConnection = new CogsConnection(manifest);
 cogsConnection.addEventListener('open', () => {
