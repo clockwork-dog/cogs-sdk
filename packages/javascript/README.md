@@ -147,6 +147,29 @@ function sendPortUpdateToCogs() {
 }
 ```
 
+You can save arbitrary data to COGS which will be restored when reconnecting with COGS:
+
+```ts
+const cogsConnection = new CogsConnection(manifest, {
+  // Initial items in the store
+  'my-key': { foo: 0, bar: '' }
+});
+
+// Update the store
+cogsConnection.store.setItems({ 'my-key': { foo: 1, bar: 'two' } });
+
+// Get item from data store
+cogsConnection.store.items.getItem('my-key')
+
+// Listen for data changes
+cogsConnection.store.addEventListener('item', ({ key, value }) => {
+  console.log(key, 'item changed:', value);
+});
+cogsConnection.store.addEventListener('items', ({ items }) => {
+  console.log('items changed:', items);
+});
+```
+
 ### Support audio actions
 
 Add `audio` to `cogs-plugin-manifest.js`:

@@ -8,8 +8,9 @@ import AllMediaClipStatesMessage from './types/AllMediaClipStatesMessage';
 import { CogsPluginManifest, PluginManifestEventJson } from './types/CogsPluginManifest';
 import * as ManifestTypes from './types/ManifestTypes';
 import { DeepReadonly } from './types/utils';
+import DataStore from './DataStore';
 
-export default class CogsConnection<Manifest extends CogsPluginManifest> {
+export default class CogsConnection<Manifest extends CogsPluginManifest, DataT extends { [key: string]: unknown } = Record<never, never>> {
   private websocket: WebSocket | ReconnectingWebSocket;
   private eventTarget = new EventTarget();
 
@@ -62,6 +63,11 @@ export default class CogsConnection<Manifest extends CogsPluginManifest> {
   }
 
   /**
+   * Stores data in COGS
+   */
+  public store: DataStore<DataT>;
+
+  /**
    * URL parameters use for the websocket connection and asset URLs
    */
   private urlParams: URLSearchParams;
@@ -69,9 +75,11 @@ export default class CogsConnection<Manifest extends CogsPluginManifest> {
   constructor(
     readonly manifest: Manifest,
     { hostname = document.location.hostname, port = COGS_SERVER_PORT }: { hostname?: string; port?: number } = {},
-    initialClientState: Partial<ManifestTypes.StateAsObject<Manifest, { writableFromClient: true }>> | undefined = undefined
+    initialClientState?: Partial<ManifestTypes.StateAsObject<Manifest, { writableFromClient: true }>>,
+    initialDataStoreData?: DataT
   ) {
     this.currentState = { ...(initialClientState as ManifestTypes.StateAsObject<Manifest, { writableFromClient: true }>) };
+    this.store = new DataStore<DataT>(initialDataStoreData ?? ({} as DataT));
 
     const { useReconnectingWebsocket, path, pathParams, supportsHttp2Assets } = websocketParametersFromUrl(document.location.href);
 
@@ -146,6 +154,9 @@ export default class CogsConnection<Manifest extends CogsPluginManifest> {
                   }
                 }
                 break;
+              case 'data_store_items':
+                this.store.handleDataStoreItemsMessage(message);
+                break;
             }
 
             this.dispatchEvent(new CogsMessageEvent(message));
@@ -157,6 +168,11 @@ export default class CogsConnection<Manifest extends CogsPluginManifest> {
         console.error('Unable to parse incoming data from server', data, e);
       }
     };
+
+    // Tell COGS when any data store items change
+    this.store.addEventListener('items', (event) => {
+      this.sendDataStoreItems(event.items);
+    });
 
     // Send a list of audio outputs to COGS and keep it up to date
     {
@@ -227,6 +243,12 @@ export default class CogsConnection<Manifest extends CogsPluginManifest> {
   sendAudioOutputs(audioOutputs: MediaDeviceInfo[]): void {
     if (this.isConnected) {
       this.websocket.send(JSON.stringify({ audioOutputs }));
+    }
+  }
+
+  private sendDataStoreItems(partialItems: { [key: string]: unknown }): void {
+    if (this.isConnected) {
+      this.websocket.send(JSON.stringify({ dataStoreItems: partialItems }));
     }
   }
 

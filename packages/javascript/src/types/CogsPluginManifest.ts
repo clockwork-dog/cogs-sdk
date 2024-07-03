@@ -136,6 +136,26 @@ export interface CogsPluginManifestJson {
     video?: true;
     images?: true;
   };
+
+  /**
+   * COGS-managed key/value data store settings
+   *
+   * Allows certain key/value pairs to be saved to disk in the project folder alongside the plugin.
+   * Any key that is not listed here can still be used.
+   */
+  store?: {
+    items?: {
+      [key: string]: {
+        /**
+         * When `true` saves this key/value pair to the project folder when the value changes
+         * and restores the value when the project is next loaded.
+         *
+         * **This option is only available for COGS plugins**, not for custom Media Master content.
+         */
+        persistValue?: boolean;
+      };
+    };
+  };
 }
 
 /**

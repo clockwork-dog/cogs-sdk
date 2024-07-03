@@ -29,6 +29,11 @@ interface CogsEnvironmentMessage {
   http2AssetsServer: boolean;
 }
 
+export interface DataStoreItemsClientMessage {
+  type: 'data_store_items';
+  items: { [key: string]: unknown };
+}
+
 // Media
 
 export type Media =
@@ -75,6 +80,7 @@ export type CogsClientMessage<CustomConfig = {}> =
   | TextHintsUpdateMessage
   | (MediaClientConfigMessage & CustomConfig)
   | CogsEnvironmentMessage
-  | MediaClientMessage;
+  | MediaClientMessage
+  | DataStoreItemsClientMessage;
 
 export default CogsClientMessage;
