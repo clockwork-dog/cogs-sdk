@@ -26,7 +26,6 @@ interface TextHintsUpdateMessage {
 interface CogsEnvironmentMessage {
   type: 'cogs_environment';
   cogsVersion: string;
-  http2AssetsServer: boolean;
 }
 
 export interface DataStoreItemsClientMessage {

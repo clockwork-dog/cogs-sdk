@@ -1,4 +1,3 @@
-import { validate, satisfies } from 'compare-versions';
 import ShowPhase from './types/ShowPhase';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import CogsClientMessage from './types/CogsClientMessage';
@@ -35,21 +34,10 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
   }
 
   /**
-   * Track the support for HTTP/2 assets on the client and server side
-   * Client side is dictated by the environment we're connecting from (and the media cogs-av-box version)
-   * Server side is dictated by the COGS version which added the HTTP/2 assets server itself
-   */
-  private clientSupportsHttp2Assets = false;
-  private serverSupportsHttp2Assets = false;
-  public get supportsHttp2Assets(): boolean {
-    return this.clientSupportsHttp2Assets && this.serverSupportsHttp2Assets;
-  }
-
-  /**
    * Return asset URLs using the information about the client and server support for HTTP/2
    */
   public getAssetUrl(path: string): string {
-    return `${assetUrl(path, this.supportsHttp2Assets)}?${this.urlParams?.toString() ?? ''}`;
+    return `${assetUrl(path)}?${this.urlParams?.toString() ?? ''}`;
   }
 
   /**
@@ -81,7 +69,7 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
     this.currentState = { ...(initialClientState as ManifestTypes.StateAsObject<Manifest, { writableFromClient: true }>) };
     this.store = new DataStore<DataT>(initialDataStoreData ?? ({} as DataT));
 
-    const { useReconnectingWebsocket, path, pathParams, supportsHttp2Assets } = websocketParametersFromUrl(document.location.href);
+    const { useReconnectingWebsocket, path, pathParams } = websocketParametersFromUrl(document.location.href);
 
     // Store the URL parameters for use in asset URLs
     // and add screen dimensions which COGS can use to determine the best asset quality to serve
@@ -95,15 +83,10 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
 
     const socketUrl = `ws://${hostname}:${port}${path}?${this.urlParams}`;
     this.websocket = useReconnectingWebsocket ? new ReconnectingWebSocket(socketUrl) : new WebSocket(socketUrl);
-    this.clientSupportsHttp2Assets = !!supportsHttp2Assets;
 
     this.websocket.onopen = () => {
       this.currentConfig = {} as ManifestTypes.ConfigAsObject<Manifest>; // Received on open connection
       this.currentState = {} as ManifestTypes.StateAsObject<Manifest>; // Received on open connection
-
-      // Reset this flag as we might have just connected to an old COGS version which doesn't support HTTP/2
-      // The flag will be set when COGS sends a "cogs_environment" message
-      this.serverSupportsHttp2Assets = false;
 
       this.dispatchEvent(new CogsConnectionOpenEvent());
       this.setState(this.currentState); // TODO: Remove this because you should set it manually...??
@@ -140,9 +123,6 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
                 break;
               case 'show_phase':
                 this._showPhase = message.phase;
-                break;
-              case 'cogs_environment':
-                this.serverSupportsHttp2Assets = message.http2AssetsServer;
                 break;
               case 'media_config_update':
                 for (const optionName of ['preferOptimizedAudio', 'preferOptimizedVideo', 'preferOptimizedImages'] as const) {
@@ -289,7 +269,6 @@ function websocketParametersFromUrl(
   path: string;
   pathParams?: URLSearchParams;
   useReconnectingWebsocket?: boolean;
-  supportsHttp2Assets?: boolean;
 } {
   const parsedUrl = new URL(url);
   const pathParams = new URLSearchParams(parsedUrl.searchParams);
@@ -297,9 +276,6 @@ function websocketParametersFromUrl(
   const isSimulator = pathParams.get('simulator') === 'true';
   const display = pathParams.get('display') ?? '';
   const pluginId = parsedUrl.pathname.startsWith('/plugin/') ? decodeURIComponent(parsedUrl.pathname.split('/')[2]) : undefined;
-  // Allow explicitly disabling HTTP/2 assets. This is useful in situations where we know the self-signed certificate cannot be
-  // supported such as the native mobile app
-  const disableHttp2Assets = (pathParams.get('http2Assets') ?? '') === 'false';
 
   if (localClientId) {
     const type = pathParams.get('t') ?? '';
@@ -308,11 +284,8 @@ function websocketParametersFromUrl(
       path: `/local/${encodeURIComponent(localClientId)}`,
       pathParams: new URLSearchParams({ t: type }),
       useReconnectingWebsocket: true,
-      supportsHttp2Assets: !disableHttp2Assets,
     };
   } else if (isSimulator) {
-    const supportsHttp2Assets = (pathParams.get('http2Assets') ?? '') === 'true';
-    pathParams.delete('http2Assets');
     const name = pathParams.get('name') ?? '';
     pathParams.delete('simulator');
     pathParams.delete('name');
@@ -320,7 +293,6 @@ function websocketParametersFromUrl(
       path: `/simulator/${encodeURIComponent(name)}`,
       pathParams,
       useReconnectingWebsocket: true,
-      supportsHttp2Assets: !disableHttp2Assets && supportsHttp2Assets,
     };
   } else if (display) {
     const displayIdIndex = pathParams.get('displayIdIndex') ?? '';
@@ -328,25 +300,18 @@ function websocketParametersFromUrl(
     pathParams.delete('displayIdIndex');
     return {
       path: `/display/${encodeURIComponent(display)}/${encodeURIComponent(displayIdIndex)}`,
-      supportsHttp2Assets: !disableHttp2Assets,
     };
   } else if (pluginId) {
     return {
       path: `/plugin/${encodeURIComponent(pluginId)}`,
       useReconnectingWebsocket: true,
-      supportsHttp2Assets: !disableHttp2Assets,
     };
   } else {
     const serial = pathParams.get('serial') ?? '';
     pathParams.delete('serial');
-    // Check if cogs-box-av is a version which added support for ignoring HTTP/2 self-signed certificates
-    const firmwareVersion = (pathParams.get('f') ?? '').replace(/^v/, '');
-    const isCogsBoxAvDevBuild = firmwareVersion === '0.0.0'; // We assume dev firmware builds have HTTP/2 assets support - Added in 2024-03
-    const supportsHttp2Assets = isCogsBoxAvDevBuild || (validate(firmwareVersion) && satisfies(firmwareVersion, '>=4.9.0'));
     return {
       path: `/client/${encodeURIComponent(serial)}`,
       pathParams,
-      supportsHttp2Assets: !disableHttp2Assets && supportsHttp2Assets,
     };
   }
 }
