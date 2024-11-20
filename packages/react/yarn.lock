@@ -23,13 +23,12 @@
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
-"@clockworkdog/cogs-client@~2.4":
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/@clockworkdog/cogs-client/-/cogs-client-2.4.0.tgz#044dc8ad2ae157978cc36b8a3c5f7eda57ed339e"
-  integrity sha512-Wo3DdQfWY5Iv5c1SAiGGarWJVeHLLtfqH2oYa/CY4e8KAhNN49zlBJBj2dQGYKdul5ecD/g5lWFh2/JKP2eKsw==
+"@clockworkdog/cogs-client@~2.5":
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/@clockworkdog/cogs-client/-/cogs-client-2.5.0.tgz#8fba7eaa69456d738ff0ea9a521a0e10bc904415"
+  integrity sha512-2LUq7iXHoT0FEcbyqcJTglkwPX7B10nFvYCwEjFnq+vWxin3XX9Rc9fEybVehulAgxgIYri7Q6sDUJCZvyTK5w==
   dependencies:
     "@clockworkdog/media-stream-library-browser" "^11.1.1-fixes.6"
-    compare-versions "^6.1.0"
     howler clockwork-dog/howler.js#fix-looping-clips
     reconnecting-websocket "^4.4.0"
 
@@ -391,11 +390,6 @@ color-name@~1.1.4:
   version "1.1.4"
   resolved "https://registry.yarnpkg.com/color-name/-/color-name-1.1.4.tgz#c2a09a87acbde69543de6f63fa3995c826c536a2"
   integrity sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==
-
-compare-versions@^6.1.0:
-  version "6.1.0"
-  resolved "https://registry.yarnpkg.com/compare-versions/-/compare-versions-6.1.0.tgz#3f2131e3ae93577df111dba133e6db876ffe127a"
-  integrity sha512-LNZQXhqUvqUTotpZ00qLSaify3b4VFD588aRr8MKFw4CMUr98ytzCW5wDH5qx/DEY5kCDXcbcRuCqL0szEf2tg==
 
 concat-map@0.0.1:
   version "0.0.1"

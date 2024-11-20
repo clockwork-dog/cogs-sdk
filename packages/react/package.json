@@ -31,7 +31,7 @@
     "typescript": "^5.1.6"
   },
   "dependencies": {
-    "@clockworkdog/cogs-client": "~2.4"
+    "@clockworkdog/cogs-client": "~2.5"
   },
   "description": "React components and hooks to connect to COGS to build a custom Media Master",
   "repository": {
