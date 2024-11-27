@@ -140,6 +140,8 @@ export interface CogsPluginManifestJson {
   /**
    * COGS-managed key/value data store settings
    *
+   * Added in COGS 5.4
+   *
    * Allows certain key/value pairs to be saved to disk in the project folder alongside the plugin.
    * Any key that is not listed here can still be used.
    */
