@@ -32,7 +32,7 @@ yarn add @clockworkdog/cogs-client
 
 ### Create a `cogs-plugin-manifest.js` file
 
-See [PluginManifestJson](https://clockwork-dog.github.io/cogs-client-lib/interfaces/PluginManifestJson.html) for details of what to include.
+See [CogsPluginManifestJson](https://clockwork-dog.github.io/cogs-client-lib/interfaces/CogsPluginManifestJson.html) for details of what to include.
 
 If using Typescript set `"allowJs": true` in your `tsconfig.json`.
 
