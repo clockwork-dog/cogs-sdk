@@ -1,40 +1,11 @@
 {
   "name": "@clockworkdog/cogs-client",
-  "version": "2.0.0",
-  "main": "dist/index.js",
-  "unpkg": "dist/browser/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "yarn lint:json && yarn lint:ts",
-    "lint:json": "prettier --list-different .eslintrc *.json",
-    "lint:ts": "eslint --ext .js,.ts --ignore-path .gitignore .",
-    "build": "tsc && browserify --debug --standalone COGS dist/index.js -o dist/browser/index.js",
-    "watch-build": "tsc -w",
-    "build-docs": "typedoc --out docs --name @clockworkdog/cogs-client src/index.ts",
-    "release": "yarn publish --access public"
-  },
-  "keywords": [],
-  "author": "Clockwork Dog <info@clockwork.dog>",
-  "license": "MIT",
-  "devDependencies": {
-    "@types/howler": "2.2.7",
-    "@types/node": "^18.14.1",
-    "@typescript-eslint/eslint-plugin": "^4.12.0",
-    "@typescript-eslint/parser": "^4.12.0",
-    "browserify": "^17.0.0",
-    "eslint": "^7.17.0",
-    "eslint-config-prettier": "^7.1.0",
-    "eslint-plugin-prettier": "^3.3.1",
-    "prettier": "^2.2.1",
-    "typedoc": "^0.25.7",
-    "typescript": "^5.1.6"
-  },
-  "dependencies": {
-    "@clockworkdog/media-stream-library-browser": "^11.1.1-fixes.6",
-    "howler": "clockwork-dog/howler.js#fix-looping-clips",
-    "reconnecting-websocket": "^4.4.0"
-  },
   "description": "Connect to COGS to build a custom Media Master",
+  "author": "Clockwork Dog <info@clockwork.dog>",
+  "homepage": "https://cogs.show",
+  "version": "0.0.0",
+  "keywords": [],
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/clockwork-dog/cogs-client-lib.git"
@@ -42,8 +13,38 @@
   "bugs": {
     "url": "https://github.com/clockwork-dog/cogs-client-lib/issues"
   },
-  "homepage": "https://cogs.show",
   "files": [
     "dist/**/*"
-  ]
+  ],
+  "main": "dist/index.js",
+  "unpkg": "dist/browser/index.js",
+  "scripts": {
+    "test": "yarn types && yarn lint",
+    "types": "tsc --noEmit",
+    "lint": "eslint .",
+    "build": "yarn build:ts && yarn build:browser",
+    "build:ts": "tsc",
+    "build:browser": "browserify --debug --standalone COGS dist/index.js -o dist/browser/index.js",
+    "watch-build": "tsc -w",
+    "build-docs": "typedoc --out ../../docs/javascript --name @clockworkdog/cogs-client src/index.ts",
+    "release": "yarn npm publish --access public"
+  },
+  "dependencies": {
+    "@clockworkdog/media-stream-library-browser": "11.1.1-fixes.7",
+    "howler": "clockwork-dog/howler.js#fix-looping-clips",
+    "reconnecting-websocket": "^4.4.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@types/howler": "2.2.12",
+    "@types/node": "^22.10.2",
+    "browserify": "^17.0.1",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "prettier": "^3.4.2",
+    "typedoc": "^0.27.5",
+    "typescript": "~5.7.2",
+    "typescript-eslint": "^8.18.1"
+  }
 }

@@ -4,7 +4,7 @@ import useCogsMessage from './useCogsMessage';
 
 export default function useWhenShowReset<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Connection extends CogsConnection<any>
+  Connection extends CogsConnection<any>,
 >(connection: Connection, whenReset: () => void): void {
   useCogsMessage(
     connection,
@@ -14,7 +14,7 @@ export default function useWhenShowReset<
           whenReset();
         }
       },
-      [whenReset]
-    )
+      [whenReset],
+    ),
   );
 }

@@ -2,9 +2,10 @@ import { CogsConnection, CogsIncomingEvent, ManifestTypes } from '@clockworkdog/
 import { useEffect } from 'react';
 import { ManifestFromConnection } from '../utils/types';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function useCogsEvents<Connection extends CogsConnection<any>>(
   connection: Connection,
-  handleEvent: (event: CogsIncomingEvent<ManifestTypes.EventFromCogs<ManifestFromConnection<Connection>>>) => void
+  handleEvent: (event: CogsIncomingEvent<ManifestTypes.EventFromCogs<ManifestFromConnection<Connection>>>) => void,
 ): void {
   useEffect(() => {
     const listener = (event: CogsIncomingEvent<ManifestTypes.EventFromCogs<ManifestFromConnection<Connection>>>) => handleEvent(event);

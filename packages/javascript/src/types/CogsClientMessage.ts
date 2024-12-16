@@ -71,7 +71,7 @@ type MediaClientMessage =
   | { type: 'image_hide'; file?: string }
   | { type: 'image_set_fit'; file: string; fit: MediaObjectFit };
 
-// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export type CogsClientMessage<CustomConfig = {}> =
   | ShowResetMessage
   | ShowPhaseMessage

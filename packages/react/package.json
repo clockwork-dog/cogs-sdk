@@ -1,50 +1,52 @@
 {
   "name": "@clockworkdog/cogs-client-react",
-  "version": "2.0.0",
-  "main": "dist/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "yarn lint:json && yarn lint:ts",
-    "lint:json": "prettier --list-different .eslintrc *.json",
-    "lint:ts": "eslint --ext .js,.ts --ignore-path .gitignore .",
-    "build": "tsc",
-    "watch-build": "tsc -w",
-    "build-docs": "typedoc --out docs --name @clockworkdog/cogs-client-react src/index.ts",
-    "release": "yarn publish --access public"
-  },
-  "keywords": [],
-  "author": "Clockwork Dog <info@clockwork.dog>",
-  "license": "MIT",
-  "devDependencies": {
-    "@types/node": "18",
-    "@types/react": "^17.0.0",
-    "@types/react-dom": "^17.0.0",
-    "@typescript-eslint/eslint-plugin": "^4.12.0",
-    "@typescript-eslint/parser": "^4.12.0",
-    "eslint": "^7.17.0",
-    "eslint-config-prettier": "^7.1.0",
-    "eslint-plugin-prettier": "^3.3.1",
-    "eslint-plugin-react": "^7.22.0",
-    "eslint-plugin-react-hooks": "^4.2.0",
-    "prettier": "^2.2.1",
-    "typedoc": "^0.25.7",
-    "typescript": "^5.1.6"
-  },
-  "dependencies": {
-    "@clockworkdog/cogs-client": "~2.5"
-  },
   "description": "React components and hooks to connect to COGS to build a custom Media Master",
+  "author": "Clockwork Dog <info@clockwork.dog>",
+  "homepage": "https://cogs.show",
+  "version": "0.0.0",
+  "keywords": [],
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/clockwork-dog/cogs-client-react-lib.git"
+    "url": "git+https://github.com/clockwork-dog/cogs-client-lib.git"
   },
   "bugs": {
-    "url": "https://github.com/clockwork-dog/cogs-client-react-lib/issues"
+    "url": "https://github.com/clockwork-dog/cogs-client-lib/issues"
   },
-  "homepage": "https://cogs.show",
-  "files": ["dist/**/*"],
+  "files": [
+    "dist/**/*"
+  ],
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "yarn types && yarn lint",
+    "types": "tsc --noEmit",
+    "lint": "eslint .",
+    "build": "tsc",
+    "watch-build": "tsc -w",
+    "build-docs": "typedoc --out ../../docs/react --name @clockworkdog/cogs-client-react src/index.ts",
+    "release": "yarn npm publish --access public"
+  },
+  "dependencies": {
+    "@clockworkdog/cogs-client": "workspace:^"
+  },
   "peerDependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.1",
+    "@types/react-dom": "^19.0.2",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "globals": "^15.13.0",
+    "prettier": "^3.4.2",
+    "typedoc": "^0.27.5",
+    "typescript": "~5.7.2",
+    "typescript-eslint": "^8.18.1"
   }
 }

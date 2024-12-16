@@ -1,5 +1,5 @@
 import { CogsVideoPlayer } from '@clockworkdog/cogs-client';
-import React, { useEffect, useRef } from 'react';
+import React, { ReactNode, useEffect, useRef } from 'react';
 import { useVideoPlayer } from '../providers/CogsConnectionProvider';
 
 export default function VideoContainer({
@@ -12,7 +12,7 @@ export default function VideoContainer({
   style?: React.CSSProperties;
   videoPlayer?: CogsVideoPlayer | null;
   fullscreen?: boolean | { style: React.CSSProperties };
-}): JSX.Element | null {
+}): ReactNode {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoPlayer = useVideoPlayer(customVideoPlayer ?? undefined);
 

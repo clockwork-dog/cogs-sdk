@@ -43,14 +43,14 @@ export default class DataStore<ItemsT extends { [key: string]: unknown } = { [ke
   public addEventListener<K extends keyof DataStoreEventMap>(
     type: K,
     listener: (event: DataStoreEventMap[K]) => void,
-    options?: boolean | AddEventListenerOptions
+    options?: boolean | AddEventListenerOptions,
   ): void {
     this.#eventTarget.addEventListener(type, listener as EventListener, options);
   }
   public removeEventListener<K extends keyof DataStoreEventMap>(
     type: K,
     listener: (event: DataStoreEventMap[K]) => void,
-    options?: boolean | EventListenerOptions
+    options?: boolean | EventListenerOptions,
   ): void {
     this.#eventTarget.removeEventListener(type, listener as EventListener, options);
   }
@@ -61,7 +61,10 @@ export default class DataStore<ItemsT extends { [key: string]: unknown } = { [ke
 
 export class DataStoreItemEvent extends Event {
   public readonly _cogsConnectionEventType = 'item';
-  constructor(public readonly key: string, public readonly value: unknown) {
+  constructor(
+    public readonly key: string,
+    public readonly value: unknown,
+  ) {
     super('item');
   }
 }

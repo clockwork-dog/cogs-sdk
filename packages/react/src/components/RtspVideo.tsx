@@ -1,5 +1,5 @@
 import { CogsRtspStreamer, LIVE_VIDEO_PLAYBACK_RATE } from '@clockworkdog/cogs-client';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import usePageVisibility from '../hooks/usePageVisibility';
 
 export interface RtspVideoProps {
@@ -22,7 +22,7 @@ export default function RtspVideo({
   websocketPath,
   live,
   ...rest
-}: RtspVideoProps & React.DetailedHTMLProps<React.VideoHTMLAttributes<HTMLVideoElement>, HTMLVideoElement>): JSX.Element | null {
+}: RtspVideoProps & React.DetailedHTMLProps<React.VideoHTMLAttributes<HTMLVideoElement>, HTMLVideoElement>): ReactNode {
   // We need to monitor the page visibility as we only want the stream to play when the page is visible
   // This is needed because the stream will "pause" when the page looses focus and start playback when it
   // becomes visible again. This will essentially cause a delay to be introduced into the stream when loosing
@@ -41,7 +41,7 @@ export default function RtspVideo({
         port: websocketPort,
         path: websocketPath,
       }),
-    [websocketHostname, websocketPath, websocketPort]
+    [websocketHostname, websocketPath, websocketPort],
   );
 
   // An effect which runs when the video element, page visibility, or URIs change

@@ -5,14 +5,14 @@ import { ManifestFromConnection } from '../utils/types';
 export default function useCogsEvent<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Connection extends CogsConnection<any>,
-  EventName extends string & ManifestTypes.EventNameFromCogs<ManifestFromConnection<Connection>>
+  EventName extends string & ManifestTypes.EventNameFromCogs<ManifestFromConnection<Connection>>,
 >(
   connection: Connection,
   eventName: EventName,
   handleEvent: (
     value: Extract<CogsIncomingEventTypes<ManifestTypes.EventFromCogs<ManifestFromConnection<Connection>>>, { name: EventName }>['value'],
-    name: EventName
-  ) => void
+    name: EventName,
+  ) => void,
 ): void {
   useEffect(() => {
     const listener = (event: ManifestTypes.EventFromCogs<ManifestFromConnection<Connection>>) => {

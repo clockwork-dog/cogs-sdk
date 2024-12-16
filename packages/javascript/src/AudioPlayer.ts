@@ -9,12 +9,9 @@ const DEBUG = false;
 // Check an iOS-only property (See https://developer.mozilla.org/en-US/docs/Web/API/Navigator#non-standard_properties)
 const IS_IOS = typeof (navigator as { standalone?: boolean }).standalone !== 'undefined';
 
-interface HTMLAudioElementWithAudioSink extends HTMLAudioElement {
-  setSinkId?: (sinkId: string) => void;
-}
 interface HowlWithHTMLSounds extends Howl {
   _html5?: unknown;
-  _sounds?: { _node?: HTMLAudioElementWithAudioSink }[];
+  _sounds?: { _node?: HTMLAudioElement }[];
 }
 
 interface InternalClipPlayer extends AudioClip {
@@ -34,6 +31,7 @@ export default class AudioPlayer {
   private audioClipPlayers: { [path: string]: InternalClipPlayer } = {};
   private sinkId = '';
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(private cogsConnection: CogsConnection<any>) {
     // Send the current status of each clip to COGS
     this.addEventListener('audioClipState', ({ detail }) => {
@@ -89,12 +87,12 @@ export default class AudioPlayer {
             state.type === 'stopping' ||
             state.type === 'play_requested' ||
             state.type === 'pause_requested' ||
-            state.type === 'stop_requested'
+            state.type === 'stop_requested',
         )
           ? ('playing' as const)
           : activeClips.some(({ state }) => state.type === 'paused')
-          ? ('paused' as const)
-          : ('stopped' as const);
+            ? ('paused' as const)
+            : ('stopped' as const);
         return [file, status] as [string, typeof status];
       });
       cogsConnection.sendInitialMediaClipStates({ mediaType: 'audio', files });
@@ -188,7 +186,7 @@ export default class AudioPlayer {
               this.handleStoppedClip(path, playId, soundId);
             }
           },
-          soundId
+          soundId,
         );
 
         const activeClip: ActiveClip = {
@@ -216,7 +214,7 @@ export default class AudioPlayer {
               this.updateActiveAudioClip(path, soundId, (clip) => ({ ...clip, state: { type: 'playing' } }));
             }
           },
-          soundId
+          soundId,
         );
 
         // To fade or to no fade?
@@ -229,7 +227,7 @@ export default class AudioPlayer {
             () => {
               fadeAudioPlayerVolume(clipPlayer.player, volume, fade * 1000, soundId);
             },
-            soundId
+            soundId,
           );
         } else {
           setAudioPlayerVolume(clipPlayer.player, volume, soundId);
@@ -269,7 +267,7 @@ export default class AudioPlayer {
                     this.updateActiveAudioClip(path, soundId, (clip) => ({ ...clip, state: { type: 'paused' } }));
                     this.notifyClipStateListeners(clip.playId, path, 'paused');
                   },
-                  soundId
+                  soundId,
                 );
 
                 fadeAudioPlayerVolume(clipPlayer.player, 0, fade * 1000, soundId);
@@ -291,7 +289,7 @@ export default class AudioPlayer {
           }
 
           return [soundIdStr, clip];
-        })
+        }),
       );
 
       return clipPlayer;
@@ -332,7 +330,7 @@ export default class AudioPlayer {
                     clipPlayer.player.loop(false, soundId);
                     clipPlayer.player.stop(soundId);
                   },
-                  soundId
+                  soundId,
                 );
 
                 log('CLIP -> stopping', soundId);
@@ -353,7 +351,7 @@ export default class AudioPlayer {
           }
 
           return [soundIdStr, clip];
-        })
+        }),
       );
 
       return clipPlayer;
@@ -395,7 +393,7 @@ export default class AudioPlayer {
           } else {
             return [soundIdStr, clip] as const;
           }
-        })
+        }),
       );
 
       return clipPlayer;
@@ -415,7 +413,7 @@ export default class AudioPlayer {
     this.updateAudioClipPlayer(path, (clipPlayer) =>
       soundId in clipPlayer.activeClips
         ? { ...clipPlayer, activeClips: { ...clipPlayer.activeClips, [soundId]: update(clipPlayer.activeClips[soundId]) } }
-        : clipPlayer
+        : clipPlayer,
     );
   }
 
@@ -449,7 +447,7 @@ export default class AudioPlayer {
         // COGS 4.6 did not send a `type` but only reported audio files
         // so we assume audio if no `type` is given
         return type === 'audio' || !type;
-      })
+      }),
     );
 
     const previousClipPlayers = this.audioClipPlayers;
@@ -457,7 +455,7 @@ export default class AudioPlayer {
       const clipPlayers = { ...previousClipPlayers };
 
       const removedClips = Object.keys(previousClipPlayers).filter(
-        (previousFile) => !(previousFile in newAudioFiles) && !previousClipPlayers[previousFile].config.ephemeral
+        (previousFile) => !(previousFile in newAudioFiles) && !previousClipPlayers[previousFile].config.ephemeral,
       );
       removedClips.forEach((file) => {
         const player = previousClipPlayers[file].player;
@@ -481,15 +479,18 @@ export default class AudioPlayer {
   }
 
   private notifyStateListeners() {
-    const clips = Object.entries(this.audioClipPlayers).reduce((clips, [path, clipPlayer]) => {
-      clips[path] = {
-        config: { preload: clipPlayer.config.preload, ephemeral: clipPlayer.config.ephemeral },
-        activeClips: clipPlayer.activeClips,
-      };
-      return clips;
-    }, {} as { [path: string]: AudioClip });
+    const clips = Object.entries(this.audioClipPlayers).reduce(
+      (clips, [path, clipPlayer]) => {
+        clips[path] = {
+          config: { preload: clipPlayer.config.preload, ephemeral: clipPlayer.config.ephemeral },
+          activeClips: clipPlayer.activeClips,
+        };
+        return clips;
+      },
+      {} as { [path: string]: AudioClip },
+    );
     const isPlaying = Object.values(this.audioClipPlayers).some(({ activeClips }) =>
-      Object.values(activeClips).some((clip) => clip.state.type === 'playing' || clip.state.type === 'pausing' || clip.state.type === 'stopping')
+      Object.values(activeClips).some((clip) => clip.state.type === 'playing' || clip.state.type === 'pausing' || clip.state.type === 'stopping'),
     );
     const audioState: AudioState = {
       globalVolume: this.globalVolume,
@@ -507,14 +508,14 @@ export default class AudioPlayer {
   public addEventListener<EventName extends keyof EventTypes>(
     type: EventName,
     listener: (ev: CustomEvent<EventTypes[EventName]>) => void,
-    options?: boolean | AddEventListenerOptions
+    options?: boolean | AddEventListenerOptions,
   ): void {
     this.eventTarget.addEventListener(type, listener as EventListener, options);
   }
   public removeEventListener<EventName extends keyof EventTypes>(
     type: EventName,
     listener: (ev: CustomEvent<EventTypes[EventName]>) => void,
-    options?: boolean | EventListenerOptions
+    options?: boolean | EventListenerOptions,
   ): void {
     this.eventTarget.removeEventListener(type, listener as EventListener, options);
   }
@@ -553,7 +554,7 @@ export default class AudioPlayer {
   }
 }
 
-function log(...data: any[]): void {
+function log(...data: unknown[]): void {
   if (DEBUG) {
     console.log(...data);
   }

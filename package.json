@@ -1,0 +1,19 @@
+{
+  "name": "cogs-sdk",
+  "version": "0.0.0",
+  "private": true,
+  "author": "Clockwork Dog <info@clockwork.dog>",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*"
+  ],
+  "packageManager": "yarn@4.5.1",
+  "scripts": {
+    "test": "yarn workspaces foreach --all run test",
+    "types": "yarn workspaces foreach --all run types",
+    "lint": "yarn workspaces foreach --all run lint",
+    "build": "yarn workspaces foreach --all --topological run build",
+    "build-docs": "yarn workspaces foreach --all --topological run build-docs",
+    "release": "yarn workspaces foreach --all run release"
+  }
+}

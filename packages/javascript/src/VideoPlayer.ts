@@ -4,12 +4,8 @@ import MediaClipStateMessage, { MediaStatus } from './types/MediaClipStateMessag
 import CogsClientMessage from './types/CogsClientMessage';
 import { MediaObjectFit } from '.';
 
-interface HTMLVideoElementWithAudioSink extends HTMLVideoElement {
-  setSinkId?: (sinkId: string) => void;
-}
-
 interface InternalClipPlayer extends VideoClip {
-  videoElement: HTMLVideoElementWithAudioSink;
+  videoElement: HTMLVideoElement;
   volume: number;
 }
 
@@ -31,7 +27,11 @@ export default class VideoPlayer {
   private parentElement: HTMLElement;
   private sinkId = '';
 
-  constructor(private cogsConnection: CogsConnection<any>, parentElement: HTMLElement = DEFAULT_PARENT_ELEMENT) {
+  constructor(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private cogsConnection: CogsConnection<any>,
+    parentElement: HTMLElement = DEFAULT_PARENT_ELEMENT,
+  ) {
     this.parentElement = parentElement;
 
     // Send the current status of each clip to COGS
@@ -81,8 +81,8 @@ export default class VideoPlayer {
         const status = !player.videoElement.paused
           ? ('playing' as const)
           : player.videoElement.currentTime === 0 || player.videoElement.currentTime === player.videoElement.duration
-          ? ('paused' as const)
-          : ('stopped' as const);
+            ? ('paused' as const)
+            : ('stopped' as const);
         return [file, status] as [string, typeof status];
       });
       cogsConnection.sendInitialMediaClipStates({ mediaType: 'video', files });
@@ -310,7 +310,7 @@ export default class VideoPlayer {
             loop: this.videoClipPlayers[this.activeClip.path].videoElement?.loop ?? false,
             volume: this.videoClipPlayers[this.activeClip.path].videoElement?.muted
               ? 0
-              : this.videoClipPlayers[this.activeClip.path].videoElement?.volume ?? 0,
+              : (this.videoClipPlayers[this.activeClip.path].videoElement?.volume ?? 0),
           }
         : undefined,
     };
@@ -325,14 +325,14 @@ export default class VideoPlayer {
   public addEventListener<EventName extends keyof EventTypes>(
     type: EventName,
     listener: (ev: CustomEvent<EventTypes[EventName]>) => void,
-    options?: boolean | AddEventListenerOptions
+    options?: boolean | AddEventListenerOptions,
   ): void {
     this.eventTarget.addEventListener(type, listener as EventListener, options);
   }
   public removeEventListener<EventName extends keyof EventTypes>(
     type: EventName,
     listener: (ev: CustomEvent<EventTypes[EventName]>) => void,
-    options?: boolean | EventListenerOptions
+    options?: boolean | EventListenerOptions,
   ): void {
     this.eventTarget.removeEventListener(type, listener as EventListener, options);
   }

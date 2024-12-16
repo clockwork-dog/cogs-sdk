@@ -1,16 +1,9 @@
 {
-  "eslint.autoFixOnSave": true,
   "eslint.validate": [
     "javascript",
     "javascriptreact",
-    {
-      "language": "html",
-      "autoFix": true
-    },
-    {
-      "language": "typescript",
-      "autoFix": true
-    }
+    "html",
+    "typescript"
   ],
   "editor.formatOnSave": true,
   "typescript.tsdk": "node_modules/typescript/lib",
@@ -21,6 +14,7 @@
     "clockworkdog",
     "fullscreen",
     "Rtsp",
+    "RTSP",
     "typedoc"
   ]
 }

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 export default function useCogsConfig<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Connection extends CogsConnection<any>
+  Connection extends CogsConnection<any>,
 >(connection: Connection): Connection['config'] {
   const [config, setConfig] = useState<Connection['config']>(connection.config);
 

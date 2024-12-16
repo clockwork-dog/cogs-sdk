@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 export default function useIsConnected<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Connection extends CogsConnection<any>
+  Connection extends CogsConnection<any>,
 >(connection: Connection): boolean {
   const [isConnected, setConnected] = useState(connection.isConnected);
 

@@ -64,7 +64,7 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
     readonly manifest: Manifest,
     { hostname = document.location.hostname, port = COGS_SERVER_PORT }: { hostname?: string; port?: number } = {},
     initialClientState?: Partial<ManifestTypes.StateAsObject<Manifest, { writableFromClient: true }>>,
-    initialDataStoreData?: DataT
+    initialDataStoreData?: DataT,
   ) {
     this.currentState = { ...(initialClientState as ManifestTypes.StateAsObject<Manifest, { writableFromClient: true }>) };
     this.store = new DataStore<DataT>(initialDataStoreData ?? ({} as DataT));
@@ -109,7 +109,7 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
             this.dispatchEvent(new CogsStateChangedEvent(parsed.updates));
           } else if (parsed.event && parsed.event.key) {
             this.dispatchEvent(
-              new CogsIncomingEvent(parsed.event.key, parsed.event.value) as CogsIncomingEventTypes<ManifestTypes.EventFromCogs<Manifest>>
+              new CogsIncomingEvent(parsed.event.key, parsed.event.value) as CogsIncomingEventTypes<ManifestTypes.EventFromCogs<Manifest>>,
             );
           } else if (typeof parsed.message === 'object') {
             const message: CogsClientMessage = parsed.message;
@@ -192,7 +192,7 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
             key: eventName,
             value: eventValue,
           },
-        })
+        }),
       );
     }
   }
@@ -247,14 +247,14 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
   public addEventListener<EventType extends CogsConnectionEvent<Manifest>['_cogsConnectionEventType']>(
     type: EventType,
     listener: (event: CogsConnectionEvent<Manifest> & { _cogsConnectionEventType: EventType }) => void,
-    options?: boolean | AddEventListenerOptions
+    options?: boolean | AddEventListenerOptions,
   ): void {
     this.eventTarget.addEventListener(type, listener as EventListener, options);
   }
   public removeEventListener<EventType extends CogsConnectionEvent<Manifest>['_cogsConnectionEventType']>(
     type: EventType,
     listener: (event: Extract<CogsConnectionEvent<Manifest>, { _cogsConnectionEventType: EventType }>) => void,
-    options?: boolean | EventListenerOptions
+    options?: boolean | EventListenerOptions,
   ): void {
     this.eventTarget.removeEventListener(type, listener as EventListener, options);
   }
@@ -263,9 +263,7 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
   }
 }
 
-function websocketParametersFromUrl(
-  url: string
-): {
+function websocketParametersFromUrl(url: string): {
   path: string;
   pathParams?: URLSearchParams;
   useReconnectingWebsocket?: boolean;
@@ -355,7 +353,10 @@ export class CogsStateChangedEvent<CogsState> extends Event {
 
 export class CogsIncomingEvent<CogsEvent extends DeepReadonly<PluginManifestEventJson> | PluginManifestEventJson> extends Event {
   public readonly _cogsConnectionEventType = 'event';
-  constructor(public readonly name: CogsEvent['name'], public readonly value: ManifestTypes.TypeFromCogsValueType<CogsEvent['value']>) {
+  constructor(
+    public readonly name: CogsEvent['name'],
+    public readonly value: ManifestTypes.TypeFromCogsValueType<CogsEvent['value']>,
+  ) {
     super('event');
   }
 }

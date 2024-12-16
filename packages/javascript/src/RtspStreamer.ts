@@ -71,7 +71,7 @@ export default class RtspStreamer {
 
     if (params.restartIfStopped) {
       let playing = false;
-      let interval: NodeJS.Timer | null = null;
+      let interval: ReturnType<typeof setInterval> | null = null;
       const handleTimeUpdate = () => {
         playing = true;
       };

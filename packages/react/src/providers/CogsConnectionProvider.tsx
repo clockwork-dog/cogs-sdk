@@ -1,5 +1,5 @@
 import { CogsAudioPlayer, CogsConnection, CogsPluginManifest, CogsVideoPlayer } from '@clockworkdog/cogs-client';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react';
 
 type CogsConnectionContextValue<Manifest extends CogsPluginManifest> = {
   useCogsConnection: (customConnection?: CogsConnection<Manifest>) => CogsConnection<Manifest>;
@@ -7,6 +7,7 @@ type CogsConnectionContextValue<Manifest extends CogsPluginManifest> = {
   useVideoPlayer: (customVideoPlayer?: CogsVideoPlayer) => CogsVideoPlayer | null;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CogsConnectionContext = React.createContext<CogsConnectionContextValue<any>>({
   useCogsConnection: (customConnection) => {
     if (!customConnection) {
@@ -90,8 +91,8 @@ export default function CogsConnectionProvider<Manifest extends CogsPluginManife
   children: React.ReactNode;
   audioPlayer?: boolean;
   videoPlayer?: boolean;
-}): JSX.Element | null {
-  const connectionRef = useRef<CogsConnection<Manifest>>();
+}): ReactNode | null {
+  const connectionRef = useRef<CogsConnection<Manifest>>(undefined);
   const [, forceRender] = useState({});
 
   useEffect(() => {
@@ -104,14 +105,14 @@ export default function CogsConnectionProvider<Manifest extends CogsPluginManife
     };
   }, [manifest, hostname, port]);
 
-  const audioPlayerRef = useRef<CogsAudioPlayer>();
+  const audioPlayerRef = useRef<CogsAudioPlayer>(undefined);
   useEffect(() => {
     if (audioPlayer && !audioPlayerRef.current && connectionRef.current) {
       audioPlayerRef.current = new CogsAudioPlayer(connectionRef.current);
     }
   }, [audioPlayer]);
 
-  const videoPlayerRef = useRef<CogsVideoPlayer>();
+  const videoPlayerRef = useRef<CogsVideoPlayer>(undefined);
   useEffect(() => {
     if (videoPlayer && !videoPlayerRef.current && connectionRef.current) {
       videoPlayerRef.current = new CogsVideoPlayer(connectionRef.current);
@@ -124,7 +125,6 @@ export default function CogsConnectionProvider<Manifest extends CogsPluginManife
   }
 
   const value: CogsConnectionContextValue<Manifest> = {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     useCogsConnection: (customConnection) => customConnection ?? connectionRef.current!,
     useAudioPlayer: (customAudioPlayer) => customAudioPlayer ?? audioPlayerRef.current ?? null,
     useVideoPlayer: (customVideoPlayer) => customVideoPlayer ?? videoPlayerRef.current ?? null,
