@@ -109,7 +109,7 @@ import * as manifest from './cogs-plugin-manifest.js';
 
 See https://github.com/clockwork-dog/cra-template-cogs-client
 
-### Create React App (deprecated)
+### Create React App project setup (deprecated)
 
 1. Create a project with `create-react-app` as usual
    e.g.
