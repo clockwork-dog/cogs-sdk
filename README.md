@@ -151,4 +151,6 @@ See https://github.com/clockwork-dog/cra-template-cogs-client
 
 ## Tips
 
+### Don't load assets over the internet
+
 We recommend that you do not rely on loading content over the internet for maximum reliability. This means your content will load correctly and quickly even when internet connectivity at your venue is not perfect. You should include all CSS, fonts, Javascript, etc in your plugin.
