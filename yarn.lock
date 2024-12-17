@@ -9,7 +9,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@clockworkdog/cogs-client-react@workspace:packages/react"
   dependencies:
-    "@clockworkdog/cogs-client": "workspace:^"
+    "@clockworkdog/cogs-client": "workspace:^0.0.0"
     "@eslint/js": "npm:^9.17.0"
     "@types/node": "npm:^22.10.2"
     "@types/react": "npm:^19.0.1"
@@ -30,7 +30,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@clockworkdog/cogs-client@workspace:^, @clockworkdog/cogs-client@workspace:packages/javascript":
+"@clockworkdog/cogs-client@workspace:^0.0.0, @clockworkdog/cogs-client@workspace:packages/javascript":
   version: 0.0.0-use.local
   resolution: "@clockworkdog/cogs-client@workspace:packages/javascript"
   dependencies:
