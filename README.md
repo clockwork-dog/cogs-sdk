@@ -40,7 +40,7 @@ Some other features you can add to your custom content include:
 - Show the COGS show timer
 - Connect to MIDI or WebSerial devices
 
-### Contents of Media Master custom content
+### Structure of Media Master custom content
 
 A folder in the `client_content` directory of a COGS Project, containing:
 
@@ -54,7 +54,7 @@ A folder in the `client_content` directory of a COGS Project, containing:
 
 COGS Plugins can be loaded into COGS to integrate with other systems or add specialised features to COGS.
 
-### Contents of a COGS Plugin
+### Structure of a COGS Plugin
 
 A COGS plugin is a folder in the `plugins` directory of a COGS Project. The plugin directory name is the ID of the plugin (e.g. `dog.clockwork.http`) and contains:
 
