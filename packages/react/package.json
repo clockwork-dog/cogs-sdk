@@ -2,16 +2,16 @@
   "name": "@clockworkdog/cogs-client-react",
   "description": "React components and hooks to connect to COGS to build a custom Media Master",
   "author": "Clockwork Dog <info@clockwork.dog>",
-  "homepage": "https://cogs.show",
+  "homepage": "https://github.com/clockwork-dog/cogs-sdk/tree/main/packages/react",
   "version": "0.0.0",
   "keywords": [],
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/clockwork-dog/cogs-client-lib.git"
+    "url": "git+https://github.com/clockwork-dog/cogs-sdk.git"
   },
   "bugs": {
-    "url": "https://github.com/clockwork-dog/cogs-client-lib/issues"
+    "url": "https://github.com/clockwork-dog/cogs-sdk/issues"
   },
   "files": [
     "dist/**/*"

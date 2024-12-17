@@ -2,7 +2,7 @@
 
 Create content for your COGS Media Master
 
-## [Documentation](https://clockwork-dog.github.io/cogs-client-lib/)
+## [Documentation](https://clockwork-dog.github.io/cogs-sdk/javascript/)
 
 ## Add to your project
 
@@ -32,7 +32,7 @@ yarn add @clockworkdog/cogs-client
 
 ### Create a `cogs-plugin-manifest.js` file
 
-See [CogsPluginManifestJson](https://clockwork-dog.github.io/cogs-client-lib/interfaces/CogsPluginManifestJson.html) for details of what to include.
+See [CogsPluginManifestJson](https://clockwork-dog.github.io/cogs-sdk/javascript/interfaces/CogsPluginManifestJson.html) for details of what to include.
 
 If using Typescript set `"allowJs": true` in your `tsconfig.json`.
 
@@ -107,7 +107,7 @@ import { CogsConnection, CogsAudioPlayer } from '@clockworkdog/cogs-client';
 
 ### Connect to COGS
 
-Initialize a [CogsConnection](https://clockwork-dog.github.io/cogs-client-lib/interfaces/CogsConnection.html) with the manifest you created above.
+Initialize a [CogsConnection](https://clockwork-dog.github.io/cogs-sdk/javascript/classes/CogsConnection.html) with the manifest you created above.
 
 ```ts
 let connected = false;
@@ -182,7 +182,7 @@ Add `audio` to `cogs-plugin-manifest.js`:
 }
 ```
 
-Add [CogsAudioPlayer](https://clockwork-dog.github.io/cogs-client-lib/classes/CogsAudioPlayer.html) to your page:
+Add [CogsAudioPlayer](https://clockwork-dog.github.io/cogs-sdk/javascript/classes/CogsAudioPlayer.html) to your page:
 
 ```ts
 const audioPlayer = new CogsAudioPlayer(cogsConnection);

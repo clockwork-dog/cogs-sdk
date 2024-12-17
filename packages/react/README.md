@@ -4,7 +4,7 @@ Use this library to create custom content for your COGS Media Master or COGS Plu
 
 We recommend using the [`cogs-client` Create React App template](https://github.com/clockwork-dog/cra-template-cogs-client) to get started or follow this guide to add `@clockworkdog/cogs-client-react` to your existing project.
 
-## [Documentation](https://clockwork-dog.github.io/cogs-client-react-lib/)
+## [Documentation](https://clockwork-dog.github.io/cogs-sdk/react/)
 
 ## Add to your project
 
@@ -22,7 +22,7 @@ yarn add @clockworkdog/cogs-client-react
 
 1. Create a `cogs-plugin-manifest.js` file in the public folder of your project.
 
-See the [CogsPluginManifestJson documentation](https://clockwork-dog.github.io/cogs-client-lib/interfaces/CogsPluginManifestJson.html) for more information on the manifest format.
+See the [CogsPluginManifestJson documentation](https://clockwork-dog.github.io/cogs-sdk/javascript/interfaces/CogsPluginManifestJson.html) for more information on the manifest format.
 
 e.g.
 
