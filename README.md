@@ -48,7 +48,7 @@ A COGS plugin is a folder in the `plugins` directory of a COGS Project. The plug
 
 COGS Plugins can be loaded into COGS to integrate with other systems, or can even be used to display custom web content on a COGS Media Master.
 
-### Contents of a COGS Plugin
+### Structure of a COGS Plugin
 
 A COGS plugin is a folder in the `plugins` or `client_content` directory of a COGS Project. The plugin directory name is the ID of the plugin (e.g. `dog.clockwork.http`) and contains:
 
