@@ -9,24 +9,6 @@ You can choose to use either the:
 
 Learn more in the [COGS technical documentation](https://docs.cogs.show).
 
-## Quick start
-
-Add the COGS JavaScript SDK to your project:
-
-```bash
-npm install --save @clockworkdog/cogs-client
-# OR
-yarn add @clockworkdog/cogs-client
-```
-
-or if you are using React:
-
-```bash
-npm install --save @clockworkdog/cogs-client-react
-# OR
-yarn add @clockworkdog/cogs-client-react
-```
-
 ## COGS Media Master custom content
 
 ### What is a Media Master custom content?
