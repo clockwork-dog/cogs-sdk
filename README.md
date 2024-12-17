@@ -44,20 +44,6 @@ A COGS plugin is a folder in the `plugins` directory of a COGS Project. The plug
 - An HTML page with the content of your plugin, usually `index.html`
 - Some Javascript, loaded by the HTML page, that uses the [COGS SDK](https://github.com/clockwork-dog/cogs-sdk) to communicate with COGS.
 
-### What is a Plugin?
-
-COGS Plugins can be loaded into COGS to integrate with other systems, or can even be used to display custom web content on a COGS Media Master.
-
-### Structure of a COGS Plugin
-
-A COGS plugin is a folder in the `plugins` or `client_content` directory of a COGS Project. The plugin directory name is the ID of the plugin (e.g. `dog.clockwork.http`) and contains:
-
-- A [`cogs-plugin-manifest.js` manifest file](https://clockwork-dog.github.io/cogs-client-lib/interfaces/CogsPluginManifestJson.html)
-- An HTML page with the content of your plugin, usually `index.html`
-- Some Javascript, loaded by the HTML page, that uses [`@clockworkdog/cogs-client-lib`](https://www.npmjs.com/package/@clockworkdog/cogs-client) to communicate with COGS.
-
-You can use the [`@clockworkdog/cogs-client-react-lib` React library](https://www.npmjs.com/package/@clockworkdog/cogs-client-react) to create your plugin content with React or, better yet, use the [`@clockworkdog/cogs-client` Create React App template](https://www.npmjs.com/package/@clockworkdog/cra-template-cogs-client) to get up and running quickly.
-
 ## Getting started
 
 If creating new COGS Media Master custom content or a new COGS Plugin we recommend using Vite and Typescript to create your project.
