@@ -1,4 +1,4 @@
-# COGS Client React library
+# COGS SDK - React
 
 Use this library to create custom content for your COGS Media Master or COGS Plugin
 
