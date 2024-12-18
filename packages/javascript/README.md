@@ -1,4 +1,4 @@
-# COGS Client library
+# COGS SDK - Javascript
 
 Create content for your COGS Media Master
 
