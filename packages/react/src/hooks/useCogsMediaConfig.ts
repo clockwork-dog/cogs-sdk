@@ -2,7 +2,7 @@ import { CogsConnection, MediaClientConfig } from '@clockworkdog/cogs-client';
 import { useEffect, useState } from 'react';
 
 export default function useCogsMediaConfig<
-  MediaConfigExtra extends unknown = Record<never, never>,
+  MediaConfigExtra,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 >(connection: CogsConnection<any>): (MediaClientConfig & MediaConfigExtra) | null {
   const [mediaConfig, setMediaConfig] = useState<(MediaClientConfig & MediaConfigExtra) | null>(null);
