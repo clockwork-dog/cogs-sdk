@@ -45,8 +45,11 @@ export type Media =
       preload: boolean | 'auto' | 'metadata' | 'none';
     };
 
-interface MediaClientConfigMessage {
+export interface MediaClientConfigMessage extends MediaClientConfig {
   type: 'media_config_update';
+}
+
+export interface MediaClientConfig {
   globalVolume: number;
   audioOutput?: string;
   files: {

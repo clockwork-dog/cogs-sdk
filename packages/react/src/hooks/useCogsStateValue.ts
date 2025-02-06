@@ -10,6 +10,9 @@ export default function useCogsStateValue<
   const [value, setValue] = useState<ManifestTypes.StateValue<ManifestFromConnection<Connection>, Name>>(connection.state[stateName]);
 
   useEffect(() => {
+    // Use the latest state in case it has changed before this useEffect ran
+    setValue(connection.state[stateName]);
+
     const listener = ({ state }: CogsStateChangedEvent<Partial<ManifestTypes.StateAsObject<ManifestFromConnection<Connection>>>>) => {
       const value = state[stateName];
       if (value !== undefined) {

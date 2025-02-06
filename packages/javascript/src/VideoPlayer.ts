@@ -1,15 +1,13 @@
-import CogsConnection from './CogsConnection';
-import { ActiveVideoClipState, VideoClip, VideoState } from './types/VideoState';
-import MediaClipStateMessage, { MediaStatus } from './types/MediaClipStateMessage';
-import CogsClientMessage from './types/CogsClientMessage';
 import { MediaObjectFit } from '.';
+import CogsConnection from './CogsConnection';
+import { MediaClientConfig } from './types/CogsClientMessage';
+import MediaClipStateMessage, { MediaStatus } from './types/MediaClipStateMessage';
+import { ActiveVideoClipState, VideoClip, VideoState } from './types/VideoState';
 
 interface InternalClipPlayer extends VideoClip {
   videoElement: HTMLVideoElement;
   volume: number;
 }
-
-type MediaClientConfigMessage = Extract<CogsClientMessage, { type: 'media_config_update' }>;
 
 type EventTypes = {
   state: VideoState;
@@ -253,7 +251,7 @@ export default class VideoPlayer {
     this.sinkId = sinkId;
   }
 
-  private updateConfig(newPaths: MediaClientConfigMessage['files']) {
+  private updateConfig(newPaths: MediaClientConfig['files']) {
     const newVideoPaths = Object.fromEntries(Object.entries(newPaths).filter(([, { type }]) => type === 'video' || !type));
 
     const previousClipPlayers = this.videoClipPlayers;

@@ -1,6 +1,5 @@
-import { CogsClientMessage, CogsConnection, ShowPhase } from '@clockworkdog/cogs-client';
-import { useCallback, useState } from 'react';
-import useCogsMessage from './useCogsMessage';
+import { CogsConnection, ShowPhase } from '@clockworkdog/cogs-client';
+import { useEffect, useState } from 'react';
 
 export default function useShowPhase<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -8,14 +7,14 @@ export default function useShowPhase<
 >(connection: Connection): ShowPhase {
   const [status, setStatus] = useState(connection.showPhase);
 
-  useCogsMessage(
-    connection,
-    useCallback((message: CogsClientMessage) => {
-      if (message.type === 'show_phase') {
-        setStatus(message.phase);
-      }
-    }, []),
-  );
+  useEffect(() => {
+    // Use the latest show phase in case it has changed before this useEffect ran
+    setStatus(connection.showPhase);
+
+    const listener = () => setStatus(connection.showPhase);
+    connection.addEventListener('showPhase', listener);
+    return () => connection.removeEventListener('showPhase', listener);
+  }, [connection]);
 
   return status;
 }

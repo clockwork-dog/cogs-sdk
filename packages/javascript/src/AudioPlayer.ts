@@ -2,7 +2,7 @@ import { Howl, Howler } from 'howler';
 import CogsConnection from './CogsConnection';
 import { ActiveClip, AudioClip, AudioState } from './types/AudioState';
 import MediaClipStateMessage, { MediaStatus } from './types/MediaClipStateMessage';
-import CogsClientMessage, { Media } from './types/CogsClientMessage';
+import { Media, MediaClientConfig } from './types/CogsClientMessage';
 
 const DEBUG = false;
 
@@ -17,8 +17,6 @@ interface HowlWithHTMLSounds extends Howl {
 interface InternalClipPlayer extends AudioClip {
   player: HowlWithHTMLSounds;
 }
-
-type MediaClientConfigMessage = Extract<CogsClientMessage, { type: 'media_config_update' }>;
 
 type EventTypes = {
   state: AudioState;
@@ -440,7 +438,7 @@ export default class AudioPlayer {
     this.sinkId = sinkId;
   }
 
-  private updateConfig(newFiles: MediaClientConfigMessage['files']) {
+  private updateConfig(newFiles: MediaClientConfig['files']) {
     const newAudioFiles = Object.fromEntries(
       Object.entries(newFiles).filter((file): file is [string, Extract<Media, { type: 'audio' }>] => {
         const type = file[1].type;
@@ -588,6 +586,7 @@ function setPlayerSinkId(player: HowlWithHTMLSounds, sinkId: string | undefined)
  * This doesn't work on iOS (volume is read-only) so at least mute it if the volume is zero
  */
 function setAudioPlayerVolume(howl: HowlWithHTMLSounds, volume: number, soundId: number) {
+  log('Setting volume', volume, soundId);
   howl.volume(volume, soundId);
   howl.mute(volume === 0, soundId);
 }

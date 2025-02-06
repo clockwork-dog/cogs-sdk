@@ -1,6 +1,6 @@
 import ShowPhase from './types/ShowPhase';
 import ReconnectingWebSocket from 'reconnecting-websocket';
-import CogsClientMessage from './types/CogsClientMessage';
+import CogsClientMessage, { MediaClientConfig } from './types/CogsClientMessage';
 import { COGS_SERVER_PORT, assetUrl } from './helpers/urls';
 import MediaClipStateMessage from './types/MediaClipStateMessage';
 import AllMediaClipStatesMessage from './types/AllMediaClipStatesMessage';
@@ -31,6 +31,11 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
   private _timerState: TimerState | null = null;
   public get timerState(): TimerState | null {
     return this._timerState ? { ...this._timerState } : null;
+  }
+
+  private _mediaConfig: MediaClientConfig | null = null;
+  public get mediaConfig(): MediaClientConfig | null {
+    return this._mediaConfig ? { ...this._mediaConfig } : null;
   }
 
   /**
@@ -123,8 +128,11 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
                 break;
               case 'show_phase':
                 this._showPhase = message.phase;
+
+                this.dispatchEvent(new CogsShowPhaseChangedEvent(message.phase));
                 break;
               case 'media_config_update':
+                this._mediaConfig = message;
                 for (const optionName of ['preferOptimizedAudio', 'preferOptimizedVideo', 'preferOptimizedImages'] as const) {
                   const optionEnabled: boolean | undefined = message[optionName];
                   if (optionEnabled) {
@@ -133,6 +141,8 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
                     this.urlParams.delete(optionName);
                   }
                 }
+
+                this.dispatchEvent(new CogsMediaConfigChangedEvent(message));
                 break;
               case 'data_store_items':
                 this.store.handleDataStoreItemsMessage(message);
@@ -361,6 +371,20 @@ export class CogsIncomingEvent<CogsEvent extends DeepReadonly<PluginManifestEven
   }
 }
 
+export class CogsMediaConfigChangedEvent extends Event {
+  public readonly _cogsConnectionEventType = 'mediaConfig';
+  constructor(public readonly mediaConfig: MediaClientConfig) {
+    super('mediaConfig');
+  }
+}
+
+export class CogsShowPhaseChangedEvent extends Event {
+  public readonly _cogsConnectionEventType = 'showPhase';
+  constructor(public readonly showPhase: ShowPhase) {
+    super('showPhase');
+  }
+}
+
 /**
  * Allows CogsIncomingEvent of each supported value type
  */
@@ -374,4 +398,6 @@ export type CogsConnectionEvent<Manifest extends CogsPluginManifest> =
   | CogsMessageEvent
   | CogsConfigChangedEvent<ManifestTypes.ConfigAsObject<Manifest>>
   | CogsStateChangedEvent<Partial<ManifestTypes.StateAsObject<Manifest>>>
-  | CogsIncomingEventTypes<ManifestTypes.EventFromCogs<Manifest>>;
+  | CogsIncomingEventTypes<ManifestTypes.EventFromCogs<Manifest>>
+  | CogsMediaConfigChangedEvent
+  | CogsShowPhaseChangedEvent;
