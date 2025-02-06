@@ -8,9 +8,11 @@ export default function useCogsConfig<
   const [config, setConfig] = useState<Connection['config']>(connection.config);
 
   useEffect(() => {
+    // Use the latest config in case it has changed before this useEffect ran
+    setConfig(connection.config);
+
     const listener = (event: CogsConfigChangedEvent<Connection['config']>) => setConfig(event.config);
     connection.addEventListener('config', listener);
-    setConfig(connection.config); // Use the latest config in case is has changed before this useEffect ran
     return () => connection.removeEventListener('config', listener);
   }, [connection]);
 
