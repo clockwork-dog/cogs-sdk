@@ -5,7 +5,7 @@ Create custom content for your COGS Media Master or custom plugins for COGS.
 You can choose to use either the:
 
 - [JavaScript COGS SDK](./packages/javascript/README.md)
-- [React COGS SDK](./packages/javascript/README.md)
+- [React COGS SDK](./packages/react/README.md)
 
 Learn more in the [COGS technical documentation](https://docs.cogs.show).
 
@@ -128,7 +128,7 @@ See https://github.com/clockwork-dog/cra-template-cogs-client
 4. Symlink `public/cogs-plugin-manifest.js` to `src/cogs-plugin-manifest.json` so that it is included in the build output:
    ```s
    # macOS / Linux
-   ln -s ../src/cogs-plugin-manifest.json public/cogs-plugin-manifest.js
+   ln -s ../src/cogs-plugin-manifest.js public/cogs-plugin-manifest.js
    # Windows
    mklink /H public\cogs-plugin-manifest.js src\cogs-plugin-manifest.js
    ```
