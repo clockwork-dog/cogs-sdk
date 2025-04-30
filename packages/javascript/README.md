@@ -150,7 +150,7 @@ function sendPortUpdateToCogs() {
 You can save arbitrary data to COGS which will be restored when reconnecting with COGS:
 
 ```ts
-const cogsConnection = new CogsConnection(manifest, {
+const cogsConnection = new CogsConnection(manifest, undefined, undefined, {
   // Initial items in the store
   'my-key': { foo: 0, bar: '' },
 });
