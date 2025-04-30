@@ -1,4 +1,4 @@
-import { CogsAudioPlayer, CogsConnection, CogsPluginManifest, CogsVideoPlayer } from '@clockworkdog/cogs-client';
+import { CogsAudioPlayer, CogsConnection, CogsPluginManifest, CogsVideoPlayer, ManifestTypes } from '@clockworkdog/cogs-client';
 import React, { ReactNode, useContext, useEffect, useRef, useState } from 'react';
 
 type CogsConnectionContextValue<Manifest extends CogsPluginManifest> = {
@@ -77,13 +77,18 @@ const CogsConnectionContext = React.createContext<CogsConnectionContextValue<any
  * }
  * ```
  */
-export default function CogsConnectionProvider<Manifest extends CogsPluginManifest>({
+export default function CogsConnectionProvider<
+  Manifest extends CogsPluginManifest,
+  DataT extends { [key: string]: unknown } = { [key: string]: unknown },
+>({
   manifest,
   hostname,
   port,
   children,
   audioPlayer,
   videoPlayer,
+  initialClientState,
+  initialDataStoreData,
 }: {
   manifest: Manifest;
   hostname?: string;
@@ -91,19 +96,21 @@ export default function CogsConnectionProvider<Manifest extends CogsPluginManife
   children: React.ReactNode;
   audioPlayer?: boolean;
   videoPlayer?: boolean;
+  initialClientState?: Partial<ManifestTypes.StateAsObject<Manifest, { writableFromClient: true }>>;
+  initialDataStoreData?: DataT;
 }): ReactNode | null {
   const connectionRef = useRef<CogsConnection<Manifest>>(undefined);
   const [, forceRender] = useState({});
 
   useEffect(() => {
-    const connection = new CogsConnection(manifest, { hostname, port });
+    const connection = new CogsConnection(manifest, { hostname, port }, initialClientState, initialDataStoreData);
     connectionRef.current = connection;
     forceRender({});
     return () => {
       connectionRef.current = undefined;
       connection.close();
     };
-  }, [manifest, hostname, port]);
+  }, [manifest, hostname, port, initialClientState, initialDataStoreData]);
 
   const audioPlayerRef = useRef<CogsAudioPlayer>(undefined);
   useEffect(() => {
