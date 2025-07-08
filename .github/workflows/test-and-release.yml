@@ -16,7 +16,7 @@ permissions:
   contents: write
 
 jobs:
-  test:
+  test-packages:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -34,9 +34,55 @@ jobs:
         run: yarn run lint
       - name: Build docs
         run: yarn run build-docs
-  
+
+  test-template:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: template
+    steps:
+      - name: Sparse checkout just the template
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            template
+            .node-version
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+          package_json_file: template/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - name: Install dependencies for the template
+        run: pnpm install
+      - name: Ensure the tests run with no generated apps
+        run: pnpm run test
+      - name: Ensure everything builds with no generated apps
+        run: pnpm run build
+      - name: Generate various apps into the template
+        run: |
+          pnpm exec turbo generate "cogs-sdk" --args "Javascript Plugin" "A JS plugin" "plugin" "javascript"
+          pnpm exec turbo generate "cogs-sdk" --args "React Plugin" "A React plugin" "plugin" "react"
+          pnpm exec turbo generate "cogs-sdk" --args "Javascript Custom Content" "A JS custom content" "customContent" "javascript"
+          pnpm exec turbo generate "cogs-sdk" --args "React Custom Content" "A React custom content" "customContent" "react"
+      - name: Install dependencies again so the new apps get their dependencies
+        run: pnpm install --no-frozen-lockfile
+      - name: Ensure the tests run with the generated apps
+        run: pnpm run test
+      - name: Ensure everything builds with the generated apps
+        run: pnpm run build
+
+  tests-complete:
+    runs-on: ubuntu-24.04
+    needs:
+      - test-packages
+      - test-template
+    steps:
+      - run: echo "Tests complete"
+
   publish-npm:
-    needs: test
+    needs: tests-complete
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-24.04
     steps:
@@ -57,9 +103,9 @@ jobs:
         run: yarn run release
         env:
           YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-  
+
   publish-docs:
-    needs: test
+    needs: tests-complete
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-24.04
     steps:

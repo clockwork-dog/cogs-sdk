@@ -1,0 +1,10 @@
+{
+  "extends": [
+    "@repo/typescript-config/base.json"
+  ],
+  "exclude": [
+    "dist",
+    "public",
+    "node_modules"
+  ]
+}

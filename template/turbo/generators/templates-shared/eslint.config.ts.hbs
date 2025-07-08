@@ -1,0 +1,10 @@
+import cogsPluginEslintConfig from "@repo/eslint-config/cogsPlugin";{{#ifCond templateType '===' "react"}}
+import reactEslintConfig from "@repo/eslint-config/react";{{/ifCond}}
+import viteEslintConfig from "@repo/eslint-config/vite";
+import tseslint from "typescript-eslint";
+
+export default tseslint.config([
+  viteEslintConfig,{{#ifCond templateType '===' "react"}}
+  reactEslintConfig,{{/ifCond}}
+  cogsPluginEslintConfig,
+]);
