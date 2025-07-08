@@ -1,0 +1,36 @@
+{
+  "name": "vite-plugin-cogs",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "scripts": {
+    "types": "tsc --noEmit",
+    "lint": "eslint",
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean"
+  },
+  "peerDependencies": {
+    "vite": ">=6.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.30.1",
+    "eslint": "^9.30.1",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.5.1",
+    "globals": "^16.3.0",
+    "tsup": "^8.5.0",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.35.1",
+    "vite": "^6.0.0"
+  }
+}
