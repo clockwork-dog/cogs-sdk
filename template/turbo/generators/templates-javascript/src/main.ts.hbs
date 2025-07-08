@@ -1,0 +1,14 @@
+import { CogsConnection } from "@clockworkdog/cogs-client";
+import * as manifest from "./cogs-plugin-manifest.js";
+import "./style.css";
+
+const cogsConnection = new CogsConnection(manifest);
+cogsConnection.addEventListener("open", () => {
+  console.log(`Connected to COGS`);
+});
+cogsConnection.addEventListener("close", () => {
+  console.log(`Disconnected from COGS`);
+});
+cogsConnection.addEventListener("showPhase", ({ showPhase }) => {
+  console.log(`Show phase: ${showPhase}`);
+});

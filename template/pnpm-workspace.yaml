@@ -1,0 +1,9 @@
+packages:
+  - apps/*
+  - packages/*
+
+onlyBuiltDependencies:
+  - cn-font-split
+  - esbuild
+  - koffi
+  - protobufjs

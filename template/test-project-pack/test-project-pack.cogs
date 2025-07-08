@@ -1,0 +1,61 @@
+{
+  "assets": {
+    "config": []
+  },
+  "channels": [],
+  "clients": [],
+  "project": {
+    "formatVersion": "5.6",
+    "locked": false
+  },
+  "resetChecks": [],
+  "rfid": {
+    "items": [],
+    "tags": []
+  },
+  "scenes": {
+    "system": {
+      "preShow": {
+        "variables": [],
+        "values": [],
+        "behaviors": []
+      },
+      "show": {
+        "notes": "Test Project Pack\n-----------------\n\nThis project pack should be used to help with development and testing of your custom COGS plugins and custom content",
+        "variables": [],
+        "values": [],
+        "behaviors": []
+      }
+    },
+    "user": [
+      [
+        "Scene",
+        {
+          "startTrigger": {
+            "type": "when",
+            "when": {
+              "template": {
+                "type": "show_started"
+              }
+            }
+          },
+          "hidden": false,
+          "optional": false,
+          "restartable": false,
+          "dashboard": [],
+          "variables": [],
+          "values": [],
+          "behaviors": []
+        }
+      ]
+    ]
+  },
+  "show": {
+    "name": "test-project-pack",
+    "autoStart": true,
+    "showTimeElapsed": true,
+    "sceneDashboardsRows": 1,
+    "runViewWhenShowStarts": ""
+  },
+  "plugins": {}
+}

@@ -1,0 +1,19 @@
+module.exports =
+  /**
+   * @type {const}
+   * @satisfies {import("@clockworkdog/cogs-client").CogsPluginManifest}
+   */
+  ({
+    name: "{{name}}",
+    description: "{{description}}",
+    icon: "./icon.png",
+    version: "0.0.0",
+    minCogsVersion: "5.6.0",
+    config: [],
+    events: {
+      toCogs: [],
+      fromCogs: [],
+    },
+    state: [],
+    media: {},
+  });
