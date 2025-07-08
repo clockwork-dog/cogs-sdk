@@ -17,7 +17,8 @@
   "scripts": {
     "types": "tsc --noEmit",
     "lint": "eslint",
-    "build": "tsup src/index.ts --format cjs,esm --dts --clean"
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "release": "yarn npm publish --access public"
   },
   "peerDependencies": {
     "vite": ">=6.0.0"
