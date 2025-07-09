@@ -1,6 +1,24 @@
 {
-  "name": "vite-plugin-cogs",
+  "name": "vite-plugin-cogs-sdk",
+  "description": "A Vite plugin to easily setup your project to be a COGS plugin or custom content",
+  "author": "Clockwork Dog <info@clockwork.dog>",
+  "homepage": "https://github.com/clockwork-dog/cogs-sdk/tree/main/packages/vite-plugin",
   "version": "0.0.0",
+  "keywords": [
+    "cogs",
+    "vite-plugin"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/clockwork-dog/cogs-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/clockwork-dog/cogs-sdk/issues"
+  },
+  "files": [
+    "dist/**/*"
+  ],
   "type": "module",
   "exports": {
     ".": {
@@ -14,9 +32,6 @@
       }
     }
   },
-  "files": [
-    "dist/**/*"
-  ],
   "scripts": {
     "types": "tsc --noEmit",
     "lint": "eslint",
@@ -32,6 +47,7 @@
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.5.1",
     "globals": "^16.3.0",
+    "prettier": "^3.6.2",
     "tsup": "^8.5.0",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.35.1",
