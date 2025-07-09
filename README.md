@@ -46,7 +46,20 @@ A COGS plugin is a folder in the `plugins` directory of a COGS Project. The plug
 
 ## Getting started
 
-If creating new COGS Media Master custom content or a new COGS Plugin we recommend using Vite and Typescript to create your project.
+If creating new COGS Media Master custom content or a new COGS Plugin we recommend using our template which includes [Turborepo](https://turborepo.com/), [Vite](https://vite.dev/), [TypeScript](https://www.typescriptlang.org/) and [ESLint](https://eslint.org/).
+
+### Using the Template
+
+Create a new project using the example template:
+
+```bash
+npx create-turbo@latest --example https://github.com/clockwork-dog/cogs-sdk/tree/main/template
+```
+
+You can then look at the README of the generated project to generate custom content or a plugin. When you generate these they will automatically be linked to the test COGS project pack which is included in the template.
+
+<details>
+<summary><em>Alternative: Manual installation options</em></summary>
 
 ### Vite
 
@@ -137,6 +150,8 @@ See https://github.com/clockwork-dog/cra-template-cogs-client
    ```
 5. If you are using React, remove `<React.StrictMode>` from your top-level component to avoid issues with multiple websockets during development.
 6. Add the [COGS SDK](https://github.com/clockwork-dog/cogs-sdk/) to your project. (See [#quick-start](Quick start).)
+
+</details>
 
 ## Tips
 
