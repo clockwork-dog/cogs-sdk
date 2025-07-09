@@ -3,7 +3,7 @@ import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
 import { Plugin, ResolvedConfig } from 'vite';
 
-const PLUGIN_NAME = 'cogs';
+const PLUGIN_NAME = 'cogs-sdk';
 
 const devModeIndexHtmlContent = (serverUrl: string) => {
   const serverUrlNoTrailingSlash = serverUrl.endsWith('/') ? serverUrl.slice(0, -1) : serverUrl;
@@ -46,7 +46,7 @@ export interface CogsPluginOptions {
   noServerExpose?: boolean;
 }
 
-export const cogsPlugin = (options: CogsPluginOptions = {}): Plugin => {
+export const cogsSdkPlugin = (options: CogsPluginOptions = {}): Plugin => {
   let config: ResolvedConfig;
   let serverUrl: string;
   let manifestFilename: string, manifestFilePath: string;
@@ -79,7 +79,10 @@ export const cogsPlugin = (options: CogsPluginOptions = {}): Plugin => {
     await cp(manifestFilePath, join(outDirPath, manifestFilename));
 
     // Copy the contents of the public dir into the root of the outDir
-    await cp(join(basePath, 'public'), outDirPath, { recursive: true });
+    const publicPath = join(basePath, 'public');
+    if (existsSync(publicPath)) {
+      await cp(publicPath, outDirPath, { recursive: true });
+    }
 
     // Create an index.html file in the root of the outDir
     const indexHtmlContent = devModeIndexHtmlContent(serverUrl);
@@ -179,3 +182,5 @@ export const cogsPlugin = (options: CogsPluginOptions = {}): Plugin => {
     },
   };
 };
+
+export default cogsSdkPlugin;
