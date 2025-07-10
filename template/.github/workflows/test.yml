@@ -1,0 +1,71 @@
+name: Test & Package
+
+on:
+  push:
+    branches:
+      - "main"
+    tags:
+      - "v*"
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-build-environment
+      - run: pnpm run build
+
+  check-repo:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-build-environment
+      - run: pnpm run check-repo
+
+  check-types:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-build-environment
+      - run: pnpm run check-types
+
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-build-environment
+      - run: pnpm run lint
+
+  tests-complete:
+    name: Tests complete
+    runs-on: ubuntu-24.04
+    needs:
+      - build
+      - check-repo
+      - check-types
+      - lint
+    steps:
+      - run: echo "Tests complete"
+
+  package:
+    name: Package
+    runs-on: ubuntu-24.04
+    needs:
+      - tests-complete
+    steps:
+      # Checkout and run the build
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-build-environment
+      - run: pnpm run build
+      # Copy the test-project-pack with symlinks followed and copied
+      - run: cp -rL test-project-pack test-project-pack-no-symlinks
+      # Upload a zip artifact for this run
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }}-${{ github.sha }}
+          path: test-project-pack-no-symlinks

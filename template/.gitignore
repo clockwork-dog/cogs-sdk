@@ -1,0 +1,12 @@
+.DS_Store
+node_modules/
+.turbo/
+dist/
+dist-ssr/
+server/dist/
+public/dist/
+*.log
+*.local
+.env
+.cache
+.encoded-assets/

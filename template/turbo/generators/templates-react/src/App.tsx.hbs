@@ -1,0 +1,43 @@
+import {
+  CogsShowPhaseChangedEvent,
+  ShowPhase,
+} from "@clockworkdog/cogs-client";
+import { useEffect, useState } from "react";
+import { useTypedCogsConnection } from "./hooks/useTypedCogsConnection";
+
+export const App = () => {
+  const connection = useTypedCogsConnection();
+
+  const [isConnected, setIsConnected] = useState(false);
+  const [showPhase, setShowPhase] = useState<ShowPhase>();
+  useEffect(() => {
+    const openListener = () => {
+      setIsConnected(true);
+    };
+    connection.addEventListener("open", openListener);
+
+    const closeListener = () => {
+      setIsConnected(false);
+    };
+    connection.addEventListener("close", closeListener);
+
+    const showPhaseListener = (event: CogsShowPhaseChangedEvent) => {
+      setShowPhase(event.showPhase);
+    };
+    connection.addEventListener("showPhase", showPhaseListener);
+
+    return () => {
+      connection.removeEventListener("open", openListener);
+      connection.removeEventListener("close", closeListener);
+      connection.removeEventListener("showPhase", showPhaseListener);
+    };
+  }, [connection]);
+
+  return (
+    <>
+      <h1>COGS Custom Content React</h1>
+      <p>{isConnected ? "Connected to COGS" : "Not connected to COGS"}</p>
+      <p>Show phase: {showPhase}</p>
+    </>
+  );
+};

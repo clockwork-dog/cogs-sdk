@@ -1,0 +1,11 @@
+{
+  "name": "@repo/typescript-config",
+  "version": "0.0.0",
+  "private": true,
+  "peerDependencies": {
+    "@types/node": "^22.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.16.0"
+  }
+}
