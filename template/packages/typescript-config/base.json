@@ -8,6 +8,7 @@
     "isolatedModules": true,
     "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
+    "allowJs": true,
     "skipLibCheck": true,
 
     "noEmit": true,
