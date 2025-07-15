@@ -56,7 +56,15 @@ Create a new project using the example template:
 npx create-turbo@latest --example https://github.com/clockwork-dog/cogs-sdk/tree/main/template
 ```
 
-You can then look at the README of the generated project to generate custom content or a plugin. When you generate these they will automatically be linked to the test COGS project pack which is included in the template.
+You can then look at the README of the generated project to generate custom content or a plugin.
+
+```sh
+npx turbo generate
+yarn turbo generate
+pnpm turbo generate
+```
+
+When you generate these they will automatically be linked to the test COGS project pack which is included in the template.
 
 <details>
 <summary><em>Alternative: Manual installation options</em></summary>
