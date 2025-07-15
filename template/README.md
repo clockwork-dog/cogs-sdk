@@ -2,8 +2,7 @@
 
 ## Requirements
 
-- [NodeJS](https://nodejs.org/) with the version specified in `.node-version` (use a too such as [mise](https://mise.jdx.dev) to automatically manage NodeJS versions).
-- [pnpm](https://pnpm.io/installation) ideally installed using `corepack` at the version specified in the `packageManager` field of `package.json`.
+- [NodeJS](https://nodejs.org/) with the version specified in `.node-version` (use a tool such as [mise](https://mise.jdx.dev) to automatically manage NodeJS versions).
 
 ## Getting Started
 

@@ -12,6 +12,9 @@ on:
       - synchronize
       - reopened
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-24.04
@@ -69,3 +72,14 @@ jobs:
         with:
           name: ${{ github.event.repository.name }}-${{ github.sha }}
           path: test-project-pack-no-symlinks
+      # Upload to Github Releases if this is a tagged build
+      - name: Zip for Github release
+        if: github.ref_type == 'tag'
+        run: |
+          mv test-project-pack-no-symlinks "${{ github.event.repository.name }}-${{ github.ref_name }}"
+          zip -r "${{ github.event.repository.name }}-${{ github.ref_name }}.zip" "${{ github.event.repository.name }}-${{ github.ref_name }}"
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        with:
+          files: "${{ github.event.repository.name }}-${{ github.ref_name }}.zip"
