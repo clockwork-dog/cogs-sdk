@@ -1,15 +1,14 @@
 {
   "name": "cogs-sdk-example",
   "private": true,
-  "packageManager": "pnpm@10.12.4",
+  "packageManager": "yarn@4.5.1",
   "scripts": {
-    "start": "pnpm run dev",
-    "dev": "turbo run dev",
-    "build": "turbo run build",
+    "start": "turbo run dev",
+    "build": "turbo run build-prod",
     "check-repo": "sherif && turbo boundaries",
-    "check-types": "turbo run check-types",
-    "lint": "turbo run lint",
-    "test": "pnpm run check-repo && turbo run check-types lint"
+    "check-types": "turbo run types",
+    "check-lint": "turbo run lint",
+    "test": "sherif && turbo boundaries && turbo run types lint"
   },
   "devDependencies": {
     "@turbo/gen": "^2.5.4",

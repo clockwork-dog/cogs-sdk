@@ -21,28 +21,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build-environment
-      - run: pnpm run build
+      - run: yarn run build
 
   check-repo:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build-environment
-      - run: pnpm run check-repo
+      - run: yarn run check-repo
 
   check-types:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build-environment
-      - run: pnpm run check-types
+      - run: yarn run check-types
 
-  lint:
+  check-lint:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build-environment
-      - run: pnpm run lint
+      - run: yarn run lint
 
   tests-complete:
     name: Tests complete
@@ -51,7 +51,7 @@ jobs:
       - build
       - check-repo
       - check-types
-      - lint
+      - check-lint
     steps:
       - run: echo "Tests complete"
 
@@ -64,7 +64,7 @@ jobs:
       # Checkout and run the build
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build-environment
-      - run: pnpm run build
+      - run: yarn run build
       # Copy the test-project-pack with symlinks followed and copied
       - run: cp -rL test-project-pack test-project-pack-no-symlinks
       # Upload a zip artifact for this run

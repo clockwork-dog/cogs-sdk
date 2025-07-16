@@ -17,13 +17,13 @@
   },
   "scripts": {
     "dev": "npm run build -- --watch",
-    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
-    "check-types": "tsc --noEmit",
+    "build-prod": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "types": "tsc --noEmit",
     "lint": "eslint"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*",
     "minimatch": "^10.0.3",
     "tsup": "^8.5.0",
     "typescript-eslint": "^8.35.1",

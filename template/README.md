@@ -9,7 +9,7 @@
 Run the following command to install all dependencies of the project:
 
 ```sh
-pnpm install
+yarn install
 ```
 
 ## Project Structure
@@ -39,30 +39,30 @@ In the base example project we have:
 To generate a new custom content or plugin, run:
 
 ```sh
-pnpm turbo generate
+yarn turbo generate
 ```
 
 This will prompt you to select the type of content or plugin you want to create. Follow the prompts to create your new content or plugin.
 
-Once this has been created make sure the depenencies are installed with `pnpm install` and then you can build or start in dev mode.
+Once this has been created make sure the dependencies are installed with `yarn install` and then you can build or start in dev mode.
 
 ## Running the Project for Development
 
 You can start the project in development mode by running:
 
 ```sh
-pnpm start
+yarn start
 ```
 
 This will set up each of the apps in development mode with hot reloading. You can then open COGS and the simulator for each type of content.
 
 ## Testing the Project
 
-This project has tools set up to help test and check for common errors with the project. You can run them all with `pnpm test` or individually using:
+This project has tools set up to help test and check for common errors with the project. You can run them all with `yarn test` or individually using:
 
-- `pnpm run check-repo`: Run Sherif to check for common issues with the monorepo.
-- `pnpm run check-types`: Run TypeScript to check for static type issues.
-- `pnpm run lint`: Run ESLint to lint the project code to check for common issues.
+- `yarn run check-repo`: Run Sherif to check for common issues with the monorepo.
+- `yarn run check-types`: Run TypeScript to check for static type issues.
+- `yarn run check-lint`: Run ESLint to lint the project code to check for common issues.
 
 The repository is also set up to check for issues before committing or pushing to avoid pushing changes with issues. Github Actions will also run the full range of tests and checks on new pull requests and changes to the `main` branch.
 
@@ -71,7 +71,7 @@ The repository is also set up to check for issues before committing or pushing t
 You can build all of the project by running:
 
 ```sh
-pnpm run build
+yarn run build
 ```
 
 ## Github Actions
