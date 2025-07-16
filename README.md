@@ -53,15 +53,16 @@ If creating new COGS Media Master custom content or a new COGS Plugin we recomme
 Create a new project using the example template:
 
 ```bash
-npx create-turbo@latest --example https://github.com/clockwork-dog/cogs-sdk/tree/main/template
+npx create-turbo@latest --example https://github.com/clockwork-dog/cogs-sdk/tree/main/template --package-manager yarn
 ```
+
+> [!NOTE]
+> The template is configured to use Yarn 4 by default. It should be possible to use other package managers such as npm or pnpm, but you will need to manually configure these after you have created a project from the example template.
 
 You can then look at the README of the generated project to generate custom content or a plugin.
 
 ```sh
-npx turbo generate
 yarn turbo generate
-pnpm turbo generate
 ```
 
 When you generate these they will automatically be linked to the test COGS project pack which is included in the template.

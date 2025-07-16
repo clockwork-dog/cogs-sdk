@@ -43,35 +43,25 @@ jobs:
     steps:
       - name: Sparse checkout just the template
         uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            template
-            .node-version
-      - uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-          package_json_file: template/package.json
       - uses: actions/setup-node@v4
         with:
           node-version-file: .node-version
+      - name: Create an empty yarn.lock in the template folder to allow it to be treated separate from the parent directory project
+        run: touch yarn.lock
       - name: Install dependencies for the template
-        run: pnpm install
-      - name: Ensure the tests run with no generated apps
-        run: pnpm run test
-      - name: Ensure everything builds with no generated apps
-        run: pnpm run build
+        run: YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install
       - name: Generate various apps into the template
         run: |
-          pnpm exec turbo generate "cogs-sdk" --args "Javascript Plugin" "A JS plugin" "plugin" "javascript"
-          pnpm exec turbo generate "cogs-sdk" --args "React Plugin" "A React plugin" "plugin" "react"
-          pnpm exec turbo generate "cogs-sdk" --args "Javascript Custom Content" "A JS custom content" "customContent" "javascript"
-          pnpm exec turbo generate "cogs-sdk" --args "React Custom Content" "A React custom content" "customContent" "react"
+          yarn turbo generate "cogs-sdk" --args "Javascript Plugin" "A JS plugin" "plugin" "javascript"
+          yarn turbo generate "cogs-sdk" --args "React Plugin" "A React plugin" "plugin" "react"
+          yarn turbo generate "cogs-sdk" --args "Javascript Custom Content" "A JS custom content" "customContent" "javascript"
+          yarn turbo generate "cogs-sdk" --args "React Custom Content" "A React custom content" "customContent" "react"
       - name: Install dependencies again so the new apps get their dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install --no-frozen-lockfile
       - name: Ensure the tests run with the generated apps
-        run: pnpm run test
+        run: yarn run test
       - name: Ensure everything builds with the generated apps
-        run: pnpm run build
+        run: yarn run build
 
   tests-complete:
     runs-on: ubuntu-24.04
