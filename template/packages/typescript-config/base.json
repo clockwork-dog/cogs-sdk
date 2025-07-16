@@ -1,9 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "module": "ESNext",
+    "module": "ES2022",
     "moduleResolution": "Bundler",
-    "target": "ESNext",
+    "target": "ES2023",
     "esModuleInterop": true,
     "isolatedModules": true,
     "resolveJsonModule": true,
