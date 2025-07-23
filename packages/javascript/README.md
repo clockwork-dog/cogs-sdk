@@ -1,22 +1,75 @@
 # COGS SDK - Javascript
 
-Create content for your COGS Media Master
+## Quickstart
+This guide should get you up and running with a custom COGS plugin in a few minutes.
+We'll make an annoying bell that rings every second.
 
-## [Documentation](https://clockwork-dog.github.io/cogs-sdk/javascript/)
+1. Make a new folder for your plugin.
+  ```shell
+  mkdir plugins/test-plugin
+  ```
+1. Create a manifest file.  This tells COGS about your plugin.
+  ```json
+  // plugins/test-plugin/cogs-plugin-manifest.json
+  {
+    "name": "test-plugin",
+    "version": "0.0.0",
 
-## Add to your project
+    "events": {
+      "toCogs": [
+        {
+          "name": "ding"
+        }
+      ]
+    }
+  }
+  ```
+1. Download the [COGS JavaScript SDK](https://unpkg.com/@clockworkdog/cogs-client) and save it in the plugins folder.
+  ```shell
+  # macOS / Linux
+  curl -L -o plugins/test-plugin/cogs-client.js https://unpkg.com/@clockworkdog/cogs-client
+  ```
+  > Avoid `<script>` tags with `http...` so your content works without an internet connection.
+1. Add an `index.html` file.  This is the logic of your plugin.
+  ```html
+  <html>
+    <head>
+      <script src="./cogs-client.js"></script>
+    </head>
+    <body>
+      <script type="module">
+        const { CogsConnection, CogsAudioPlayer } = COGS;
+        const manifest = await (await fetch('./cogs-plugin-manifest.json')).json();
+        
+        let interval;
+        const cogsConnection = new CogsConnection(manifest);
+        cogsConnection.addEventListener('open', () => {
+          interval = setInterval(() => {
+            cogsConnection.sendEvent('ding')            
+          }, 1000);
+        });
+        cogsConnection.addEventListener('close', () => {
+          clearInterval(interval);
+        });
+      </script>
+    </body>
+  </html>
+  ```
+1. Download a sound to play, and put it in the `/assets` folder
+  > You can also use [our bell sound](./assets/quickstart-bell.mp3)
+1. Enable your plugin in COGS
+  ![Enabling COGS plugin](./assets/quickstart-enable-plugin.png)
+1. Create a behaviour to listen to the `ding` event.
+  ![Adding a behaviour](./assets/quickstart-behavior-when.png)
+1. Make the behaviour do something.  In this case it'll play our bell sound.
+  ![Adding a behaviour](./assets/quickstart-behavior-do.png)
+1. Start the show!
+  ![Press play](./assets/quickstart-play.png)
 
-### Static HTML
+We strongly suggest that for anything more complex you follow our guide using TypeScript and Vite.
+TypeScript will make it a lot easier to know why things go wrong, and Vite will make developing a lot quicker with hot reloading.
 
-Download `cogs-client.js` from https://unpkg.com/@clockworkdog/cogs-client and save it to your project.
-
-Include the script in your HTML page:
-
-```html
-<script src="./cogs-client.js"></script>
-```
-
-(Avoid `<script>` tags with `http...` so your content works without an internet connection.)
+## Using Typescript & Vite
 
 ### NPM / Yarn
 

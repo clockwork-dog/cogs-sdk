@@ -50,12 +50,16 @@ If creating new COGS Media Master custom content or a new COGS Plugin we recomme
 
 ### Vite
 
-1. Create a project with Vite as usual
+1. Create a project with Vite as usual and add cogs-sdk
    e.g.
    ```
-   yarn create vite my-vite-plugin --template vanilla-ts
+   yarn create vite my-vite-plugin --template vanilla-ts;
+   yarn add --dev @clockworkdog/cogs-client
+   yarn install;
    // OR
-   yarn create vite my-vite-plugin --template react-ts
+   yarn create vite my-vite-plugin --template react-ts;
+   yarn add --dev @clockworkdog/cogs-client
+   yarn install;
    ```
 2. Add a polyfill for `global` by adding the following to `index.html`.
    ```html
@@ -72,11 +76,10 @@ If creating new COGS Media Master custom content or a new COGS Plugin we recomme
    e.g.
 
    ```ts
-   import { defineConfig } from "vite";
+   import { defineConfig } from 'vite';
 
    export default defineConfig({
-     base: "./",
-     ...
+     base: './',
    });
    ```
 
@@ -90,7 +93,7 @@ If creating new COGS Media Master custom content or a new COGS Plugin we recomme
    ```
 5. Add a `cogs-plugin-manifest.js` file to the `src` folder as described above
 6. Symlink `public/cogs-plugin-manifest.js` to `src/cogs-plugin-manifest.json` so that it is included in the build output:
-   ```s
+   ```bash
    # macOS / Linux
    ln -s ../src/cogs-plugin-manifest.js public/cogs-plugin-manifest.js
    # Windows
