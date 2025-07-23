@@ -1,0 +1,15 @@
+.DS_Store
+node_modules/
+.turbo/
+.yarn/cache
+.yarn/install-state.gz
+.yarn/unplugged
+dist/
+dist-ssr/
+server/dist/
+public/dist/
+*.log
+*.local
+.env
+.cache
+.encoded-assets/

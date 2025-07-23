@@ -1,0 +1,27 @@
+{
+  "name": "cogs-sdk-example",
+  "private": true,
+  "packageManager": "yarn@4.5.1",
+  "scripts": {
+    "start": "turbo run dev",
+    "build": "turbo run build-prod",
+    "check-repo": "sherif && turbo boundaries",
+    "check-types": "turbo run types",
+    "check-lint": "turbo run lint",
+    "test": "sherif && turbo boundaries && turbo run types lint"
+  },
+  "devDependencies": {
+    "@turbo/gen": "^2.5.4",
+    "es-toolkit": "^1.39.6",
+    "eslint": "^9.30.1",
+    "jiti": "^2.4.2",
+    "prettier": "^3.6.2",
+    "prettier-plugin-organize-imports": "^4.1.0",
+    "sherif": "^1.6.1",
+    "turbo": "^2.5.4",
+    "typescript": "~5.8.3"
+  },
+  "overrides": {
+    "@types/node": "^22.16.0"
+  }
+}

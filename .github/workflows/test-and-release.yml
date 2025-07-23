@@ -16,7 +16,7 @@ permissions:
   contents: write
 
 jobs:
-  test:
+  test-packages:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -34,9 +34,45 @@ jobs:
         run: yarn run lint
       - name: Build docs
         run: yarn run build-docs
-  
+
+  test-template:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: template
+    steps:
+      - name: Sparse checkout just the template
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - name: Create an empty yarn.lock in the template folder to allow it to be treated separate from the parent directory project
+        run: touch yarn.lock
+      - name: Install dependencies for the template
+        run: YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install
+      - name: Generate various apps into the template
+        run: |
+          yarn turbo generate "cogs-sdk" --args "Javascript Plugin" "A JS plugin" "plugin" "javascript"
+          yarn turbo generate "cogs-sdk" --args "React Plugin" "A React plugin" "plugin" "react"
+          yarn turbo generate "cogs-sdk" --args "Javascript Custom Content" "A JS custom content" "customContent" "javascript"
+          yarn turbo generate "cogs-sdk" --args "React Custom Content" "A React custom content" "customContent" "react"
+      - name: Install dependencies again so the new apps get their dependencies
+        run: YARN_ENABLE_IMMUTABLE_INSTALLS=false yarn install --no-frozen-lockfile
+      - name: Ensure the tests run with the generated apps
+        run: yarn run test
+      - name: Ensure everything builds with the generated apps
+        run: yarn run build
+
+  tests-complete:
+    runs-on: ubuntu-24.04
+    needs:
+      - test-packages
+      - test-template
+    steps:
+      - run: echo "Tests complete"
+
   publish-npm:
-    needs: test
+    needs: tests-complete
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-24.04
     steps:
@@ -57,9 +93,9 @@ jobs:
         run: yarn run release
         env:
           YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-  
+
   publish-docs:
-    needs: test
+    needs: tests-complete
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-24.04
     steps:

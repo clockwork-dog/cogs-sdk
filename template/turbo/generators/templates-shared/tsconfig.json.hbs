@@ -1,0 +1,14 @@
+{
+  "extends": [
+    "@repo/typescript-config/vite.json"{{#ifCond templateType '===' "react"}},
+    "@repo/typescript-config/react.json"{{/ifCond}}
+  ],
+  "compilerOptions": {
+    "checkJs": true
+  },
+  "exclude": [
+    "dist",
+    "public",
+    "node_modules"
+  ]
+}

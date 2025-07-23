@@ -1,0 +1,85 @@
+name: Test & Package
+
+on:
+  push:
+    branches:
+      - "main"
+    tags:
+      - "v*"
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-build-environment
+      - run: yarn run build
+
+  check-repo:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-build-environment
+      - run: yarn run check-repo
+
+  check-types:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-build-environment
+      - run: yarn run check-types
+
+  check-lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-build-environment
+      - run: yarn run lint
+
+  tests-complete:
+    name: Tests complete
+    runs-on: ubuntu-24.04
+    needs:
+      - build
+      - check-repo
+      - check-types
+      - check-lint
+    steps:
+      - run: echo "Tests complete"
+
+  package:
+    name: Package
+    runs-on: ubuntu-24.04
+    needs:
+      - tests-complete
+    steps:
+      # Checkout and run the build
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-build-environment
+      - run: yarn run build
+      # Copy the test-project-pack with symlinks followed and copied
+      - run: cp -rL test-project-pack test-project-pack-no-symlinks
+      # Upload a zip artifact for this run
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }}-${{ github.sha }}
+          path: test-project-pack-no-symlinks
+      # Upload to Github Releases if this is a tagged build
+      - name: Zip for Github release
+        if: github.ref_type == 'tag'
+        run: |
+          mv test-project-pack-no-symlinks "${{ github.event.repository.name }}-${{ github.ref_name }}"
+          zip -r "${{ github.event.repository.name }}-${{ github.ref_name }}.zip" "${{ github.event.repository.name }}-${{ github.ref_name }}"
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        with:
+          files: "${{ github.event.repository.name }}-${{ github.ref_name }}.zip"

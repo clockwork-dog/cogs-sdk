@@ -1,0 +1,11 @@
+name: 'Setup build environment'
+description: 'Setup build environment'
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version-file: '.node-version'
+        cache: yarn
+    - run: yarn install
+      shell: bash
