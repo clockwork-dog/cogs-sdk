@@ -53,11 +53,11 @@ If creating new COGS Media Master custom content or a new COGS Plugin we recomme
 1. Create a project with Vite as usual and add cogs-sdk
    e.g.
    ```
-   yarn create vite my-vite-plugin --template vanilla-ts;
+   yarn create vite my-vite-plugin --template vanilla-ts
    yarn add --dev @clockworkdog/cogs-client
    yarn install;
    // OR
-   yarn create vite my-vite-plugin --template react-ts;
+   yarn create vite my-vite-plugin --template react-ts
    yarn add --dev @clockworkdog/cogs-client
    yarn install;
    ```

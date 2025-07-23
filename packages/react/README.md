@@ -8,13 +8,13 @@ We recommend using the [`cogs-client` Create React App template](https://github.
 
 ## Add to your project
 
-```shell
+```bash
 npm install --save @clockworkdog/cogs-client-react
 ```
 
 or
 
-```shell
+```bash
 yarn add @clockworkdog/cogs-client-react
 ```
 

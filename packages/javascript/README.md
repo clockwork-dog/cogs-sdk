@@ -5,7 +5,7 @@ This guide should get you up and running with a custom COGS plugin in a few minu
 We'll make an annoying bell that rings every second.
 
 1. Make a new folder for your plugin.
-    ```shell
+    ```bash
     mkdir plugins/test-plugin
     ```
 1. Create a manifest file at `plugins/test-plugin/cogs-plugin-manifest.json`    This tells COGS about your plugin.
@@ -24,7 +24,7 @@ We'll make an annoying bell that rings every second.
     }
     ```
 1. Download the [COGS JavaScript SDK](https://unpkg.com/@clockworkdog/cogs-client) and save it in the plugins folder.
-    ```shell
+    ```bash
     # macOS / Linux
     curl -L -o plugins/test-plugin/cogs-client.js https://unpkg.com/@clockworkdog/cogs-client
     ```
@@ -78,7 +78,7 @@ TypeScript will make it a lot easier to know why things go wrong, and Vite will 
 
 Then add `cogs-client` with NPM or Yarn:
 
-```shell
+```bash
 npm install --save @clockworkdog/cogs-client
 # OR
 yarn add @clockworkdog/cogs-client
