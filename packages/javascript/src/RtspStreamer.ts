@@ -10,6 +10,8 @@ export const LIVE_VIDEO_PLAYBACK_RATE = 1.1;
 /**
  * Manages a websocket connection to the COGS TCP relay which can be used to send RTSP video
  * feeds to the web.
+ *
+ * @deprecated
  */
 export default class RtspStreamer {
   private _websocketUri: string;
