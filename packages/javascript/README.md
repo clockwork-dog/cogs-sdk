@@ -5,66 +5,69 @@ This guide should get you up and running with a custom COGS plugin in a few minu
 We'll make an annoying bell that rings every second.
 
 1. Make a new folder for your plugin.
-  ```shell
-  mkdir plugins/test-plugin
-  ```
-1. Create a manifest file.  This tells COGS about your plugin.
-  ```json
-  // plugins/test-plugin/cogs-plugin-manifest.json
-  {
-    "name": "test-plugin",
-    "version": "0.0.0",
+    ```shell
+    mkdir plugins/test-plugin
+    ```
+1. Create a manifest file at `plugins/test-plugin/cogs-plugin-manifest.json`    This tells COGS about your plugin.
+    ```json
+    {
+        "name": "test-plugin",
+        "version": "0.0.0",
 
-    "events": {
-      "toCogs": [
-        {
-          "name": "ding"
+        "events": {
+            "toCogs": [
+                {
+                    "name": "ding"
+                }
+            ]
         }
-      ]
     }
-  }
-  ```
+    ```
 1. Download the [COGS JavaScript SDK](https://unpkg.com/@clockworkdog/cogs-client) and save it in the plugins folder.
-  ```shell
-  # macOS / Linux
-  curl -L -o plugins/test-plugin/cogs-client.js https://unpkg.com/@clockworkdog/cogs-client
-  ```
-  > Avoid `<script>` tags with `http...` so your content works without an internet connection.
-1. Add an `index.html` file.  This is the logic of your plugin.
-  ```html
-  <html>
-    <head>
-      <script src="./cogs-client.js"></script>
-    </head>
-    <body>
-      <script type="module">
-        const { CogsConnection, CogsAudioPlayer } = COGS;
-        const manifest = await (await fetch('./cogs-plugin-manifest.json')).json();
-        
-        let interval;
-        const cogsConnection = new CogsConnection(manifest);
-        cogsConnection.addEventListener('open', () => {
-          interval = setInterval(() => {
-            cogsConnection.sendEvent('ding')            
-          }, 1000);
-        });
-        cogsConnection.addEventListener('close', () => {
-          clearInterval(interval);
-        });
-      </script>
-    </body>
-  </html>
-  ```
-1. Download a sound to play, and put it in the `/assets` folder
-  > You can also use [our bell sound](./assets/quickstart-bell.mp3)
-1. Enable your plugin in COGS
-  ![Enabling COGS plugin](./assets/quickstart-enable-plugin.png)
+    ```shell
+    # macOS / Linux
+    curl -L -o plugins/test-plugin/cogs-client.js https://unpkg.com/@clockworkdog/cogs-client
+    ```
+    > Avoid `<script>` tags with `http...` so your content works without an internet connection.
+1. Add an index file at `plugins/test-plugin/index.html`.    This is the logic of your plugin.
+    ```html
+    <html>
+        <head>
+            <script src="./cogs-client.js"></script>
+        </head>
+        <body>
+            <script type="module">
+                const { CogsConnection, CogsAudioPlayer } = COGS;
+                const manifest = await (await fetch('./cogs-plugin-manifest.json')).json();
+                
+                let interval;
+                const cogsConnection = new CogsConnection(manifest);
+                cogsConnection.addEventListener('open', () => {
+                    interval = setInterval(() => {
+                        cogsConnection.sendEvent('ding')                        
+                    }, 1000);
+                });
+                cogsConnection.addEventListener('close', () => {
+                    clearInterval(interval);
+                });
+            </script>
+        </body>
+    </html>
+    ```
+1. Download a sound to play, and put it in the `/assets` folder.
+    > You could also use [our bell sound](./assets/quickstart-bell.mp3).
+1. Enable your plugin in COGS.
+
+    <img src="./assets/quickstart-enable-plugin.png" alt="Enabling COGS plugin" width="600">
 1. Create a behaviour to listen to the `ding` event.
-  ![Adding a behaviour](./assets/quickstart-behavior-when.png)
-1. Make the behaviour do something.  In this case it'll play our bell sound.
-  ![Adding a behaviour](./assets/quickstart-behavior-do.png)
+
+    <img src="./assets/quickstart-behavior-when.png" alt="Adding a behaviour" width="600">
+1. Make the behaviour do something.    In this case it'll play our bell sound.
+
+    <img src="./assets/quickstart-behavior-do.png" alt="Adding a behaviour" width="600">
 1. Start the show!
-  ![Press play](./assets/quickstart-play.png)
+
+    <img src="./assets/quickstart-play.png" alt="Press play" width="600">
 
 We strongly suggest that for anything more complex you follow our guide using TypeScript and Vite.
 TypeScript will make it a lot easier to know why things go wrong, and Vite will make developing a lot quicker with hot reloading.
@@ -95,47 +98,47 @@ e.g.
 
 ```js
 module.exports =
-  /**
-   * @type {const}
-   * @satisfies {import("@clockworkdog/cogs-client").CogsPluginManifest}
-   */
-  ({
-    name: 'Big Button',
-    icon: 'bullseye-pointer',
-    description: 'A big, colorful touchscreen button',
-    version: '1',
-    config: [
-      {
-        name: 'Color',
-        value: { type: 'string', default: 'red' },
-      },
-    ],
-    state: [
-      {
-        name: 'Enabled',
-        value: { type: 'boolean', default: false },
-        writableFromCogs: true,
-      },
-    ],
-    events: {
-      toCogs: [
-        {
-          name: 'Pressed',
-          value: { type: 'boolean' },
+    /**
+     * @type {const}
+     * @satisfies {import("@clockworkdog/cogs-client").CogsPluginManifest}
+     */
+    ({
+        name: 'Big Button',
+        icon: 'bullseye-pointer',
+        description: 'A big, colorful touchscreen button',
+        version: '1',
+        config: [
+            {
+                name: 'Color',
+                value: { type: 'string', default: 'red' },
+            },
+        ],
+        state: [
+            {
+                name: 'Enabled',
+                value: { type: 'boolean', default: false },
+                writableFromCogs: true,
+            },
+        ],
+        events: {
+            toCogs: [
+                {
+                    name: 'Pressed',
+                    value: { type: 'boolean' },
+                },
+            ],
+            fromCogs: [
+                {
+                    name: 'Explosion',
+                },
+            ],
         },
-      ],
-      fromCogs: [
-        {
-          name: 'Explosion',
+        media: {
+            audio: true,
+            video: true,
+            images: true,
         },
-      ],
-    },
-    media: {
-      audio: true,
-      video: true,
-      images: true,
-    },
-  });
+    });
 ```
 
 ### Import the library
@@ -169,34 +172,34 @@ import * as manifest from './cogs-plugin-manifest.js'; // Requires `"allowJs": t
 
 const cogsConnection = new CogsConnection(manifest);
 cogsConnection.addEventListener('open', () => {
-  connected = true;
+    connected = true;
 });
 cogsConnection.addEventListener('close', () => {
-  connected = false;
+    connected = false;
 });
 cogsConnection.addEventListener('config', ({ config }) => {
-  // Handle new config
-  // `config` is of type `{ [name: string]: number | string | boolean }`
+    // Handle new config
+    // `config` is of type `{ [name: string]: number | string | boolean }`
 });
 cogsConnection.addEventListener('state', ({ state }) => {
-  // Handle state updates
-  // `state` is of type `{ [name: string]: number | string | boolean }`
+    // Handle state updates
+    // `state` is of type `{ [name: string]: number | string | boolean }`
 });
 cogsConnection.addEventListener('event', ({ name, value }) => {
-  // Handle events from COGS
-  // `name` is the event name.
-  // `value` is of the type defined in manifest, one of `number | string | boolean | undefined`.
+    // Handle events from COGS
+    // `name` is the event name.
+    // `value` is of the type defined in manifest, one of `number | string | boolean | undefined`.
 });
 cogsConnection.addEventListener('message', ({ message }) => {
-  // Handle low-level COGS messages. See `types/CogsClientMessage.ts`
+    // Handle low-level COGS messages. See `types/CogsClientMessage.ts`
 });
 
 function sendEventToCogs() {
-  cogsConnection.sendEvent('Hello');
+    cogsConnection.sendEvent('Hello');
 }
 
 function sendPortUpdateToCogs() {
-  cogsConnection.setState({ port1: 100 });
+    cogsConnection.setState({ port1: 100 });
 }
 ```
 
@@ -204,8 +207,8 @@ You can save arbitrary data to COGS which will be restored when reconnecting wit
 
 ```ts
 const cogsConnection = new CogsConnection(manifest, undefined, undefined, {
-  // Initial items in the store
-  'my-key': { foo: 0, bar: '' },
+    // Initial items in the store
+    'my-key': { foo: 0, bar: '' },
 });
 
 // Update the store
@@ -216,10 +219,10 @@ cogsConnection.store.items.getItem('my-key');
 
 // Listen for data changes
 cogsConnection.store.addEventListener('item', ({ key, value }) => {
-  console.log(key, 'item changed:', value);
+    console.log(key, 'item changed:', value);
 });
 cogsConnection.store.addEventListener('items', ({ items }) => {
-  console.log('items changed:', items);
+    console.log('items changed:', items);
 });
 ```
 
@@ -229,9 +232,9 @@ Add `audio` to `cogs-plugin-manifest.js`:
 
 ```js
 {
-  media: {
-    audio: true;
-  }
+    media: {
+        audio: true;
+    }
 }
 ```
 
@@ -242,7 +245,7 @@ const audioPlayer = new CogsAudioPlayer(cogsConnection);
 
 // Optional
 audioPlayer.addEventListener('state', (audioState) => {
-  // Handle audio state changes. See `types/AudioState.ts`
+    // Handle audio state changes. See `types/AudioState.ts`
 });
 ```
 
