@@ -2,6 +2,9 @@ import { CogsRtspStreamer, LIVE_VIDEO_PLAYBACK_RATE } from '@clockworkdog/cogs-c
 import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import usePageVisibility from '../hooks/usePageVisibility';
 
+/**
+ * @deprecated
+ */
 export interface RtspVideoProps {
   uri: string;
   websocketHostname?: string;
@@ -14,6 +17,8 @@ export interface RtspVideoProps {
  * Takes an RTSP video URL and streams it in a video element. By default this will open the TCP relay
  * websocket on the same hostname as COGS is running, but can be configured by passing in custom
  * websocket details.
+ *
+ * @deprecated
  */
 export default function RtspVideo({
   uri,
