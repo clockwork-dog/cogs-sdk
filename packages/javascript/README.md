@@ -1,5 +1,7 @@
 # COGS SDK - Javascript
 
+## [Documentation](https://clockwork-dog.github.io/cogs-sdk/javascript/)
+
 ## Quickstart
 This guide should get you up and running with a custom COGS plugin in a few minutes.
 We'll make an annoying bell that rings every second.
