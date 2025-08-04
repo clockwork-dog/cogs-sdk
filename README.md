@@ -1,76 +1,40 @@
 # COGS SDK
 
-Create custom content for your COGS Media Master or custom plugins for COGS.
+The COGS SDK allows you to create:
 
-You can choose to use either the:
+- Plugins for extending the functionality of the COGS SDK.
+- Media Master Custom Content for displaying content through a Media Master or on the COGS Media Master app for [Android](https://play.google.com/store/apps/details?id=dog.clockwork.mobile.av) or [iOS](https://apps.apple.com/us/app/cogs-av/id6444409185).
 
-- [JavaScript COGS SDK](./packages/javascript/README.md)
-- [React COGS SDK](./packages/react/README.md)
+We have provided a template project to get started or you can manually install and use the [JavaScript COGS SDK](./packages/javascript/README.md) or [React COGS SDK](./packages/react/README.md).
 
-Learn more in the [COGS technical documentation](https://docs.cogs.show).
+## Getting started using the template
+If creating new COGS Media Master custom content or a new COGS Plugin we recommend using our [Turborepo](https://turbo.build) template.
 
-## COGS Media Master custom content
-
-### What is a Media Master custom content?
-
-COGS Media Masters can display a browser window with custom HTML, Javascript and CSS, using the COGS SDK.
-
-Some other features you can add to your custom content include:
-
-- Play audio from your COGS project
-- Display or react to COGS text hints
-- Show the COGS show timer
-- Connect to MIDI or WebSerial devices
-
-### Structure of Media Master custom content
-
-A folder in the `client_content` directory of a COGS Project, containing:
-
-- A [`cogs-plugin-manifest.js` manifest file](https://clockwork-dog.github.io/cogs-sdk/javascript/interfaces/CogsPluginManifestJson.html)
-- An HTML page with the content of your plugin, usually `index.html`
-- Some Javascript, loaded by the HTML page, that uses the [COGS SDK](https://github.com/clockwork-dog/cogs-sdk) to communicate with COGS.
-
-## COGS Plugins
-
-### What is a Plugin?
-
-COGS Plugins can be loaded into COGS to integrate with other systems or add specialised features to COGS.
-
-### Structure of a COGS Plugin
-
-A COGS plugin is a folder in the `plugins` directory of a COGS Project. The plugin directory name is the ID of the plugin (e.g. `dog.clockwork.http`) and contains:
-
-- A [`cogs-plugin-manifest.js` manifest file](https://clockwork-dog.github.io/cogs-sdk/javascript/interfaces/CogsPluginManifestJson.html)
-- An HTML page with the content of your plugin, usually `index.html`
-- Some Javascript, loaded by the HTML page, that uses the [COGS SDK](https://github.com/clockwork-dog/cogs-sdk) to communicate with COGS.
-
-## Getting started
-
-If creating new COGS Media Master custom content or a new COGS Plugin we recommend using our template which includes [Turborepo](https://turborepo.com/), [Vite](https://vite.dev/), [TypeScript](https://www.typescriptlang.org/) and [ESLint](https://eslint.org/).
-
-### Using the Template
-
-Create a new project using the example template:
+Create a new project by running:
 
 ```bash
 npx create-turbo@latest --example https://github.com/clockwork-dog/cogs-sdk/tree/main/template --package-manager yarn
 ```
 
-> [!NOTE]
-> The template is configured to use Yarn 4 by default. It should be possible to use other package managers such as npm or pnpm, but you will need to manually configure these after you have created a project from the example template.
-
-You can then look at the README of the generated project to generate custom content or a plugin.
+You can then `cd` into the project and run this command to generate a new COGS Plugin or Media Master Custom Content:
 
 ```sh
-yarn turbo generate
+yarn turbo generate && yarn install
 ```
 
 When you generate these they will automatically be linked to the test COGS project pack which is included in the template.
 
-<details>
-<summary><em>Alternative: Manual installation options</em></summary>
+You can read the generated `README.md` file for more details.
 
-### Vite
+> [!NOTE]
+> The template is configured to use Yarn 4 by default. It should be possible to use other package managers such as npm or pnpm, but you will need to manually configure these after you have created a project from the example template.
+
+## Manual installation options
+
+<details>
+<summary><em>Manual installation options</em></summary>
+
+### Manually with Vite
 
 1. Create a project with Vite as usual and add cogs-sdk
    e.g.
@@ -161,6 +125,37 @@ See https://github.com/clockwork-dog/cra-template-cogs-client
 6. Add the [COGS SDK](https://github.com/clockwork-dog/cogs-sdk/) to your project. (See [#quick-start](Quick start).)
 
 </details>
+
+## COGS Media Master Custom Content
+
+COGS Media Masters can display a browser window with custom HTML, Javascript and CSS, using the COGS SDK.
+
+Some other features you can add to your custom content include:
+
+- Play audio from your COGS project
+- Display or react to COGS text hints
+- Show the COGS show timer
+- Connect to MIDI or WebSerial devices
+
+### Structure of Media Master Custom Content
+
+A folder in the `client_content` directory of a COGS Project, containing:
+
+- A [`cogs-plugin-manifest.js` manifest file](https://clockwork-dog.github.io/cogs-sdk/javascript/interfaces/CogsPluginManifestJson.html)
+- An HTML page with the content of your plugin, usually `index.html`
+- Some Javascript, loaded by the HTML page, that uses the [COGS SDK](https://github.com/clockwork-dog/cogs-sdk) to communicate with COGS.
+
+## COGS Plugins
+
+COGS Plugins can be loaded into COGS to integrate with other systems or add specialised features to COGS.
+
+### Structure of a COGS Plugin
+
+A COGS plugin is a folder in the `plugins` directory of a COGS Project. The plugin directory name is the ID of the plugin (e.g. `dog.clockwork.http`) and contains:
+
+- A [`cogs-plugin-manifest.js` manifest file](https://clockwork-dog.github.io/cogs-sdk/javascript/interfaces/CogsPluginManifestJson.html)
+- An HTML page with the content of your plugin, usually `index.html`
+- Some Javascript, loaded by the HTML page, that uses the [COGS SDK](https://github.com/clockwork-dog/cogs-sdk) to communicate with COGS.
 
 ## Tips
 
