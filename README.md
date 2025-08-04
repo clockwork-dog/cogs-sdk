@@ -24,7 +24,13 @@ yarn turbo generate && yarn install
 
 When you generate these they will automatically be linked to the test COGS project pack which is included in the template.
 
-You can read the generated `README.md` file for more details.
+You can then run the project in development mode with:
+
+```sh
+yarn start
+```
+
+See the generated `README.md` file for more details.
 
 > [!NOTE]
 > The template is configured to use Yarn 4 by default. It should be possible to use other package managers such as npm or pnpm, but you will need to manually configure these after you have created a project from the example template.
