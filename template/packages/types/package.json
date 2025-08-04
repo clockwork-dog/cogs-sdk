@@ -16,7 +16,7 @@
     }
   },
   "scripts": {
-    "dev": "npm run build -- --watch",
+    "dev": "yarn run build-prod --watch",
     "build-prod": "tsup src/index.ts --format cjs,esm --dts --clean",
     "types": "tsc --noEmit",
     "lint": "eslint"
