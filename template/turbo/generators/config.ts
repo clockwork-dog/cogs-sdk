@@ -84,11 +84,11 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
         message: "Do you want to create custom content or a plugin?",
         choices: [
           {
-            name: "Custom Content",
+            name: "Media Master Custom Content",
             value: "customContent",
           },
           {
-            name: "Plugin",
+            name: "COGS Plugin",
             value: "plugin",
           },
         ],
