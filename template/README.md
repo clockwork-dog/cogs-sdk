@@ -25,7 +25,7 @@ yarn install
 To generate a new Media Master Custom Content or COGS Plugin, run:
 
 ```sh
-yarn turbo generate && yarn install
+yarn new
 ```
 
 This will prompt you to select the type of content or plugin you want to create.
