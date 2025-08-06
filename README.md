@@ -19,7 +19,7 @@ npx create-turbo@latest --example https://github.com/clockwork-dog/cogs-sdk/tree
 You can then `cd` into the project and run this command to generate a new COGS Plugin or Media Master Custom Content:
 
 ```sh
-yarn turbo generate && yarn install
+yarn new
 ```
 
 When you generate these they will automatically be linked to the test COGS project pack which is included in the template.

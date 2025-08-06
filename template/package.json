@@ -8,7 +8,8 @@
     "check-repo": "sherif && turbo boundaries",
     "check-types": "turbo run types",
     "check-lint": "turbo run lint",
-    "test": "sherif && turbo boundaries && turbo run types lint"
+    "test": "sherif && turbo boundaries && turbo run types lint",
+    "new": "turbo gen cogs-sdk && yarn install"
   },
   "devDependencies": {
     "@turbo/gen": "^2.5.4",
