@@ -24,16 +24,28 @@ yarn new
 
 When you generate these they will automatically be linked to the test COGS project pack which is included in the template.
 
-You can then run the project in development mode with:
+You can then run the project in development mode:
 
 ```sh
 yarn start
 ```
 
+When ready to build the project run: 
+
+```sh
+yarn build
+```
+
 See the generated `README.md` file for more details.
 
+### Test Project Pack
+
+You can open `test-project-pack/test-project-pack.cogs` in COGS, which automatically includes your plugins and/or custom Media Master content. 
+In development mode (`yarn start`) they will live-reload with any changes you make.
+In production mode (`yarn build`) the production versions of your plugins/custom Media Master content will included.
+
 > [!NOTE]
-> The template is configured to use Yarn 4 by default. It should be possible to use other package managers such as npm or pnpm, but you will need to manually configure these after you have created a project from the example template.
+> The template is configured to use Yarn 4 by default. It should be possible to use other package managers such as `npm` or `pnpm`, but you will need to manually configure these after you have created a project from the example template.
 
 ## Manual installation options
 
