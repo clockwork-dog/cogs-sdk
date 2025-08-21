@@ -54,7 +54,7 @@ export type PluginManifestStateJson = {
  *
  * It should be saved in the root of a folder in the `plugins` or `client_content` folder in your COGS project
  *
- * The [COGS plugins directory](/plugins) contains a number of plugins you can use out of the box
+ * The [COGS plugins directory](https://docs.cogss.show/plugins/) contains a number of plugins you can use out of the box
  */
 export interface CogsPluginManifestJson {
   /**
