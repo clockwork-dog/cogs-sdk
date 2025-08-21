@@ -8,9 +8,11 @@ The COGS SDK allows you to create:
 We have provided a template project to get started or you can manually install and use the [JavaScript COGS SDK](./packages/javascript/README.md) or [React COGS SDK](./packages/react/README.md).
 
 ## Getting started using the template
-If creating new COGS Media Master custom content or a new COGS Plugin we recommend using our [Turborepo](https://turbo.build) template.
 
-Create a new project by running:
+If creating new COGS Media Master custom content or a new COGS Plugin we recommend using our [Turborepo](https://turbo.build) template.
+This will create an environment for you to develop in, and a template COGS project to run your Plugin or Custom Content.
+
+In an empty folder, create a new project by running:
 
 ```bash
 npx create-turbo@latest --example https://github.com/clockwork-dog/cogs-sdk/tree/main/template --package-manager yarn
@@ -30,7 +32,7 @@ You can then run the project in development mode:
 yarn start
 ```
 
-When ready to build the project run: 
+When ready to build the project run:
 
 ```sh
 yarn build
@@ -40,12 +42,57 @@ See the generated `README.md` file for more details.
 
 ### Test Project Pack
 
-You can open `test-project-pack/test-project-pack.cogs` in COGS, which automatically includes your plugins and/or custom Media Master content. 
+You can open `test-project-pack/test-project-pack.cogs` in COGS, which automatically includes your plugins and/or custom Media Master content.
 In development mode (`yarn start`) they will live-reload with any changes you make.
 In production mode (`yarn build`) the production versions of your plugins/custom Media Master content will included.
 
 > [!NOTE]
 > The template is configured to use Yarn 4 by default. It should be possible to use other package managers such as `npm` or `pnpm`, but you will need to manually configure these after you have created a project from the example template.
+
+## COGS Media Master Custom Content
+
+If you have created Custom Content:
+
+- Go to the Connect tab.
+- Add a Media Master
+- In the Media Setup panel, set Media type to Custom
+- In the Media Master options menu, click Open Simulator
+
+COGS Media Masters can display a browser window with custom HTML, Javascript and CSS, using the COGS SDK.
+
+Some other features you can add to your custom content include:
+
+- Play audio from your COGS project
+- Display or react to COGS text hints
+- Show the COGS show timer
+- Connect to MIDI or WebSerial devices
+
+### Structure of Media Master Custom Content
+
+If you have created a Plugin:
+
+- Go to Plugins in the left navigation panel
+- Enable your new Plugin
+- Click on your Plugin in the navigation panel
+- Here you can configure any settings defined in your manifest file
+
+A folder in the `client_content` directory of a COGS Project, containing:
+
+- A [`cogs-plugin-manifest.js` manifest file](https://clockwork-dog.github.io/cogs-sdk/javascript/interfaces/CogsPluginManifestJson.html)
+- An HTML page with the content of your plugin, usually `index.html`
+- Some Javascript, loaded by the HTML page, that uses the [COGS SDK](https://github.com/clockwork-dog/cogs-sdk) to communicate with COGS.
+
+## COGS Plugins
+
+COGS Plugins can be loaded into COGS to integrate with other systems or add specialised features to COGS.
+
+### Structure of a COGS Plugin
+
+A COGS plugin is a folder in the `plugins` directory of a COGS Project. The plugin directory name is the ID of the plugin (e.g. `dog.clockwork.http`) and contains:
+
+- A [`cogs-plugin-manifest.js` manifest file](https://clockwork-dog.github.io/cogs-sdk/javascript/interfaces/CogsPluginManifestJson.html)
+- An HTML page with the content of your plugin, usually `index.html`
+- Some Javascript, loaded by the HTML page, that uses the [COGS SDK](https://github.com/clockwork-dog/cogs-sdk) to communicate with COGS.
 
 ## Manual installation options
 
@@ -143,37 +190,6 @@ See https://github.com/clockwork-dog/cra-template-cogs-client
 6. Add the [COGS SDK](https://github.com/clockwork-dog/cogs-sdk/) to your project. (See [#quick-start](Quick start).)
 
 </details>
-
-## COGS Media Master Custom Content
-
-COGS Media Masters can display a browser window with custom HTML, Javascript and CSS, using the COGS SDK.
-
-Some other features you can add to your custom content include:
-
-- Play audio from your COGS project
-- Display or react to COGS text hints
-- Show the COGS show timer
-- Connect to MIDI or WebSerial devices
-
-### Structure of Media Master Custom Content
-
-A folder in the `client_content` directory of a COGS Project, containing:
-
-- A [`cogs-plugin-manifest.js` manifest file](https://clockwork-dog.github.io/cogs-sdk/javascript/interfaces/CogsPluginManifestJson.html)
-- An HTML page with the content of your plugin, usually `index.html`
-- Some Javascript, loaded by the HTML page, that uses the [COGS SDK](https://github.com/clockwork-dog/cogs-sdk) to communicate with COGS.
-
-## COGS Plugins
-
-COGS Plugins can be loaded into COGS to integrate with other systems or add specialised features to COGS.
-
-### Structure of a COGS Plugin
-
-A COGS plugin is a folder in the `plugins` directory of a COGS Project. The plugin directory name is the ID of the plugin (e.g. `dog.clockwork.http`) and contains:
-
-- A [`cogs-plugin-manifest.js` manifest file](https://clockwork-dog.github.io/cogs-sdk/javascript/interfaces/CogsPluginManifestJson.html)
-- An HTML page with the content of your plugin, usually `index.html`
-- Some Javascript, loaded by the HTML page, that uses the [COGS SDK](https://github.com/clockwork-dog/cogs-sdk) to communicate with COGS.
 
 ## Tips
 
