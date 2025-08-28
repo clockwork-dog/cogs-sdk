@@ -3,6 +3,8 @@ description: 'Setup build environment'
 runs:
   using: 'composite'
   steps:
+    - run: corepack enable
+      shell: bash
     - uses: actions/setup-node@v4
       with:
         node-version-file: '.node-version'
