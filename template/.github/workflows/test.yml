@@ -42,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-build-environment
-      - run: yarn run lint
+      - run: yarn run check-lint
 
   tests-complete:
     name: Tests complete
