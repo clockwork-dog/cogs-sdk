@@ -19,7 +19,7 @@
   "main": "dist/index.js",
   "unpkg": "dist/browser/index.js",
   "scripts": {
-    "test": "yarn types && yarn lint",
+    "test": "yarn types && yarn lint && vitest",
     "types": "tsc --noEmit",
     "lint": "eslint .",
     "build": "yarn build:ts && yarn build:browser",
@@ -31,7 +31,8 @@
   },
   "dependencies": {
     "howler": "clockwork-dog/howler.js#fix-looping-clips",
-    "reconnecting-websocket": "^4.4.0"
+    "reconnecting-websocket": "^4.4.0",
+    "vitest": "^4.0.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

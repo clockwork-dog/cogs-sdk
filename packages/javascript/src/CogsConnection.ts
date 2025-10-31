@@ -1,7 +1,7 @@
 import ShowPhase from './types/ShowPhase';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import CogsClientMessage, { MediaClientConfig } from './types/CogsClientMessage';
-import { COGS_SERVER_PORT, assetUrl } from './helpers/urls';
+import { COGS_SERVER_PORT, assetUrl } from './utils/urls';
 import MediaClipStateMessage from './types/MediaClipStateMessage';
 import AllMediaClipStatesMessage from './types/AllMediaClipStatesMessage';
 import { CogsPluginManifest, PluginManifestEventJson } from './types/CogsPluginManifest';
