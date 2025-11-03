@@ -30,7 +30,6 @@
     "release": "yarn npm publish --access public"
   },
   "dependencies": {
-    "@clockworkdog/media-stream-library-browser": "11.1.1-fixes.7",
     "howler": "clockwork-dog/howler.js#fix-looping-clips",
     "reconnecting-websocket": "^4.4.0"
   },

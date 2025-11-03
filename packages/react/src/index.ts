@@ -17,9 +17,6 @@ export * from './utils/types';
 export { default as useAudioClips } from './hooks/useAudioClips';
 export { default as useIsAudioPlaying } from './hooks/useIsAudioPlaying';
 
-// RTSP
-export { default as RtspVideo, RtspVideoProps } from './components/RtspVideo';
-
 // Video
 export { default as VideoContainer } from './components/VideoContainer';
 
