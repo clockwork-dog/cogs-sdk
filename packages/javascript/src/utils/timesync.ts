@@ -71,7 +71,7 @@ export function createTimeSyncClient({
         const halfLatency = (receivedAt - sentAt) / 2;
         return clientNow - serverNow + halfLatency;
       });
-    const averageDelta = deltas.reduce((d1, d2) => d1 + d2) / deltas.length;
+    const averageDelta = deltas.reduce((d1, d2) => d1 + d2, 0) / deltas.length;
     onChange(Date.now() + averageDelta);
   }
 
