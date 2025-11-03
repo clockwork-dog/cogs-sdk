@@ -7,7 +7,7 @@
   "workspaces": [
     "packages/*"
   ],
-  "packageManager": "yarn@4.5.1",
+  "packageManager": "yarn@4.10.3",
   "scripts": {
     "test": "yarn workspaces foreach --all run test",
     "types": "yarn workspaces foreach --all run types",
