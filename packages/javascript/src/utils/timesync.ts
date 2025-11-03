@@ -36,10 +36,14 @@ export function createTimeSyncClient({
   interval,
   send,
   onChange = setDate,
+  syncSampleSize = SYNC_SAMPLE_SIZE,
+  syncRequestTimeout = SYNC_REQUEST_TIMEOUT,
 }: {
   interval: number;
   send: (data: TimeSyncRequestData) => void | Promise<void>;
   onChange?: (now: number) => void;
+  syncSampleSize?: number;
+  syncRequestTimeout?: number;
 }): TimeSyncClient {
   const requests: Record<string, PendingRequest> = {};
 
@@ -47,7 +51,7 @@ export function createTimeSyncClient({
     const promises: Promise<CompletedRequest | null>[] = [];
 
     // Send a series of requests
-    for (let i = 0; i < SYNC_SAMPLE_SIZE; i++) {
+    for (let i = 0; i < syncSampleSize; i++) {
       const promise = new Promise<CompletedRequest | null>((resolve) => {
         const id = getId();
         const sentAt = performance.now();
@@ -56,7 +60,7 @@ export function createTimeSyncClient({
         const complete = (receivedAt: number, serverNow: number) => resolve({ sentAt, receivedAt, serverNow, clientNow: Date.now() });
 
         requests[id] = { complete };
-        setTimeout(() => resolve(null), SYNC_REQUEST_TIMEOUT);
+        setTimeout(() => resolve(null), syncRequestTimeout);
       });
       promises.push(promise);
       await promise;
@@ -72,7 +76,9 @@ export function createTimeSyncClient({
         return clientNow - serverNow + halfLatency;
       });
     const averageDelta = deltas.reduce((d1, d2) => d1 + d2, 0) / deltas.length;
-    onChange(Date.now() + averageDelta);
+    if (!isNaN(averageDelta)) {
+      onChange(Date.now() + averageDelta);
+    }
   }
 
   const receive = (data: TimeSyncResponseData) => {

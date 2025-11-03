@@ -19,7 +19,7 @@
   "main": "dist/index.js",
   "unpkg": "dist/browser/index.js",
   "scripts": {
-    "test": "yarn types && yarn lint",
+    "test": "yarn types && yarn lint && vitest",
     "types": "tsc --noEmit",
     "lint": "eslint .",
     "build": "yarn build:ts && yarn build:browser",
@@ -44,6 +44,7 @@
     "prettier": "^3.4.2",
     "typedoc": "^0.27.5",
     "typescript": "~5.7.2",
-    "typescript-eslint": "^8.18.1"
+    "typescript-eslint": "^8.18.1",
+    "vitest": "^4.0.6"
   }
 }
