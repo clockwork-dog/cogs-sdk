@@ -10,6 +10,7 @@ export default defineConfig({
     outDir: 'dist/browser',
   },
   define: {
+    // Fixes HowlerGlobal: https://github.com/goldfire/howler.js/pull/1331
     global: {},
   },
 });
