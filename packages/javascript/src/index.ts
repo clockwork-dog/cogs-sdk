@@ -5,7 +5,6 @@ export { default as MediaClipStateMessage } from './types/MediaClipStateMessage'
 export { default as ShowPhase } from './types/ShowPhase';
 export { default as MediaObjectFit } from './types/MediaObjectFit';
 export { default as CogsAudioPlayer } from './AudioPlayer';
-export { default as CogsRtspStreamer, LIVE_VIDEO_PLAYBACK_RATE } from './RtspStreamer';
 export { default as CogsVideoPlayer } from './VideoPlayer';
 export * from './types/AudioState';
 export { assetUrl } from './helpers/urls';
