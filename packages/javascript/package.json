@@ -17,7 +17,9 @@
     "dist/**/*"
   ],
   "main": "dist/index.js",
-  "unpkg": "dist/browser/index.umd.js",
+  "exports": {
+    "default": "./dist/browser/index.umd.js"
+  },
   "scripts": {
     "test": "yarn types && yarn lint && vitest",
     "types": "tsc --noEmit",
