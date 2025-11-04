@@ -17,27 +17,27 @@
     "dist/**/*"
   ],
   "main": "dist/index.js",
-  "unpkg": "dist/browser/index.js",
+  "unpkg": "dist/browser/index.umd.js",
   "scripts": {
     "test": "yarn types && yarn lint && vitest",
     "types": "tsc --noEmit",
     "lint": "eslint .",
     "build": "yarn build:ts && yarn build:browser",
     "build:ts": "tsc",
-    "build:browser": "browserify --debug --standalone COGS dist/index.js -o dist/browser/index.js",
+    "build:browser": "vite build",
     "watch-build": "tsc -w",
     "build-docs": "typedoc --out ../../docs/javascript --name @clockworkdog/cogs-client src/index.ts",
     "release": "yarn npm publish --access public"
   },
   "dependencies": {
     "howler": "clockwork-dog/howler.js#fix-looping-clips",
-    "reconnecting-websocket": "^4.4.0"
+    "reconnecting-websocket": "^4.4.0",
+    "vite": "^7.1.12"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
     "@types/howler": "2.2.12",
     "@types/node": "^22.10.2",
-    "browserify": "^17.0.1",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
