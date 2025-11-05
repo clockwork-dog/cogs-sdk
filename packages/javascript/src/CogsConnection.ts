@@ -8,7 +8,7 @@ import { CogsPluginManifest, PluginManifestEventJson } from './types/CogsPluginM
 import * as ManifestTypes from './types/ManifestTypes';
 import { DeepReadonly } from './types/utils';
 import DataStore from './DataStore';
-import { createTimeSyncClient, TimeSyncResponseData } from './utils/timesync';
+import { createTimeSyncClient, TimeSyncResponseData } from '@clockworkdog/timesync';
 
 export default class CogsConnection<Manifest extends CogsPluginManifest, DataT extends { [key: string]: unknown } = Record<never, never>> {
   private websocket: WebSocket | ReconnectingWebSocket;

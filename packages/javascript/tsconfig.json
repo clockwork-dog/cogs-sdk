@@ -4,7 +4,6 @@
     "target": "es2019",
     "module": "commonjs",
     "allowJs": true,
-    "declaration": true,
     "outDir": "dist",
     "esModuleInterop": true,
     "resolveJsonModule": true

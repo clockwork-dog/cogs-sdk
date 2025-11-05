@@ -5,7 +5,6 @@
     "module": "commonjs",
     "allowJs": true,
     "jsx": "react",
-    "declaration": true,
     "outDir": "dist",
     "esModuleInterop": true,
     "resolveJsonModule": true
