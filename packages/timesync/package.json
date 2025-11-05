@@ -1,6 +1,6 @@
 {
     "name": "@clockworkdog/timesync",
-    "description": "",
+    "description": "A library to synchronize a client's clock to a server's",
     "author": "Clockwork Dog <info@clockwork.dog>",
     "homepage": "https://github.com/clockwork-dog/cogs-sdk/tree/main/packages/timesync",
     "version": "0.0.0",
@@ -18,7 +18,7 @@
     ],
     "main": "dist/index.js",
     "scripts": {
-        "test": "yarn lint && vitest run",
+        "test": "yarn lint && vitest",
         "lint": "eslint .",
         "build": "tsc",
         "release": "yarn npm publish --access public"
