@@ -9,7 +9,7 @@ describe('createTimeSyncServer', () => {
 
     server.receive({ timesync: { id: 10 } });
     expect(send).toHaveBeenCalledWith({ timesync: { id: 10, now: 0 } });
-  }, 2_000);
+  });
 });
 
 describe('createTimeSyncClient', () => {
