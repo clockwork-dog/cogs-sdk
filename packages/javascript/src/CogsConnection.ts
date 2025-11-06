@@ -1,13 +1,14 @@
 import ShowPhase from './types/ShowPhase';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import CogsClientMessage, { MediaClientConfig } from './types/CogsClientMessage';
-import { COGS_SERVER_PORT, assetUrl } from './helpers/urls';
+import { COGS_SERVER_PORT, assetUrl } from './utils/urls';
 import MediaClipStateMessage from './types/MediaClipStateMessage';
 import AllMediaClipStatesMessage from './types/AllMediaClipStatesMessage';
 import { CogsPluginManifest, PluginManifestEventJson } from './types/CogsPluginManifest';
 import * as ManifestTypes from './types/ManifestTypes';
 import { DeepReadonly } from './types/utils';
 import DataStore from './DataStore';
+import { createTimeSyncClient, TimeSyncResponseData } from '@clockworkdog/timesync';
 
 export default class CogsConnection<Manifest extends CogsPluginManifest, DataT extends { [key: string]: unknown } = Record<never, never>> {
   private websocket: WebSocket | ReconnectingWebSocket;
@@ -97,11 +98,31 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
       this.setState(this.currentState); // TODO: Remove this because you should set it manually...??
     };
 
+    const timeSyncClient = createTimeSyncClient({
+      interval: 60_000,
+      send: (data) => {
+        this.websocket.send(JSON.stringify(data));
+      },
+    });
+
+    this.websocket.addEventListener('message', ({ data }) => {
+      try {
+        const response = JSON.parse(data);
+        if (typeof response === 'object' && response !== null && 'timesync' in response) {
+          const parsed = response as TimeSyncResponseData;
+          timeSyncClient.receive(parsed);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    });
+
     this.websocket.onclose = () => {
+      timeSyncClient.destroy();
       this.dispatchEvent(new CogsConnectionCloseEvent());
     };
 
-    this.websocket.onmessage = ({ data }) => {
+    this.websocket.addEventListener('message', ({ data }) => {
       try {
         const parsed = JSON.parse(data);
 
@@ -157,7 +178,7 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
       } catch (e) {
         console.error('Unable to parse incoming data from server', data, e);
       }
-    };
+    });
 
     // Tell COGS when any data store items change
     this.store.addEventListener('items', (event) => {

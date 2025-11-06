@@ -19,7 +19,7 @@ We'll make an annoying bell that rings every second.
         "events": {
             "toCogs": [
                 {
-                    "name": "ding"
+                    "name": "ping"
                 }
             ]
         }
@@ -46,7 +46,7 @@ We'll make an annoying bell that rings every second.
                 const cogsConnection = new CogsConnection(manifest);
                 cogsConnection.addEventListener('open', () => {
                     interval = setInterval(() => {
-                        cogsConnection.sendEvent('ding')                        
+                        cogsConnection.sendEvent('ping')
                     }, 1000);
                 });
                 cogsConnection.addEventListener('close', () => {
@@ -61,10 +61,10 @@ We'll make an annoying bell that rings every second.
 1. Enable your plugin in COGS.
 
     <img src="./assets/quickstart-enable-plugin.png" alt="Enabling COGS plugin" width="600">
-1. Create a behaviour to listen to the `ding` event.
+1. Create a behaviour to listen to the `ping` event.
 
     <img src="./assets/quickstart-behavior-when.png" alt="Adding a behaviour" width="600">
-1. Make the behaviour do something.    In this case it'll play our bell sound.
+1. Make the behaviour do something.  In this case it'll play our bell sound.
 
     <img src="./assets/quickstart-behavior-do.png" alt="Adding a behaviour" width="600">
 1. Start the show!

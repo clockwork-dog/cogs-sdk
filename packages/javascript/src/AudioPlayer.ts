@@ -1,4 +1,6 @@
-import { Howl, Howler } from 'howler';
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
+/// <reference path="./types/howler.d.ts" />
+import { Howl, Howler } from 'howler/dist/howler.core.min.js';
 import CogsConnection from './CogsConnection';
 import { ActiveClip, AudioClip, AudioState } from './types/AudioState';
 import MediaClipStateMessage, { MediaStatus } from './types/MediaClipStateMessage';

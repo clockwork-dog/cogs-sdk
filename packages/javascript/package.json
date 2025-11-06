@@ -17,33 +17,39 @@
     "dist/**/*"
   ],
   "main": "dist/index.js",
-  "unpkg": "dist/browser/index.js",
+  "exports": {
+    "default": "./dist/browser/index.umd.js"
+  },
   "scripts": {
-    "test": "yarn types && yarn lint",
+    "test": "yarn types && yarn lint && vitest",
     "types": "tsc --noEmit",
     "lint": "eslint .",
     "build": "yarn build:ts && yarn build:browser",
     "build:ts": "tsc",
-    "build:browser": "browserify --debug --standalone COGS dist/index.js -o dist/browser/index.js",
+    "build:browser": "vite build",
     "watch-build": "tsc -w",
     "build-docs": "typedoc --out ../../docs/javascript --name @clockworkdog/cogs-client src/index.ts",
     "release": "yarn npm publish --access public"
   },
   "dependencies": {
+    "@clockworkdog/timesync": "workspace:^",
     "howler": "clockwork-dog/howler.js#fix-looping-clips",
     "reconnecting-websocket": "^4.4.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
     "@types/howler": "2.2.12",
+    "@types/jsdom": "^27",
     "@types/node": "^22.10.2",
-    "browserify": "^17.0.1",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
+    "jsdom": "^27.1.0",
     "prettier": "^3.4.2",
     "typedoc": "^0.27.5",
     "typescript": "~5.7.2",
-    "typescript-eslint": "^8.18.1"
+    "typescript-eslint": "^8.18.1",
+    "vite": "^7.1.12",
+    "vitest": "^4.0.6"
   }
 }

@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "skipLibCheck": true,
+        "declaration": true,
+        // Target es2019 or higher required to use proper import/export statements between packages
+        "target": "es2019"
+    }
+}
