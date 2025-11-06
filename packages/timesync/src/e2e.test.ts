@@ -1,4 +1,4 @@
-import { describe, test, expect } from 'vitest';
+import { describe, test, expect, vi } from 'vitest';
 import { WebSocketServer, WebSocket } from 'ws';
 import { createTimeSyncClient, createTimeSyncServer } from './timesync';
 
@@ -8,7 +8,7 @@ describe('e2e', () => {
     let requestReceive = false;
     let responseSend = false;
     let responseReceive = false;
-    let onChangeFired = false;
+    const onChange = vi.fn();
 
     // Setup server
     const server = new WebSocketServer({ port: 8080 });
@@ -45,9 +45,7 @@ describe('e2e', () => {
           requestSend = true;
           socket.send(JSON.stringify(data));
         },
-        onChange: () => {
-          onChangeFired = true;
-        },
+        onChange,
       });
 
       //How to receive timesync response
@@ -73,6 +71,6 @@ describe('e2e', () => {
     expect(requestReceive).toBe(true);
     expect(responseSend).toBe(true);
     expect(responseReceive).toBe(true);
-    expect(onChangeFired).toBe(true);
+    expect(onChange).toHaveBeenCalledWith(expect.any(Number));
   });
 });
