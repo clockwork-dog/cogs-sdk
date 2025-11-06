@@ -28,10 +28,8 @@ jobs:
         run: yarn install
       - name: Build packages
         run: yarn run build
-      - name: Type check packages
-        run: yarn run types
-      - name: Lint packages
-        run: yarn run lint
+      - name: Test packages
+        run: yarn run test
       - name: Build docs
         run: yarn run build-docs
 

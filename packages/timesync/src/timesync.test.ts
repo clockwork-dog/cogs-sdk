@@ -1,15 +1,7 @@
-import { vi, expect, it } from 'vitest';
+import { describe, vi, expect, it } from 'vitest';
 import { createTimeSyncServer, createTimeSyncClient } from './timesync';
-import { afterEach, beforeEach, describe } from 'node:test';
 
 describe('createTimeSyncServer', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-  });
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
   it('returns correct id and current Date', () => {
     const send = vi.fn();
     vi.setSystemTime(0);
@@ -21,13 +13,6 @@ describe('createTimeSyncServer', () => {
 });
 
 describe('createTimeSyncClient', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-  });
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
   it('waits for response between sends', async () => {
     const send = vi.fn();
     const onChange = vi.fn();
