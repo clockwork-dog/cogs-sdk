@@ -18,7 +18,8 @@
   ],
   "main": "dist/index.js",
   "exports": {
-    "default": "./dist/browser/index.umd.js"
+    "default": "./dist/index.js",
+    "unpkg": "./dist/browser/index.umd.js"
   },
   "scripts": {
     "test": "yarn types && yarn lint && vitest",
