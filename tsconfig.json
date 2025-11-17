@@ -4,6 +4,8 @@
         "skipLibCheck": true,
         "declaration": true,
         // Target es2019 or higher required to use proper import/export statements between packages
-        "target": "es2019"
+        "target": "es2020",
+        "module": "es2020",
+        "moduleResolution": "bundler",
     }
 }

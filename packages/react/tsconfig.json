@@ -1,11 +1,9 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "module": "commonjs",
     "allowJs": true,
     "jsx": "react",
     "outDir": "dist",
-    "esModuleInterop": true,
     "resolveJsonModule": true
   },
   "files": ["src/index.ts"]

@@ -1,5 +1,5 @@
 import { CogsClientMessage, CogsConnection } from '@clockworkdog/cogs-client';
-import { TimerState } from '@clockworkdog/cogs-client/dist/CogsConnection';
+import { TimerState } from '@clockworkdog/cogs-client';
 import React, { useCallback, useEffect, useState } from 'react';
 import useCogsMessage from '../hooks/useCogsMessage';
 import { useCogsConnection } from '../providers/CogsConnectionProvider';
