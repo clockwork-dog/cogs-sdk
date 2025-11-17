@@ -8,7 +8,7 @@ import { CogsPluginManifest, PluginManifestEventJson } from './types/CogsPluginM
 import * as ManifestTypes from './types/ManifestTypes';
 import { DeepReadonly } from './types/utils';
 import DataStore from './DataStore';
-import { createTimeSyncClient, TimeSyncResponseData } from '@clockworkdog/timesync';
+import { createTimeSyncClient, TimeSyncClient, TimeSyncResponseData } from '@clockworkdog/timesync';
 
 export default class CogsConnection<Manifest extends CogsPluginManifest, DataT extends { [key: string]: unknown } = Record<never, never>> {
   private websocket: WebSocket | ReconnectingWebSocket;
@@ -89,6 +89,7 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
 
     const socketUrl = `ws://${hostname}:${port}${path}?${this.urlParams}`;
     this.websocket = useReconnectingWebsocket ? new ReconnectingWebSocket(socketUrl) : new WebSocket(socketUrl);
+    let timeSyncClient: TimeSyncClient | undefined;
 
     this.websocket.onopen = () => {
       this.currentConfig = {} as ManifestTypes.ConfigAsObject<Manifest>; // Received on open connection
@@ -96,21 +97,21 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
 
       this.dispatchEvent(new CogsConnectionOpenEvent());
       this.setState(this.currentState); // TODO: Remove this because you should set it manually...??
-    };
 
-    const timeSyncClient = createTimeSyncClient({
-      interval: 60_000,
-      send: (data) => {
-        this.websocket.send(JSON.stringify(data));
-      },
-    });
+      timeSyncClient = createTimeSyncClient({
+        interval: 60_000,
+        send: (data) => {
+          this.websocket.send(JSON.stringify(data));
+        },
+      });
+    };
 
     this.websocket.addEventListener('message', ({ data }) => {
       try {
         const response = JSON.parse(data);
         if (typeof response === 'object' && response !== null && 'timesync' in response) {
           const parsed = response as TimeSyncResponseData;
-          timeSyncClient.receive(parsed);
+          timeSyncClient?.receive(parsed);
         }
       } catch (e) {
         console.error(e);
@@ -118,7 +119,7 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
     });
 
     this.websocket.onclose = () => {
-      timeSyncClient.destroy();
+      timeSyncClient?.destroy();
       this.dispatchEvent(new CogsConnectionCloseEvent());
     };
 

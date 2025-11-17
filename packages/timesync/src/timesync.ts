@@ -54,10 +54,11 @@ export function createTimeSyncClient({
     for (let i = 0; i < syncSampleSize; i++) {
       const promise = new Promise<CompletedRequest | null>((resolve) => {
         const id = getId();
+        const clientNow = Date.now();
         const sentAt = performance.now();
         send({ timesync: { id } });
 
-        const complete = (receivedAt: number, serverNow: number) => resolve({ sentAt, receivedAt, serverNow, clientNow: Date.now() });
+        const complete = (receivedAt: number, serverNow: number) => resolve({ sentAt, receivedAt, serverNow, clientNow });
 
         requests[id] = { complete };
         setTimeout(() => resolve(null), syncRequestTimeout);
@@ -67,17 +68,10 @@ export function createTimeSyncClient({
     }
 
     // Perform calculation with results
-    const results = await Promise.all(promises);
-    const deltas = results
-      .filter((result) => result !== null)
-      .map((result) => {
-        const { sentAt, receivedAt, serverNow, clientNow } = result;
-        const halfLatency = (receivedAt - sentAt) / 2;
-        return clientNow - serverNow + halfLatency;
-      });
-    const averageDelta = deltas.reduce((d1, d2) => d1 + d2, 0) / deltas.length;
-    if (!isNaN(averageDelta)) {
-      onChange(Date.now() + averageDelta);
+    const results = (await Promise.all(promises)).filter((result) => result !== null);
+    const delta = calculateDelta(results);
+    if (!isNaN(delta)) {
+      onChange(Date.now() + delta);
     }
   }
 
@@ -99,6 +93,17 @@ export function createTimeSyncClient({
     receive,
     destroy,
   };
+}
+
+export function calculateDelta(results: CompletedRequest[]) {
+  return (
+    results
+      .map(({ sentAt, receivedAt, clientNow, serverNow }) => {
+        const halfLatency = (receivedAt - sentAt) / 2;
+        return serverNow - clientNow - halfLatency;
+      })
+      .reduce((d1, d2) => d1 + d2, 0) / results.length
+  );
 }
 
 export function createTimeSyncServer({ send }: { send: (data: TimeSyncResponseData) => void | Promise<void> }): TimeSyncServer {
