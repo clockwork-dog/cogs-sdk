@@ -35,7 +35,8 @@
   "dependencies": {
     "@clockworkdog/timesync": "workspace:^",
     "howler": "clockwork-dog/howler.js#fix-looping-clips",
-    "reconnecting-websocket": "^4.4.0"
+    "reconnecting-websocket": "^4.4.0",
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
