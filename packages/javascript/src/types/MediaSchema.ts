@@ -36,6 +36,9 @@ const VideoMetadata = z.object({
 export type NullKeyframe = z.infer<typeof NullKeyframe>;
 const NullKeyframe = z.tuple([z.number(), z.null()]);
 
+/**
+ * Keyframes are indexed by a timestamp given in ms
+ */
 export type InitialImageKeyframe = z.infer<typeof InitialImageKeyframe>;
 const InitialImageKeyframe = z.tuple([
   z.number(),
@@ -49,6 +52,10 @@ const InitialImageKeyframe = z.tuple([
     })
     .partial(),
 ]);
+
+/**
+ * Keyframes are indexed by a timestamp given in ms
+ */
 export type ImageKeyframe = z.infer<typeof ImageKeyframe>;
 const ImageKeyframe = z.tuple([
   z.number(),
@@ -68,6 +75,9 @@ const ImageKeyframe = z.tuple([
     .partial(),
 ]);
 
+/**
+ * Keyframes are indexed by a timestamp given in ms
+ */
 export type InitialAudioKeyframe = z.infer<typeof InitialAudioKeyframe>;
 const InitialAudioKeyframe = z.tuple([
   z.number(),
@@ -82,6 +92,10 @@ const InitialAudioKeyframe = z.tuple([
     })
     .partial(),
 ]);
+
+/**
+ * Keyframes are indexed by a timestamp given in ms
+ */
 export type AudioKeyframe = z.infer<typeof AudioKeyframe>;
 const AudioKeyframe = z.tuple([
   z.number(),
@@ -101,6 +115,10 @@ const AudioKeyframe = z.tuple([
     })
     .partial(),
 ]);
+
+/**
+ * Keyframes are indexed by a timestamp given in ms
+ */
 export type InitialVideoKeyframe = z.infer<typeof InitialVideoKeyframe>;
 const InitialVideoKeyframe = z.tuple([
   z.number(),
@@ -116,6 +134,10 @@ const InitialVideoKeyframe = z.tuple([
     })
     .partial(),
 ]);
+
+/**
+ * Keyframes are indexed by a timestamp given in ms
+ */
 export type VideoKeyframe = z.infer<typeof VideoKeyframe>;
 const VideoKeyframe = z.tuple([
   z.number(),
