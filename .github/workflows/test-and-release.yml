@@ -87,7 +87,11 @@ jobs:
         run: yarn workspaces foreach --all version ${GITHUB_REF#refs/tags/}
       - name: Build packages
         run: yarn run build
-      - name: Release packages
+      - name: Publish prerelease
+        if: 'github.event.prerelease'
+        run: yarn run prerelease"
+      - name: Publish release
+        if: '!github.event.prerelease'
         run: yarn run release
         env:
           YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
