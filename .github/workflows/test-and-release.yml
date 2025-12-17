@@ -88,10 +88,10 @@ jobs:
       - name: Build packages
         run: yarn run build
       - name: Publish prerelease
-        if: 'github.event.prerelease'
+        if: 'github.event.release.prerelease'
         run: yarn run prerelease"
       - name: Publish release
-        if: '!github.event.prerelease'
+        if: '!github.event.release.prerelease'
         run: yarn run release
         env:
           YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
