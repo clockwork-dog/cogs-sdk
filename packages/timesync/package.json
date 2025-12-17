@@ -22,7 +22,7 @@
         "lint": "eslint .",
         "build": "tsc",
         "release": "yarn npm publish --access public",
-        "prerelease": "yarn npm publish --access public --preid=alpha --tag=next"
+        "prerelease": "yarn npm publish --access public --tag=next"
     },
     "devDependencies": {
         "@eslint/js": "^9.17.0",

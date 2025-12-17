@@ -25,7 +25,7 @@
     "watch-build": "tsc -w",
     "build-docs": "typedoc --out ../../docs/react --name @clockworkdog/cogs-client-react src/index.ts",
     "release": "yarn npm publish --access public",
-    "prerelease": "yarn npm publish --access public --preid=alpha --tag=next"
+    "prerelease": "yarn npm publish --access public --tag=next"
   },
   "dependencies": {
     "@clockworkdog/cogs-client": "workspace:^0.0.0"

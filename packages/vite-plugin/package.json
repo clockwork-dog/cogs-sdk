@@ -37,7 +37,7 @@
     "lint": "eslint",
     "build": "tsup src/index.ts --format cjs,esm --dts --clean",
     "release": "yarn npm publish --access public",
-    "prerelease": "yarn npm publish --access public --preid=alpha --tag=next"
+    "prerelease": "yarn npm publish --access public --tag=next"
   },
   "peerDependencies": {
     "vite": ">=6.0.0"

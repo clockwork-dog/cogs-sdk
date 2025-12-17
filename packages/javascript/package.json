@@ -31,7 +31,7 @@
     "watch-build": "tsc -w",
     "build-docs": "typedoc --out ../../docs/javascript --name @clockworkdog/cogs-client src/index.ts",
     "release": "yarn npm publish --access public",
-    "prerelease": "yarn npm publish --access public --preid=alpha --tag=next"
+    "prerelease": "yarn npm publish --access public --tag=next"
   },
   "dependencies": {
     "@clockworkdog/timesync": "workspace:^",
