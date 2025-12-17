@@ -21,7 +21,8 @@
         "test": "yarn lint && vitest",
         "lint": "eslint .",
         "build": "tsc",
-        "release": "yarn npm publish --access public"
+        "release": "yarn npm publish --access public",
+        "prerelease": "yarn npm publish --access public --tag=next"
     },
     "devDependencies": {
         "@eslint/js": "^9.17.0",
