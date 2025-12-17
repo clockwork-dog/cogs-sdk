@@ -14,7 +14,8 @@
     "lint": "yarn workspaces foreach --all run lint",
     "build": "yarn workspaces foreach --all --topological run build",
     "build-docs": "yarn workspaces foreach --all --topological run build-docs",
-    "release": "yarn workspaces foreach --all run release"
+    "release": "yarn workspaces foreach --all --topological run release",
+    "prerelease": "yarn workspaces foreach --all --topological run prerelease"
   },
   "devDependencies": {
     "@types/ws": "^8",
