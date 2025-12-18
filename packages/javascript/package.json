@@ -31,7 +31,10 @@
     "watch-build": "tsc -w",
     "build-docs": "typedoc --out ../../docs/javascript --name @clockworkdog/cogs-client src/index.ts",
     "release": "yarn npm publish --access public",
-    "prerelease": "yarn npm publish --access public --tag=next"
+    "prerelease": "yarn npm publish --access public --tag=next",
+    "cy:open": "cypress open",
+    "cy:run": "cypress run --component",
+    "cy:generate": "cypress run --e2e"
   },
   "dependencies": {
     "@clockworkdog/timesync": "workspace:^",
@@ -40,15 +43,19 @@
     "zod": "^4.1.13"
   },
   "devDependencies": {
+    "@cypress/mount-utils": "^4.1.2",
     "@eslint/js": "^9.17.0",
     "@types/howler": "2.2.12",
     "@types/jsdom": "^27",
     "@types/node": "^22.10.2",
+    "cypress": "^14.5.4",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "jsdom": "^27.1.0",
     "prettier": "^3.4.2",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
     "typedoc": "^0.27.5",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.18.1",
