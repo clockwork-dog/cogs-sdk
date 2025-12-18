@@ -1,0 +1,115 @@
+<html>
+
+<head>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        :root {
+            --arrow-width: 30vmin;
+            --arrow-height: 9vmin;
+            --arrow-head-width: 9vmin;
+        }
+        #arrows {
+            overflow: visible;
+        }
+        .arrow {
+            overflow: visible;
+            translate: 0 -50%;
+            position: absolute;
+            background-color: black;
+            width: var(--arrow-width);
+            height: var(--arrow-height);
+            display: inline-flex;
+            align-items: center;
+        }
+        .arrow.top {
+            top: 0;
+        }
+        .arrow.bottom {
+            top: 100vh;
+        }
+
+        .arrow.left {
+            left: calc(var(--arrow-head-width) - 1px);
+        }
+        .arrow.right {
+            right: calc(var(--arrow-head-width) - 1px);
+        }
+
+
+        .arrow::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border: var(--arrow-head-width) solid transparent;
+        }
+
+        .arrow.left::after {
+            left: calc(1px + var(--arrow-head-width) * -1);
+            border-right-color: black;
+            border-left-width: 0;
+        }
+
+        .arrow.right::after {
+            right: calc(1px + var(--arrow-head-width) * -1);
+            border-left-color: black;
+            border-right-width: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="arrows">
+        <div class="arrow left top"></div>
+        <div class="arrow right top"></div>
+        <div class="arrow left bottom"></div>
+        <div class="arrow right bottom"></div>
+    </div>
+        <script>
+            const url = new URL(globalThis.location);
+            const arrows = document.getElementById('arrows')
+
+            // Parse loop duration
+            const loopQuery = url.searchParams.get('loopDurationMs');
+            if (!loopQuery) {
+                throw new Error('Please specify loop duration in query string: ?loopDurationMs=1000');
+            }
+            const loopDurationMs = parseFloat(loopQuery, 10);
+
+            // Parse current time
+            const currentQuery = url.searchParams.get('currentMs')
+            currentMs = currentQuery ? parseFloat(currentQuery, 10) : NaN;
+
+            function render(ms) {
+                const loopProgress = (ms % loopDurationMs) / loopDurationMs;
+                const loopProgressPercent = loopProgress * 100;
+                const loopProgressPercentAroundMiddle = ((loopProgressPercent - 50) % 100);
+                const translation = `0 ${loopProgressPercentAroundMiddle}vh`;
+                arrows.style.translate = translation;
+            }
+
+            if (Number.isFinite(currentMs)) {
+                // Go to specified time
+                render(currentMs);
+            } else {
+                // Loop
+                function loop(ms) {
+                    render(ms);
+                    requestAnimationFrame(loop)
+                }
+                loop();
+            }
+
+
+    </script>
+</body>
+
+</html>
