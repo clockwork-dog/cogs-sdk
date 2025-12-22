@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@types/ws": "^8",
+    "@vitest/coverage-v8": "^4.0.16",
     "vite": "^7.2.0",
     "ws": "^8.18.3"
   }

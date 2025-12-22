@@ -1,4 +1,4 @@
-import { MediaManager } from '../../src/MediaManager';
+import { MediaManager } from '../../src/state-based/SurfaceManager';
 
 describe('Playback tests', () => {
   it('can buffer without playing', () => {

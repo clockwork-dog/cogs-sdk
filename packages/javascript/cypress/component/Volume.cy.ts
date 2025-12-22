@@ -1,4 +1,4 @@
-import { MediaManager } from '../../src/MediaManager';
+import { MediaManager } from '../../src/state-based/SurfaceManager';
 
 const INITIAL_VOLUME = 0;
 const CHANGED_VOLUME = 1;
