@@ -78,7 +78,7 @@ describe('getTemporalPropertiesAtTime()', () => {
     expect(getTemporalPropertiesAtTime(playFromZero, 100)).toEqual({ t: 100, rate: 1 });
     expect(getTemporalPropertiesAtTime(playFromZero, 250)).toEqual({ t: 250, rate: 1 });
   });
-  it('keeps track of time past the end of the media', () => {
+  it('keeps track of time past the end of the media at different rates', () => {
     const quickPlayFromZero: [number, { set?: Record<any, unknown> }][] = [[0, { set: { t: 0, rate: 2 } }]];
     expect(getTemporalPropertiesAtTime(quickPlayFromZero, 0)).toEqual({ t: 0, rate: 2 });
     expect(getTemporalPropertiesAtTime(quickPlayFromZero, 100)).toEqual({ t: 200, rate: 2 });
