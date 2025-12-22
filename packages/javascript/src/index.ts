@@ -9,6 +9,7 @@ export { default as CogsAudioPlayer } from './AudioPlayer';
 export { default as CogsVideoPlayer } from './VideoPlayer';
 export * from './types/AudioState';
 export { assetUrl, preloadUrl } from './utils/urls';
+export { getStateAtTime } from './utils/getStateAtTime';
 export * from './types/CogsPluginManifest';
 export * as ManifestTypes from './types/ManifestTypes';
 export * from './DataStore';
