@@ -78,6 +78,23 @@ describe('getTemporalPropertiesAtTime()', () => {
     expect(getTemporalPropertiesAtTime(playFromZero, 100)).toEqual({ t: 100, rate: 1 });
     expect(getTemporalPropertiesAtTime(playFromZero, 250)).toEqual({ t: 250, rate: 1 });
   });
+  it('can loop', () => {
+    const loopEvery100: [number, { set?: Record<any, unknown> }][] = [
+      [0, { set: { t: 0, rate: 1 } }],
+      [100, { set: { t: 0, rate: 1 } }],
+      [200, { set: { t: 0, rate: 1 } }],
+      [300, { set: { t: 0, rate: 1 } }],
+      [400, { set: { t: 0, rate: 1 } }],
+    ];
+    expect(getTemporalPropertiesAtTime(loopEvery100, 0)).toEqual({ t: 0, rate: 1 });
+    expect(getTemporalPropertiesAtTime(loopEvery100, 99)).toEqual({ t: 99, rate: 1 });
+    expect(getTemporalPropertiesAtTime(loopEvery100, 100)).toEqual({ t: 0, rate: 1 });
+    expect(getTemporalPropertiesAtTime(loopEvery100, 101)).toEqual({ t: 1, rate: 1 });
+    expect(getTemporalPropertiesAtTime(loopEvery100, 150)).toEqual({ t: 50, rate: 1 });
+    expect(getTemporalPropertiesAtTime(loopEvery100, 199)).toEqual({ t: 99, rate: 1 });
+    expect(getTemporalPropertiesAtTime(loopEvery100, 200)).toEqual({ t: 0, rate: 1 });
+    expect(getTemporalPropertiesAtTime(loopEvery100, 201)).toEqual({ t: 1, rate: 1 });
+  });
   it('keeps track of time past the end of the media at different rates', () => {
     const quickPlayFromZero: [number, { set?: Record<any, unknown> }][] = [[0, { set: { t: 0, rate: 2 } }]];
     expect(getTemporalPropertiesAtTime(quickPlayFromZero, 0)).toEqual({ t: 0, rate: 2 });
