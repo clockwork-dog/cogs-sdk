@@ -14,8 +14,6 @@ type EventTypes = {
   videoClipState: MediaClipStateMessage;
 };
 
-const DEFAULT_PARENT_ELEMENT = document.body;
-
 export default class VideoPlayer {
   private eventTarget = new EventTarget();
   private globalVolume = 1;
@@ -28,7 +26,7 @@ export default class VideoPlayer {
   constructor(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private cogsConnection: CogsConnection<any>,
-    parentElement: HTMLElement = DEFAULT_PARENT_ELEMENT,
+    parentElement: HTMLElement = document.body,
   ) {
     this.parentElement = parentElement;
 
@@ -98,7 +96,7 @@ export default class VideoPlayer {
   }
 
   resetParentElement(): void {
-    this.setParentElement(DEFAULT_PARENT_ELEMENT);
+    this.setParentElement(document.body);
   }
 
   setGlobalVolume(globalVolume: number): void {

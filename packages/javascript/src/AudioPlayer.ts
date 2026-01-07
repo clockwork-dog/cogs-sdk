@@ -9,7 +9,7 @@ import { Media, MediaClientConfig } from './types/CogsClientMessage';
 const DEBUG = false;
 
 // Check an iOS-only property (See https://developer.mozilla.org/en-US/docs/Web/API/Navigator#non-standard_properties)
-const IS_IOS = typeof (navigator as { standalone?: boolean }).standalone !== 'undefined';
+const IS_IOS = typeof navigator !== 'undefined' && typeof (navigator as { standalone?: boolean }).standalone !== 'undefined';
 
 interface HowlWithHTMLSounds extends Howl {
   _html5?: unknown;
