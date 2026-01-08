@@ -10,8 +10,11 @@ describe('template spec', () => {
     let ms = 0;
 
     while (frame < TOTAL_FRAMES) {
+      // Debug log for long running tasks
       cy.task('log', `[frame: ${frame + 1}/${TOTAL_FRAMES}] [ms: ${ms.toFixed(2)}/${TOTAL_LOOPS * LOOP_DURATION}]`);
+      // Go to new frame of the video
       cy.visit(`cypress/e2e/test-video.html?loopDurationMs=${LOOP_DURATION}&currentMs=${ms}`);
+      // Capture screenshot
       cy.screenshot(`${frame}`, { capture: 'viewport', overwrite: true });
       // Set up for next iteration
       frame++;
