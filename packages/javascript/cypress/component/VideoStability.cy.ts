@@ -97,4 +97,49 @@ describe('Video stability tests', () => {
     cy.log('Video should have recovered');
     cy.get('video').invoke('prop', 'currentTime').should('be.lessThan', 2);
   });
+
+  it('recovers from volume change', () => {
+    const INITIAL_VOLUME = 0;
+    const CHANGED_VOLUME = 1;
+    const now = Date.now();
+    const manager = new SurfaceManager({
+      'clip-id': {
+        type: 'video',
+        file: 'cypress/fixtures/5x2s@2560x1440.mp4',
+        audioOutput: '',
+        fit: 'cover',
+        keyframes: [[now, { set: { t: 0, rate: 1, volume: INITIAL_VOLUME } }]],
+      },
+    });
+    cy.mount(manager.element);
+
+    cy.get('video').invoke('prop', 'volume', CHANGED_VOLUME);
+    cy.get('video').should('have.prop', 'volume', CHANGED_VOLUME);
+
+    cy.wait(1000);
+
+    cy.get('video').should('have.prop', 'volume', INITIAL_VOLUME);
+  });
+
+  it('recovers from video element deletion', () => {
+    const now = Date.now();
+    const manager = new SurfaceManager({
+      'clip-id': {
+        type: 'video',
+        file: 'cypress/fixtures/5x2s@2560x1440.mp4',
+        audioOutput: '',
+        fit: 'cover',
+        keyframes: [[now, { set: { t: 0, rate: 1 } }]],
+      },
+    });
+    cy.mount(manager.element);
+
+    cy.get('video').should('exist');
+    cy.get('video').invoke('remove');
+    cy.get('video').should('not.exist');
+
+    cy.wait(1000);
+
+    cy.get('video').should('exist');
+  });
 });

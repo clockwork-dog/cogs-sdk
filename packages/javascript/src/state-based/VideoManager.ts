@@ -14,13 +14,21 @@ export class VideoManager extends ClipManager<VideoState> {
 
   constructor(surfaceElement: HTMLElement, clipElement: HTMLElement, state: VideoState) {
     super(surfaceElement, clipElement, state);
+    this.clipElement = clipElement;
+  }
+
+  updateVideoElement() {
     this.videoElement = document.createElement('video');
-    clipElement.replaceChildren(this.videoElement);
+    this.clipElement.replaceChildren(this.videoElement);
     this.videoElement.style.position = 'absolute';
     this.videoElement.style.width = '100%';
     this.videoElement.style.height = '100%';
   }
 
+  /**
+   * Helper function to seek to a specified time.
+   * Works with the update loop to poll until seeked event has fired.
+   */
   private seekTo(time: number) {
     if (!this.videoElement) return;
     this.videoElement.addEventListener(
@@ -36,11 +44,20 @@ export class VideoManager extends ClipManager<VideoState> {
   protected update(): void {
     // Update loop used to poll until seek finished
     if (this.isSeeking) return;
-    if (!this.videoElement) return;
-    const currentState = getStateAtTime(this._state, Date.now());
-    if (!currentState) return;
-
     this.delay = DEFAULT_VIDEO_POLLING;
+
+    // Does the <video /> element need adding/removing?
+    const currentState = getStateAtTime(this._state, Date.now());
+    if (currentState) {
+      if (!this.videoElement || this.isConnected(this.videoElement)) {
+        this.updateVideoElement();
+      }
+    } else {
+      this.videoElement?.remove();
+      this.videoElement = undefined;
+    }
+
+    if (!currentState || !this.videoElement) return;
     const { t, rate, volume } = { ...defaultVideoOptions, ...currentState };
 
     // videoElement.src will be a fully qualified URL

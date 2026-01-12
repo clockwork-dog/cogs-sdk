@@ -8,10 +8,11 @@ const DEFAULT_DELAY = 1_000;
 export abstract class ClipManager<T extends MediaClipState> {
   constructor(
     private surfaceElement: HTMLElement,
-    private clipElement: HTMLElement,
+    protected clipElement: HTMLElement,
     state: T,
   ) {
     this._state = state;
+    // Allow the class to be constructed, then call the loop
     setTimeout(this.loop);
   }
 
@@ -24,10 +25,21 @@ export abstract class ClipManager<T extends MediaClipState> {
   protected abstract update(): void;
   public abstract destroy(): void;
 
-  get isConnected() {
-    if (!this.surfaceElement) return false;
-    if (!this.clipElement) return false;
-    if (!this.surfaceElement.contains(this.clipElement)) return false;
+  isConnected(element?: HTMLElement) {
+    if (!this.surfaceElement) {
+      return false;
+    }
+    if (!this.clipElement) {
+      return false;
+    }
+    if (!this.surfaceElement.contains(this.clipElement)) {
+      return false;
+    }
+
+    if (element) {
+      if (this.clipElement.contains(element)) return false;
+    }
+
     return true;
   }
 
@@ -40,7 +52,7 @@ export abstract class ClipManager<T extends MediaClipState> {
 
   private timeout: ReturnType<typeof setTimeout> | undefined;
   private loop = async () => {
-    if (this.isConnected) {
+    if (this.isConnected()) {
       this.update();
       this.timeout = setTimeout(this.loop, this.delay);
     } else {
