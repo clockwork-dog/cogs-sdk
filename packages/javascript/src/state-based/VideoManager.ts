@@ -16,6 +16,9 @@ export class VideoManager extends ClipManager<VideoState> {
     super(surfaceElement, clipElement, state);
     this.videoElement = document.createElement('video');
     clipElement.replaceChildren(this.videoElement);
+    this.videoElement.style.position = 'absolute';
+    this.videoElement.style.width = '100%';
+    this.videoElement.style.height = '100%';
   }
 
   private seekTo(time: number) {
@@ -61,27 +64,39 @@ export class VideoManager extends ClipManager<VideoState> {
     const currentTime = this.videoElement.currentTime * 1000;
     const deltaTime = currentTime - t;
     const deltaTimeAbs = Math.abs(deltaTime);
+    this.delay = 100;
     switch (true) {
       case deltaTimeAbs <= TARGET_SYNC_THRESHOLD_MS:
+        // We are on course:
+        //   - The video is within accepted latency of the server time
+        //   - The playback rate is aligned with the server rate
         if (this.videoElement.playbackRate !== rate) {
           this.videoElement.playbackRate = rate;
         }
         break;
-      case deltaTimeAbs > TARGET_SYNC_THRESHOLD_MS && deltaTimeAbs <= MAX_SYNC_THRESHOLD_MS: {
-        this.delay = 100;
+      case rate > 0 && deltaTimeAbs > TARGET_SYNC_THRESHOLD_MS && deltaTimeAbs <= MAX_SYNC_THRESHOLD_MS: {
+        // We are close, we can smoothly adjust with playbackRate:
+        //  - The video must be playing
+        //  - We must be close in time to the server time
         const playbackRateAdjustment = (deltaTime / MAX_SYNC_THRESHOLD_MS) * MAX_PLAYBACK_RATE_ADJUSTMENT;
-        this.videoElement.playbackRate = rate - playbackRateAdjustment;
+        const adjustedPlaybackRate = Math.max(0, rate - playbackRateAdjustment);
+        if (this.videoElement.playbackRate !== adjustedPlaybackRate) {
+          this.videoElement.playbackRate = adjustedPlaybackRate;
+        }
         break;
       }
-      case deltaTimeAbs > MAX_SYNC_THRESHOLD_MS: {
+      default: {
+        // We cannot smoothly recover:
+        //  - We seek just ahead of server time
+        if (this.videoElement.playbackRate !== rate) {
+          this.videoElement.playbackRate = rate;
+        }
+
         // delay to poll until seeked
         this.delay = 10;
         this.seekTo(t + rate * (SEEK_LOOKAHEAD_MS / 1000));
         break;
       }
-      default:
-        this.videoElement.playbackRate = rate;
-        console.warn(`Unknown time error: ${deltaTime}`);
     }
   }
 
