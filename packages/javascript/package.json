@@ -22,7 +22,7 @@
     "default": "./dist/index.js"
   },
   "scripts": {
-    "test": "yarn types && yarn lint && vitest",
+    "test": "yarn types && yarn lint && vitest && yarn cy:run",
     "types": "tsc --noEmit",
     "lint": "eslint .",
     "build": "yarn build:ts && yarn build:browser",
