@@ -1,6 +1,15 @@
 import { spawn } from 'node:child_process';
 const ffmpeg = 'ffmpeg';
 
+/**
+ * - First make sure cypress/screenshots is empty
+ *   This is the directory we'll use to save all video frames
+ * - Then run `yarn cy:generate`
+ *   This will run the generate procedure in the e2e test
+ *   It will save screenshots to cypres/screenshots
+ * - Finally run this file to create a test video
+ */
+
 const child = spawn(ffmpeg, [
   // Set the input framerate
   '-framerate',

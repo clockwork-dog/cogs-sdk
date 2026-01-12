@@ -1,57 +1,90 @@
-import { StableMediaPlayer } from './StableMediaPlayer';
 import { MediaClipState, MediaSurfaceState } from '../types/MediaSchema';
+import { ClipManager } from './ClipManager';
+import { ImageManager } from './ImageManager';
+import { VideoManager } from './VideoManager';
 
 const DATA_CLIP_ID = 'data-clip-id';
 type TaggedElement = HTMLElement & { [DATA_CLIP_ID]?: string };
 
-export class MediaManager {
-  private state: MediaSurfaceState = {};
-
-  private _element: HTMLDivElement = document.createElement('div');
+/**
+ * The SurfaceManager will receive state updates and:
+ * - Ensure that each clip has a parent element
+ * - Instantiate a ClipManager attached to each respective element
+ */
+export class SurfaceManager {
+  private _state: MediaSurfaceState = {};
+  public set state(newState: MediaSurfaceState) {
+    this._state = newState;
+    this.update();
+  }
+  private _element: HTMLDivElement;
   public get element() {
     return this._element;
   }
 
+  private resources: { [clipId: string]: { element: HTMLElement; manager?: ClipManager<MediaClipState> } } = {};
+
   constructor(testState?: MediaSurfaceState) {
-    this.state = testState || {};
+    this._element = document.createElement('div');
+    this._element.style.width = '100%';
+    this._element.style.height = '100%';
+    this._element.style.backgroundColor = 'beige';
+
+    this._state = testState || {};
     this.update();
   }
 
   async update() {
-    this.cleanupElements();
-
-    const currentMediaElements = new Set([...this._element.children].map((child) => (child as TaggedElement)[DATA_CLIP_ID]));
-    Object.entries(this.state).forEach(([clipId, clip]) => {
-      if (!currentMediaElements.has(clipId)) {
-        // Create new media element
+    // Destroy stale managers
+    Object.entries(this.resources).forEach(([clipId, { element, manager }]) => {
+      if (!(clipId in this._state)) {
+        delete this.resources[clipId];
+        element.remove();
+        manager?.destroy();
       }
     });
-  }
 
-  private cleanupElements() {
-    for (const childElement of this._element.children) {
-      const child = childElement as TaggedElement;
-      const clipId = child[DATA_CLIP_ID];
-      // Remove unknown elements
-      if (!clipId) {
-        child.remove();
-        continue;
-      }
-      // Remove stale elements
-      if (this.state[clipId] === undefined) {
-        child.remove();
-      }
-    }
-  }
+    // Create and attach new wrapper elements
+    const elements = Object.keys(this._state)
+      .toSorted()
+      .map((clipId) => {
+        const resource = this.resources[clipId];
+        if (resource) {
+          return resource.element;
+        } else {
+          const element = document.createElement('div') as TaggedElement;
+          element.setAttribute(DATA_CLIP_ID, clipId);
+          this.resources[clipId] = { element };
+          return element;
+        }
+      });
+    this._element.replaceChildren(...elements);
 
-  createMediaPlayer(clip: MediaClipState) {
-    const tagName = getMediaTagName(state.url);
+    // Create new managers
+    Object.keys(this._state)
+      .toSorted()
+      .forEach((clipId) => {
+        const clip = this._state[clipId]!;
+        const resource = this.resources[clipId];
+        if (!resource) {
+          throw new Error('Failed to create resource');
+        }
 
-    if (tagName === 'img') {
-      return;
-    }
-
-    const stable = new StableMediaPlayer(state);
-    this._element.replaceChildren(...[stable.element]);
+        if (!resource.manager) {
+          switch (clip.type) {
+            case 'image':
+              resource.manager = new ImageManager(this._element, resource.element, clip);
+              break;
+            case 'audio':
+              throw new Error('Not implemented: ImageManager');
+              break;
+            case 'video':
+              resource.manager = new VideoManager(this._element, resource.element, clip);
+              break;
+          }
+        } else {
+          resource.manager.setState(clip);
+        }
+      });
   }
 }

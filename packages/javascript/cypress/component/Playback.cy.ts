@@ -1,17 +1,20 @@
-import { MediaManager } from '../../src/state-based/SurfaceManager';
+import { SurfaceManager } from '../../src/state-based/SurfaceManager';
 
 describe('Playback tests', () => {
   it('can buffer without playing', () => {
-    const manager = new MediaManager([
-      {
-        id: '1',
-        url: 'cypress/fixtures/out.mp4',
-        startTime: Date.now() + 60_000,
-        endTime: Date.now() + 70_000,
-        loop: false,
-        volume: 0,
+    const now = Date.now();
+    const manager = new SurfaceManager({
+      'clip-id': {
+        file: 'cypress/fixtures/5x2s@2560x1440.mp4',
+        type: 'video',
+        audioOutput: '',
+        fit: 'cover',
+        keyframes: [
+          [now, { set: { t: 0, rate: 0 } }], // paused at start
+          [now + 2_000, { set: { t: 0, rate: 0 } }], // play in 2 seconds
+        ],
       },
-    ]);
+    });
     cy.mount(manager.element);
 
     // Video element is meant to start in 1 minute
@@ -20,44 +23,52 @@ describe('Playback tests', () => {
   });
 
   it('recovers from a pause', () => {
-    const manager = new MediaManager([
-      {
-        id: '1',
-        url: 'cypress/fixtures/out.mp4',
-        startTime: Date.now(),
-        endTime: Date.now() + 1000,
-        loop: true,
-        volume: 0,
+    const now = Date.now();
+    const manager = new SurfaceManager({
+      'clip-id': {
+        file: 'cypress/fixtures/5x2s@2560x1440.mp4',
+        type: 'video',
+        audioOutput: '',
+        fit: 'cover',
+        keyframes: [[now, { set: { t: 0, rate: 1 } }]],
       },
-    ]);
+    });
     cy.mount(manager.element);
 
+    // Allow video to start playing.
+    // Calling pause() during async play() will throw an error
+
+    cy.log('Interfere with video element');
     cy.get('video').should('have.prop', 'paused', false);
     cy.get('video').invoke('trigger', 'pause');
     cy.get('video').should('have.prop', 'paused', true);
 
     cy.wait(1000);
 
+    cy.log('Video should have recovered');
     cy.get('video').should('have.prop', 'paused', false);
+    cy.get('video').invoke('prop', 'currentTime').should('be.greaterThan', 1.5);
   });
 
   it('recovers from a seek', () => {
-    const manager = new MediaManager([
-      {
-        id: '1',
-        url: 'cypress/fixtures/out.mp4',
-        startTime: Date.now(),
-        endTime: Date.now() + 100000,
-        loop: true,
-        volume: 0,
+    const now = Date.now();
+    const manager = new SurfaceManager({
+      'clip-id': {
+        file: 'cypress/fixtures/5x2s@2560x1440.mp4',
+        type: 'video',
+        audioOutput: '',
+        fit: 'cover',
+        keyframes: [[now, { set: { t: 0, rate: 1 } }]],
       },
-    ]);
+    });
     cy.mount(manager.element);
 
+    cy.log('Interfere with video element');
     cy.get('video').invoke('prop', 'currentTime', 10);
 
     cy.wait(500);
 
+    cy.log('Video should have recovered');
     cy.get('video').invoke('prop', 'currentTime').should('be.lessThan', 5);
   });
 });
