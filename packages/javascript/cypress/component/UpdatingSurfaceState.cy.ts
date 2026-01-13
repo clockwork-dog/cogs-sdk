@@ -22,6 +22,7 @@ describe('Updating surface state', () => {
         };
       })
       .then(() => {
+        // This implicitly waits
         cy.get('video').should('exist');
       })
       .then(() => {

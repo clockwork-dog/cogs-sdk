@@ -7,6 +7,11 @@ const TARGET_SYNC_THRESHOLD_MS = 10; // If we're closer than this we're good eno
 const MAX_SYNC_THRESHOLD_MS = 1_000; // If we're further away than this, we'll seek instead
 const SEEK_LOOKAHEAD_MS = 200; // We won't seek ahead instantly, so lets seek ahead
 const MAX_PLAYBACK_RATE_ADJUSTMENT = 0.5;
+// We smoothly ramp playbackRate up and down
+const PLAYBACK_ADJUSTMENT_SMOOTHING = 0.3;
+function playbackSmoothing(deltaTime: number) {
+  return Math.sign(deltaTime) * Math.pow(Math.abs(deltaTime) / MAX_SYNC_THRESHOLD_MS, PLAYBACK_ADJUSTMENT_SMOOTHING) * MAX_PLAYBACK_RATE_ADJUSTMENT;
+}
 
 export class VideoManager extends ClipManager<VideoState> {
   private videoElement?: HTMLVideoElement;
@@ -95,7 +100,7 @@ export class VideoManager extends ClipManager<VideoState> {
         // We are close, we can smoothly adjust with playbackRate:
         //  - The video must be playing
         //  - We must be close in time to the server time
-        const playbackRateAdjustment = (deltaTime / MAX_SYNC_THRESHOLD_MS) * MAX_PLAYBACK_RATE_ADJUSTMENT;
+        const playbackRateAdjustment = playbackSmoothing(deltaTime);
         const adjustedPlaybackRate = Math.max(0, rate - playbackRateAdjustment);
         if (this.videoElement.playbackRate !== adjustedPlaybackRate) {
           this.videoElement.playbackRate = adjustedPlaybackRate;
