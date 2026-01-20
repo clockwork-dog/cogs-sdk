@@ -5,7 +5,7 @@ describe('Video stability tests', () => {
     const now = Date.now();
     const manager = new SurfaceManager({
       'clip-id': {
-        file: 'cypress/fixtures/5x2s@2560x1440.mp4',
+        file: 'cypress/fixtures/yuv444p~5x2s@2560x1440.mp4',
         type: 'video',
         audioOutput: '',
         fit: 'cover',
@@ -25,7 +25,7 @@ describe('Video stability tests', () => {
     const now = Date.now();
     const manager = new SurfaceManager({
       'clip-id': {
-        file: 'cypress/fixtures/5x2s@2560x1440.mp4',
+        file: 'cypress/fixtures/yuv444p~5x2s@2560x1440.mp4',
         type: 'video',
         audioOutput: '',
         fit: 'cover',
@@ -50,7 +50,7 @@ describe('Video stability tests', () => {
     const now = Date.now();
     const manager = new SurfaceManager({
       'clip-id': {
-        file: 'cypress/fixtures/5x2s@2560x1440.mp4',
+        file: 'cypress/fixtures/yuv444p~5x2s@2560x1440.mp4',
         type: 'video',
         audioOutput: '',
         fit: 'cover',
@@ -65,8 +65,10 @@ describe('Video stability tests', () => {
       .should(($time) => expect(parseFloat($time)).to.be.closeTo(1.5, 0.1));
 
     cy.log('Interfere with video element');
+    cy.get('video').invoke('prop', 'paused').should('be.true');
     cy.get('video').invoke('prop', 'playbackRate', 1);
-    cy.get('video').invoke('trigger', 'play');
+    cy.get('video').then(($video) => $video.get(0).play().catch(/* do nothing*/));
+    cy.get('video').invoke('prop', 'paused').should('be.false');
 
     cy.wait(1000);
 
@@ -80,7 +82,7 @@ describe('Video stability tests', () => {
     const now = Date.now();
     const manager = new SurfaceManager({
       'clip-id': {
-        file: 'cypress/fixtures/5x2s@2560x1440.mp4',
+        file: 'cypress/fixtures/yuv444p~5x2s@2560x1440.mp4',
         type: 'video',
         audioOutput: '',
         fit: 'cover',
@@ -105,7 +107,7 @@ describe('Video stability tests', () => {
     const manager = new SurfaceManager({
       'clip-id': {
         type: 'video',
-        file: 'cypress/fixtures/5x2s@2560x1440.mp4',
+        file: 'cypress/fixtures/yuv444p~5x2s@2560x1440.mp4',
         audioOutput: '',
         fit: 'cover',
         keyframes: [[now, { set: { t: 0, rate: 1, volume: INITIAL_VOLUME } }]],
@@ -126,7 +128,7 @@ describe('Video stability tests', () => {
     const manager = new SurfaceManager({
       'clip-id': {
         type: 'video',
-        file: 'cypress/fixtures/5x2s@2560x1440.mp4',
+        file: 'cypress/fixtures/yuv444p~5x2s@2560x1440.mp4',
         audioOutput: '',
         fit: 'cover',
         keyframes: [[now, { set: { t: 0, rate: 1 } }]],
@@ -148,7 +150,7 @@ describe('Video stability tests', () => {
     const manager = new SurfaceManager({
       'clip-id': {
         type: 'video',
-        file: 'cypress/fixtures/5x2s@2560x1440.mp4',
+        file: 'cypress/fixtures/yuv444p~5x2s@2560x1440.mp4',
         audioOutput: '',
         fit: 'cover',
         keyframes: [[now - 500, { set: { t: 0, rate: 1 } }]],

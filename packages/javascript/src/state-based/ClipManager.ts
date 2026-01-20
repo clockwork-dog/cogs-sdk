@@ -37,7 +37,7 @@ export abstract class ClipManager<T extends MediaClipState> {
     }
 
     if (element) {
-      if (this.clipElement.contains(element)) return false;
+      if (!this.clipElement.contains(element)) return false;
     }
 
     return true;

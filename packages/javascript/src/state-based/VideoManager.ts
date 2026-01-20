@@ -22,7 +22,7 @@ export class VideoManager extends ClipManager<VideoState> {
     this.clipElement = clipElement;
   }
 
-  updateVideoElement() {
+  private updateVideoElement() {
     this.videoElement = document.createElement('video');
     this.clipElement.replaceChildren(this.videoElement);
     this.videoElement.style.position = 'absolute';
@@ -54,7 +54,7 @@ export class VideoManager extends ClipManager<VideoState> {
     // Does the <video /> element need adding/removing?
     const currentState = getStateAtTime(this._state, Date.now());
     if (currentState) {
-      if (!this.videoElement || this.isConnected(this.videoElement)) {
+      if (!this.videoElement || !this.isConnected(this.videoElement)) {
         this.updateVideoElement();
       }
     } else {
@@ -65,7 +65,7 @@ export class VideoManager extends ClipManager<VideoState> {
     if (!currentState || !this.videoElement) return;
     const { t, rate, volume } = { ...defaultVideoOptions, ...currentState };
 
-    // videoElement.src will be a fully qualified URL
+    // this.videoElement.src will be a fully qualified URL
     if (!this.videoElement.src.endsWith(this._state.file)) {
       this.videoElement.src = this._state.file;
     }

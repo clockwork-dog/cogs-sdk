@@ -3,7 +3,7 @@ import { ClipManager } from './ClipManager';
 import { ImageManager } from './ImageManager';
 import { VideoManager } from './VideoManager';
 
-const DATA_CLIP_ID = 'data-clip-id';
+export const DATA_CLIP_ID = 'data-clip-id';
 type TaggedElement = HTMLElement & { [DATA_CLIP_ID]?: string };
 
 /**
@@ -13,7 +13,7 @@ type TaggedElement = HTMLElement & { [DATA_CLIP_ID]?: string };
  */
 export class SurfaceManager {
   private _state: MediaSurfaceState = {};
-  public set state(newState: MediaSurfaceState) {
+  public setState(newState: MediaSurfaceState) {
     this._state = newState;
     this.update();
   }
@@ -28,7 +28,6 @@ export class SurfaceManager {
     this._element = document.createElement('div');
     this._element.style.width = '100%';
     this._element.style.height = '100%';
-    this._element.style.backgroundColor = 'beige';
 
     this._state = testState || {};
     this.update();
@@ -76,7 +75,7 @@ export class SurfaceManager {
               resource.manager = new ImageManager(this._element, resource.element, clip);
               break;
             case 'audio':
-              throw new Error('Not implemented: ImageManager');
+              throw new Error('Not implemented: AudioManager');
               break;
             case 'video':
               resource.manager = new VideoManager(this._element, resource.element, clip);
