@@ -23,6 +23,7 @@ export class VideoManager extends ClipManager<VideoState> {
   }
 
   private updateVideoElement() {
+    this.destroy();
     this.videoElement = document.createElement('video');
     this.clipElement.replaceChildren(this.videoElement);
     this.videoElement.style.position = 'absolute';
@@ -123,6 +124,9 @@ export class VideoManager extends ClipManager<VideoState> {
   }
 
   destroy(): void {
-    this.videoElement?.remove();
+    if (this.videoElement) {
+      this.videoElement.src = '';
+      this.videoElement.remove();
+    }
   }
 }

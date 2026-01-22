@@ -32,7 +32,7 @@ describe('Audio stability tests', () => {
     });
     cy.mount(manager);
 
-    cy.log('Interfere with video element');
+    cy.log('Interfere with audio element');
     cy.get('audio').should('have.prop', 'paused', false);
     cy.get('audio').invoke('trigger', 'pause');
     cy.get('audio').should('have.prop', 'paused', true);
@@ -56,12 +56,12 @@ describe('Audio stability tests', () => {
     });
     cy.mount(manager);
 
-    // Wait until video ready
+    // Wait until audio ready
     cy.get('audio')
       .invoke('prop', 'currentTime')
       .should(($time) => expect(parseFloat($time)).to.be.closeTo(1.5, 0.1));
 
-    cy.log('Interfere with video element');
+    cy.log('Interfere with audio element');
     cy.get('audio').invoke('prop', 'paused').should('be.true');
     cy.get('audio').invoke('prop', 'playbackRate', 1);
     cy.get('audio').then(($audio) => $audio.get(0).play().catch(/* do nothing*/));
@@ -87,7 +87,7 @@ describe('Audio stability tests', () => {
     });
     cy.mount(manager);
 
-    cy.log('Interfere with video element');
+    cy.log('Interfere with audio element');
     cy.get('audio').invoke('prop', 'currentTime', 5);
 
     cy.wait(500);
