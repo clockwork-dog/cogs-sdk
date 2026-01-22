@@ -34,11 +34,13 @@ Cypress.Commands.add('getPixelAt', (x: number, y: number) => {
 // An identical web page will be rendered differently depending on the color profile.
 // This will be different on different machines, and displays
 const RGB_ε = 15;
-Cypress.Commands.add('assertPixelAt', (x: number, y: number, color: Color) => {
-  cy.getPixelAt(x, y).then(($response) => {
-    expect($response.r).to.be.closeTo(color.r, RGB_ε);
-    expect($response.g).to.be.closeTo(color.g, RGB_ε);
-    expect($response.b).to.be.closeTo(color.b, RGB_ε);
+Cypress.Commands.add('assertPixelAt', (x: number, y: number, expected: Color) => {
+  cy.getPixelAt(x, y).then(($actual) => {
+    const expectedColor = `{r:${expected.r},g:${expected.g},b:${expected.b}}`;
+    const actualColor = `{r:${$actual.r},g:${$actual.g},b:${$actual.b}}`;
+    expect($actual.r).to.be.closeTo(expected.r, RGB_ε, `Expected within ${RGB_ε} of color ${expectedColor}, but got ${actualColor}`);
+    expect($actual.g).to.be.closeTo(expected.g, RGB_ε, `Expected within ${RGB_ε} of color ${expectedColor}, but got ${actualColor}`);
+    expect($actual.b).to.be.closeTo(expected.b, RGB_ε, `Expected within ${RGB_ε} of color ${expectedColor}, but got ${actualColor}`);
   });
 });
 
