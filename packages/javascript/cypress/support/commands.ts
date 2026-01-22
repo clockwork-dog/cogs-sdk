@@ -21,7 +21,12 @@ Cypress.Commands.add('getPixelAt', (x: number, y: number) => {
   const id = '123';
   cy.screenshot(id, { overwrite: true, capture: 'viewport' });
   cy.task('get-pixel-value', { id, x, y }).then(($response) => {
-    return rgb.parse($response);
+    try {
+      return rgb.parse($response);
+    } catch (e) {
+      console.error($response);
+      console.error(e);
+    }
   });
 });
 
