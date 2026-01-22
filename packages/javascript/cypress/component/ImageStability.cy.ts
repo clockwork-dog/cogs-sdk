@@ -11,7 +11,7 @@ describe('Image stability tests', () => {
         keyframes: [[now, { set: { opacity: 1 } }]],
       },
     });
-    cy.mount(manager.element);
+    cy.mount(manager);
     cy.get('img').should('exist');
   });
 
@@ -27,7 +27,7 @@ describe('Image stability tests', () => {
         ],
       },
     });
-    cy.mount(manager.element);
+    cy.mount(manager);
     cy.get('img').should('not.exist');
   });
 
@@ -43,7 +43,7 @@ describe('Image stability tests', () => {
         keyframes: [[now, { set: { opacity: 1 } }]],
       },
     });
-    cy.mount(manager.element);
+    cy.mount(manager);
 
     cy.get('img').should('exist');
     cy.get('img').invoke('prop', 'src', CHANGED_SRC);
@@ -65,7 +65,7 @@ describe('Image stability tests', () => {
         keyframes: [[now, { set: { opacity: 1 } }]],
       },
     });
-    cy.mount(manager.element);
+    cy.mount(manager);
 
     cy.get('img').should('exist');
     cy.get('img').invoke('remove');

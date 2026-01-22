@@ -15,7 +15,7 @@ describe('Video stability tests', () => {
         ],
       },
     });
-    cy.mount(manager.element);
+    cy.mount(manager);
 
     cy.get('video').should('have.prop', 'paused', true);
     cy.get('video').should('have.prop', 'currentTime', 0);
@@ -32,7 +32,7 @@ describe('Video stability tests', () => {
         keyframes: [[now, { set: { t: 0, rate: 1 } }]],
       },
     });
-    cy.mount(manager.element);
+    cy.mount(manager);
 
     cy.log('Interfere with video element');
     cy.get('video').should('have.prop', 'paused', false);
@@ -57,7 +57,7 @@ describe('Video stability tests', () => {
         keyframes: [[now, { set: { t: 1_500, rate: 0 } }]],
       },
     });
-    cy.mount(manager.element);
+    cy.mount(manager);
 
     // Wait until video ready
     cy.get('video')
@@ -89,7 +89,7 @@ describe('Video stability tests', () => {
         keyframes: [[now, { set: { t: 0, rate: 1 } }]],
       },
     });
-    cy.mount(manager.element);
+    cy.mount(manager);
 
     cy.log('Interfere with video element');
     cy.get('video').invoke('prop', 'currentTime', 5);
@@ -113,7 +113,7 @@ describe('Video stability tests', () => {
         keyframes: [[now, { set: { t: 0, rate: 1, volume: INITIAL_VOLUME } }]],
       },
     });
-    cy.mount(manager.element);
+    cy.mount(manager);
 
     cy.get('video').invoke('prop', 'volume', CHANGED_VOLUME);
     cy.get('video').should('have.prop', 'volume', CHANGED_VOLUME);
@@ -134,7 +134,7 @@ describe('Video stability tests', () => {
         keyframes: [[now, { set: { t: 0, rate: 1 } }]],
       },
     });
-    cy.mount(manager.element);
+    cy.mount(manager);
 
     cy.get('video').should('exist');
     cy.get('video').invoke('remove');
@@ -156,7 +156,7 @@ describe('Video stability tests', () => {
         keyframes: [[now - 500, { set: { t: 0, rate: 1 } }]],
       },
     });
-    cy.mount(manager.element);
+    cy.mount(manager);
 
     cy.get('video').invoke('prop', 'currentTime').should('be.lessThan', 2);
   });

@@ -2,6 +2,7 @@ import { MediaClipState, MediaSurfaceState } from '../types/MediaSchema';
 import { ClipManager } from './ClipManager';
 import { ImageManager } from './ImageManager';
 import { VideoManager } from './VideoManager';
+import { AudioManager } from './AudioManager';
 
 export const DATA_CLIP_ID = 'data-clip-id';
 type TaggedElement = HTMLElement & { [DATA_CLIP_ID]?: string };
@@ -33,7 +34,7 @@ export class SurfaceManager {
     this.update();
   }
 
-  async update() {
+  update() {
     // Destroy stale managers
     Object.entries(this.resources).forEach(([clipId, { element, manager }]) => {
       if (!(clipId in this._state)) {
@@ -75,7 +76,7 @@ export class SurfaceManager {
               resource.manager = new ImageManager(this._element, resource.element, clip);
               break;
             case 'audio':
-              throw new Error('Not implemented: AudioManager');
+              resource.manager = new AudioManager(this._element, resource.element, clip);
               break;
             case 'video':
               resource.manager = new VideoManager(this._element, resource.element, clip);

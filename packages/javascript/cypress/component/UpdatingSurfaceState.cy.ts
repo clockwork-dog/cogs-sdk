@@ -3,7 +3,7 @@ import { DATA_CLIP_ID, SurfaceManager } from '../../src/state-based/SurfaceManag
 describe('Updating surface state', () => {
   it('adds and removes a video clip', () => {
     const manager = new SurfaceManager({});
-    cy.mount(manager.element);
+    cy.mount(manager);
 
     cy.get('video')
       .should('not.exist')
@@ -36,7 +36,7 @@ describe('Updating surface state', () => {
   it('adds multiple media', () => {
     const now = Date.now();
     const manager = new SurfaceManager({});
-    cy.mount(manager.element);
+    cy.mount(manager);
     expect(manager.element.children.length).to.eq(0);
 
     manager.setState({

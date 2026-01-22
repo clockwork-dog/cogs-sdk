@@ -1,6 +1,7 @@
 import { getContainerEl, setupHooks } from '@cypress/mount-utils';
+import { SurfaceManager } from '../src/state-based/SurfaceManager';
 
-export function mount(element: HTMLElement): Cypress.Chainable {
+export function mount(surfaceManager: SurfaceManager): Cypress.Chainable {
   const container = getContainerEl();
 
   // 100% styling
@@ -10,10 +11,15 @@ export function mount(element: HTMLElement): Cypress.Chainable {
 
   // clean up each time we mount a new component
   container.innerHTML = '';
+  const prevManager = (window as any).surfaceManager as SurfaceManager;
+  prevManager?.setState({});
+
   // mount component
-  container.append(element);
+  (window as any).surfaceManager = surfaceManager;
+  container.append(surfaceManager.element);
+
   // initialize internal pre/post test hooks
   setupHooks();
 
-  return cy.wrap(element, { log: false });
+  return cy.wrap(surfaceManager.element, { log: false });
 }
