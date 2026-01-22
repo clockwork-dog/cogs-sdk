@@ -9,7 +9,6 @@ export default defineConfig({
   defaultBrowser: 'electron',
   component: {
     setupNodeEvents(on) {
-      //
       on('after:screenshot', flattenScreenshots);
       on('task', {
         'get-pixel-value': getPixelValue,
@@ -26,11 +25,10 @@ export default defineConfig({
 
   e2e: {
     setupNodeEvents(on) {
-      //
       on('after:screenshot', flattenScreenshots);
-      // This is required to log progress to the terminal whilst generating frames
       on('task', {
         'get-pixel-value': getPixelValue,
+        // This is required to log progress to the terminal whilst generating frames
         log(message) {
           console.log(message);
           return null;
