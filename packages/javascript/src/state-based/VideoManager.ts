@@ -81,6 +81,10 @@ export class VideoManager extends ClipManager<VideoState> {
     if (this.videoElement.style.opacity !== opacityString) {
       this.videoElement.style.opacity = opacityString;
     }
+    const zIndex = Math.round(currentState.zIndex ?? defaultVideoOptions.zIndex);
+    if (parseInt(this.videoElement.style.zIndex) !== zIndex) {
+      this.videoElement.style.zIndex = String(zIndex);
+    }
     if (this.videoElement.volume !== volume) {
       this.videoElement.volume = volume;
     }
