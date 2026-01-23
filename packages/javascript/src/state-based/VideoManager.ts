@@ -73,6 +73,13 @@ export class VideoManager extends ClipManager<VideoState> {
     if (this.videoElement.style.objectFit !== this._state.fit) {
       this.videoElement.style.objectFit = this._state.fit;
     }
+    if (parseFloat(this.videoElement.style.opacity) !== currentState.opacity) {
+      this.videoElement.style.opacity = String(currentState.opacity ?? defaultVideoOptions.opacity);
+    }
+    const z = Math.round(currentState.zIndex ?? defaultVideoOptions.zIndex);
+    if (parseInt(this.videoElement.style.zIndex) !== z) {
+      this.videoElement.style.zIndex = String(z);
+    }
     if (this.videoElement.volume !== volume) {
       this.videoElement.volume = volume;
     }

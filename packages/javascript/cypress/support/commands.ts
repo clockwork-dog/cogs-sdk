@@ -18,7 +18,7 @@ const rgb = z.object({
 });
 
 Cypress.Commands.add('getPixelAt', (x: number, y: number) => {
-  const id = '123';
+  const id = Math.random().toString(16).slice(2);
   cy.screenshot(id, { overwrite: true, capture: 'viewport' });
   cy.task('get-pixel-value', { id, x, y }).then(($response) => {
     try {
