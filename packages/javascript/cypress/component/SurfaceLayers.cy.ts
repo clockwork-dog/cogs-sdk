@@ -15,6 +15,13 @@ describe('Surface layer tests', () => {
     });
     cy.mount(manager);
 
+    // Wait for image to load (naturalWidth is set once loaded)
+    cy.get('img')
+      .should('be.visible')
+      .and(($img) => {
+        expect($img[0].naturalWidth).to.be.greaterThan(0);
+      });
+
     cy.assertPixelAt(100, 100, INDIANRED);
   });
 });
