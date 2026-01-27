@@ -25,7 +25,7 @@ describe('Surface layer tests', () => {
     cy.assertPixelAt(100, 100, INDIAN_RED);
   });
 
-  it.only('respects z-index', () => {
+  it('respects z-index', () => {
     const now = Date.now();
     const manager = new SurfaceManager({
       red: {
