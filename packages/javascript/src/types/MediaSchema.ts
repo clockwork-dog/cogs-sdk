@@ -8,6 +8,7 @@ const TemporalProperties = z.object({
 export type VisualProperties = z.infer<typeof VisualProperties>;
 const VisualProperties = z.object({
   opacity: z.number().gte(0).lte(1),
+  zIndex: z.number(),
 });
 export type AudialProperties = z.infer<typeof AudialProperties>;
 const AudialProperties = z.object({
@@ -213,6 +214,7 @@ true satisfies UnionsEqual<MediaSurfaceState, z.infer<typeof MediaSurfaceStateSc
 
 export const defaultImageOptions: ImageOptions = {
   opacity: 1,
+  zIndex: 0,
 };
 export const defaultAudioOptions: AudioOptions = {
   t: 0,
@@ -224,4 +226,5 @@ export const defaultVideoOptions: VideoOptions = {
   rate: 1,
   volume: 1,
   opacity: 1,
+  zIndex: 0,
 };
