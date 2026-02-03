@@ -54,7 +54,9 @@ export abstract class ClipManager<T extends MediaClipState> {
   private loop = async () => {
     if (this.isConnected()) {
       this.update();
-      this.timeout = setTimeout(this.loop, this.delay);
+      if (isFinite(this.delay)) {
+        this.timeout = setTimeout(this.loop, this.delay);
+      }
     } else {
       this.destroy();
     }
