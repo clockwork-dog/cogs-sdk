@@ -17,8 +17,8 @@ export class AudioManager extends ClipManager<AudioState> {
   private audioElement?: HTMLAudioElement;
   private isSeeking = false;
 
-  constructor(surfaceElement: HTMLElement, clipElement: HTMLElement, state: AudioState) {
-    super(surfaceElement, clipElement, state);
+  constructor(surfaceElement: HTMLElement, clipElement: HTMLElement, state: AudioState, constructAssetURL: (file: string) => string) {
+    super(surfaceElement, clipElement, state, constructAssetURL);
     this.clipElement = clipElement;
   }
 
@@ -62,9 +62,10 @@ export class AudioManager extends ClipManager<AudioState> {
     if (!currentState || !this.audioElement) return;
     const { t, rate, volume } = { ...defaultAudioOptions, ...currentState };
 
-    // this.audioElement.src will be a fully qualified URL
-    if (!this.audioElement.src.endsWith(this._state.file)) {
-      this.audioElement.src = this._state.file;
+    // this.videoElement.src will be a fully qualified URL
+    const assetURL = this.constructAssetURL(this._state.file);
+    if (!this.audioElement.src.includes(assetURL)) {
+      this.audioElement.src = assetURL;
     }
     if (this.audioElement.volume !== volume) {
       this.audioElement.volume = volume;

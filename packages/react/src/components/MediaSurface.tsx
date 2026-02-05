@@ -1,13 +1,12 @@
-import { CogsConnection, CogsMessageEvent, MediaSchema } from '@clockworkdog/cogs-client';
+import { CogsConnection, CogsMessageEvent, MediaSchema, SurfaceManager } from '@clockworkdog/cogs-client';
 import React, { useEffect, useRef, useState } from 'react';
-import { SurfaceManager } from '../../../javascript/src';
 
 export interface MediaSurfaceProps {
   cogsConnection: CogsConnection<any, any>;
 }
 export function MediaSurface({ cogsConnection }: MediaSurfaceProps) {
-  const surfaceManagerRef = useRef<SurfaceManager>(null);
-  const surfaceStateRef = useRef<MediaSchema.MediaSurfaceState>(null);
+  const surfaceManagerRef = useRef<SurfaceManager>(undefined);
+  const surfaceStateRef = useRef<MediaSchema.MediaSurfaceState>(undefined);
   const [surfaceElem, setSurfaceElem] = useState<HTMLDivElement | null>();
 
   // Create and attach new surface manager
@@ -17,7 +16,7 @@ export function MediaSurface({ cogsConnection }: MediaSurfaceProps) {
     surfaceElem?.replaceChildren(sm.element);
     return () => {
       surfaceManagerRef.current?.setState({});
-      surfaceManagerRef.current = null;
+      surfaceManagerRef.current = undefined;
       surfaceElem?.replaceChildren(/* empty */);
     };
   }, [surfaceElem]);
@@ -25,10 +24,10 @@ export function MediaSurface({ cogsConnection }: MediaSurfaceProps) {
   // Listen to messages
   useEffect(() => {
     function updateSurfaceState({ message }: CogsMessageEvent) {
-      if (message.type !== 'media_state') return;
-      if (!surfaceManagerRef.current) return;
-      surfaceStateRef.current = message.state;
-      surfaceManagerRef.current.setState(message.state);
+      if (message.type === 'media_state' && message.media_strategy === 'state' && surfaceManagerRef.current) {
+        surfaceStateRef.current = message.state;
+        surfaceManagerRef.current.setState(message.state);
+      }
     }
 
     cogsConnection.addEventListener('message', updateSurfaceState);

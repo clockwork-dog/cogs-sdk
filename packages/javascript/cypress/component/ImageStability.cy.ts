@@ -1,11 +1,12 @@
 import { SurfaceManager } from '../../src/state-based/SurfaceManager';
 
+const constructAssetURL = (file: string) => `cypress/fixtures/${file}`;
 describe('Image stability tests', () => {
   it('can show an image', () => {
     const now = Date.now();
-    const manager = new SurfaceManager({
+    const manager = new SurfaceManager(constructAssetURL, {
       'clip-id': {
-        file: 'cypress/fixtures/indianred@2560x1440.png',
+        file: 'indianred@2560x1440.png',
         type: 'image',
         fit: 'cover',
         keyframes: [[now, { set: { opacity: 1 } }]],
@@ -17,9 +18,9 @@ describe('Image stability tests', () => {
 
   it("doesn't show a queued image", () => {
     const now = Date.now();
-    const manager = new SurfaceManager({
+    const manager = new SurfaceManager(constructAssetURL, {
       'clip-id': {
-        file: 'cypress/fixtures/indianred@2560x1440.png',
+        file: 'indianred@2560x1440.png',
         type: 'image',
         fit: 'cover',
         keyframes: [
@@ -35,7 +36,7 @@ describe('Image stability tests', () => {
     const ORIGINAL_SRC = 'cypress/fixtures/indianred@2560x1440.png';
     const CHANGED_SRC = '404.png';
     const now = Date.now();
-    const manager = new SurfaceManager({
+    const manager = new SurfaceManager(constructAssetURL, {
       'clip-id': {
         file: ORIGINAL_SRC,
         type: 'image',
@@ -57,9 +58,9 @@ describe('Image stability tests', () => {
 
   it('recovers from img element deletion', () => {
     const now = Date.now();
-    const manager = new SurfaceManager({
+    const manager = new SurfaceManager(constructAssetURL, {
       'clip-id': {
-        file: 'cypress/fixtures/indianred@2560x1440.png',
+        file: 'indianred@2560x1440.png',
         type: 'image',
         fit: 'cover',
         keyframes: [[now, { set: { opacity: 1 } }]],

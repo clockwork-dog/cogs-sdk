@@ -5,8 +5,8 @@ import { ClipManager } from './ClipManager';
 export class ImageManager extends ClipManager<ImageState> {
   private imageElement?: HTMLImageElement;
 
-  constructor(surfaceElement: HTMLElement, clipElement: HTMLElement, state: ImageState) {
-    super(surfaceElement, clipElement, state);
+  constructor(surfaceElement: HTMLElement, clipElement: HTMLElement, state: ImageState, constructAssetURL: (file: string) => string) {
+    super(surfaceElement, clipElement, state, constructAssetURL);
     this.clipElement = clipElement;
   }
 
@@ -32,9 +32,10 @@ export class ImageManager extends ClipManager<ImageState> {
     }
     if (!this.imageElement || !currentState) return;
 
-    // this.imageElement.src will be a fully qualified URL
-    if (!this.imageElement.src.startsWith(this._state.file)) {
-      this.imageElement.src = this._state.file;
+    // this.videoElement.src will be a fully qualified URL
+    const assetURL = this.constructAssetURL(this._state.file);
+    if (!this.imageElement.src.includes(assetURL)) {
+      this.imageElement.src = assetURL;
     }
     if (this.imageElement.style.objectFit !== this._state.fit) {
       this.imageElement.style.objectFit = this._state.fit;

@@ -40,8 +40,8 @@ export class VideoManager extends ClipManager<VideoState> {
   // We change playbackRate to intercept the server time of the video and don't change course until we intercept
   private timeToIntercept: number | undefined = undefined;
 
-  constructor(surfaceElement: HTMLElement, clipElement: HTMLElement, state: VideoState) {
-    super(surfaceElement, clipElement, state);
+  constructor(surfaceElement: HTMLElement, clipElement: HTMLElement, state: VideoState, constructAssetURL: (file: string) => string) {
+    super(surfaceElement, clipElement, state, constructAssetURL);
     this.clipElement = clipElement;
   }
 
@@ -97,8 +97,9 @@ export class VideoManager extends ClipManager<VideoState> {
     const { t, rate, volume } = { ...defaultVideoOptions, ...currentState };
 
     // this.videoElement.src will be a fully qualified URL
-    if (!this.videoElement.src.endsWith(this._state.file)) {
-      this.videoElement.src = this._state.file;
+    const assetURL = this.constructAssetURL(this._state.file);
+    if (!this.videoElement.src.includes(assetURL)) {
+      this.videoElement.src = assetURL;
     }
     if (this.videoElement.style.objectFit !== this._state.fit) {
       this.videoElement.style.objectFit = this._state.fit;

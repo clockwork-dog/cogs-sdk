@@ -10,6 +10,7 @@ export abstract class ClipManager<T extends MediaClipState> {
     private surfaceElement: HTMLElement,
     protected clipElement: HTMLElement,
     state: T,
+    protected constructAssetURL: (file: string) => string,
   ) {
     this._state = state;
     // Allow the class to be constructed, then call the loop

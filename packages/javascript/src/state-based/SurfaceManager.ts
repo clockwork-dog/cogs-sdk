@@ -25,8 +25,12 @@ export class SurfaceManager {
 
   private resources: { [clipId: string]: { element: HTMLElement; manager?: ClipManager<MediaClipState> } } = {};
 
-  constructor(testState?: MediaSurfaceState) {
+  constructor(
+    private constructAssetUrl: (file: string) => string,
+    testState?: MediaSurfaceState,
+  ) {
     this._element = document.createElement('div');
+    this._element.className = 'surface-manager';
     this._element.style.width = '100%';
     this._element.style.height = '100%';
 
@@ -73,13 +77,13 @@ export class SurfaceManager {
         if (!resource.manager) {
           switch (clip.type) {
             case 'image':
-              resource.manager = new ImageManager(this._element, resource.element, clip);
+              resource.manager = new ImageManager(this._element, resource.element, clip, this.constructAssetUrl);
               break;
             case 'audio':
-              resource.manager = new AudioManager(this._element, resource.element, clip);
+              resource.manager = new AudioManager(this._element, resource.element, clip, this.constructAssetUrl);
               break;
             case 'video':
-              resource.manager = new VideoManager(this._element, resource.element, clip);
+              resource.manager = new VideoManager(this._element, resource.element, clip, this.constructAssetUrl);
               break;
           }
         } else {

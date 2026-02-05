@@ -2,12 +2,13 @@ import { SurfaceManager } from '../../src/state-based/SurfaceManager';
 const INDIAN_RED = { r: 191, g: 99, b: 96 };
 const ROYAL_BLUE = { r: 75, g: 104, b: 218 };
 
+const constructAssetURL = (file: string) => `cypress/fixtures/${file}`;
 describe('Surface layer tests', () => {
   it('can take a known screenshot', () => {
     const now = Date.now();
-    const manager = new SurfaceManager({
+    const manager = new SurfaceManager(constructAssetURL, {
       red: {
-        file: 'cypress/fixtures/indianred@2560x1440.png',
+        file: 'indianred@2560x1440.png',
         type: 'image',
         fit: 'cover',
         keyframes: [[now, { set: { opacity: 1 } }]],
@@ -27,9 +28,9 @@ describe('Surface layer tests', () => {
 
   it('respects z-index', () => {
     const now = Date.now();
-    const manager = new SurfaceManager({
+    const manager = new SurfaceManager(constructAssetURL, {
       red: {
-        file: 'cypress/fixtures/indianred@2560x1440.png',
+        file: 'indianred@2560x1440.png',
         type: 'image',
         fit: 'cover',
         keyframes: [
@@ -38,7 +39,7 @@ describe('Surface layer tests', () => {
         ],
       },
       blue: {
-        file: 'cypress/fixtures/royalblue@2560x1440.png',
+        file: 'royalblue@2560x1440.png',
         type: 'image',
         fit: 'cover',
         keyframes: [[now, { set: { zIndex: 200 } }]],
