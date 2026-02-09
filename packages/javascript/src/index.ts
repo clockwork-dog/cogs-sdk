@@ -5,6 +5,7 @@ export type { default as MediaClipStateMessage } from './types/MediaClipStateMes
 export type { default as ShowPhase } from './types/ShowPhase';
 export type { default as MediaObjectFit } from './types/MediaObjectFit';
 export * as MediaSchema from './types/MediaSchema';
+export * from './state-based/SurfaceManager';
 export { default as CogsAudioPlayer } from './AudioPlayer';
 export { default as CogsVideoPlayer } from './VideoPlayer';
 export { SurfaceManager } from './state-based/SurfaceManager';

@@ -11,7 +11,7 @@ export function MediaSurface({ cogsConnection }: MediaSurfaceProps) {
 
   // Create and attach new surface manager
   useEffect(() => {
-    const sm = new SurfaceManager();
+    const sm = new SurfaceManager(cogsConnection.getAssetUrl);
     surfaceManagerRef.current = sm;
     surfaceElem?.replaceChildren(sm.element);
     return () => {
@@ -19,7 +19,7 @@ export function MediaSurface({ cogsConnection }: MediaSurfaceProps) {
       surfaceManagerRef.current = undefined;
       surfaceElem?.replaceChildren(/* empty */);
     };
-  }, [surfaceElem]);
+  }, [surfaceElem, cogsConnection.getAssetUrl]);
 
   // Listen to messages
   useEffect(() => {
