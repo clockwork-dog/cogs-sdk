@@ -1,6 +1,7 @@
 import { defaultVideoOptions, VideoState } from '../types/MediaSchema';
 import { getStateAtTime } from '../utils/getStateAtTime';
 import { ClipManager } from './ClipManager';
+import { MediaPreloader } from './MediaPreloader';
 
 const DEFAULT_VIDEO_POLLING_MS = 1_000;
 const TARGET_SYNC_THRESHOLD_MS = 10; // If we're closer than this we're good enough
@@ -40,14 +41,20 @@ export class VideoManager extends ClipManager<VideoState> {
   // We change playbackRate to intercept the server time of the video and don't change course until we intercept
   private timeToIntercept: number | undefined = undefined;
 
-  constructor(surfaceElement: HTMLElement, clipElement: HTMLElement, state: VideoState, constructAssetURL: (file: string) => string) {
+  constructor(
+    surfaceElement: HTMLElement,
+    clipElement: HTMLElement,
+    state: VideoState,
+    constructAssetURL: (file: string) => string,
+    private mediaPreloader: MediaPreloader,
+  ) {
     super(surfaceElement, clipElement, state, constructAssetURL);
     this.clipElement = clipElement;
   }
 
   private updateVideoElement() {
-    this.destroy();
-    this.videoElement = document.createElement('video');
+    const element = this.mediaPreloader.getElement(this._state.file, 'video');
+    this.videoElement = element as HTMLVideoElement;
     this.clipElement.replaceChildren(this.videoElement);
     this.videoElement.style.position = 'absolute';
     this.videoElement.style.width = '100%';
@@ -99,7 +106,7 @@ export class VideoManager extends ClipManager<VideoState> {
     // this.videoElement.src will be a fully qualified URL
     const assetURL = this.constructAssetURL(this._state.file);
     if (!this.videoElement.src.includes(assetURL)) {
-      this.videoElement.src = assetURL;
+      this.updateVideoElement();
     }
     if (this.videoElement.style.objectFit !== this._state.fit) {
       this.videoElement.style.objectFit = this._state.fit;
@@ -225,7 +232,7 @@ export class VideoManager extends ClipManager<VideoState> {
 
   destroy(): void {
     if (this.videoElement) {
-      this.videoElement.src = '';
+      this.mediaPreloader.releaseElement(this.videoElement);
       this.videoElement.remove();
     }
   }

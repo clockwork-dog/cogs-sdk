@@ -3,6 +3,7 @@ import { ClipManager } from './ClipManager';
 import { ImageManager } from './ImageManager';
 import { VideoManager } from './VideoManager';
 import { AudioManager } from './AudioManager';
+import { MediaPreloader } from './MediaPreloader';
 
 export const DATA_CLIP_ID = 'data-clip-id';
 type TaggedElement = HTMLElement & { [DATA_CLIP_ID]?: string };
@@ -27,14 +28,15 @@ export class SurfaceManager {
 
   constructor(
     private constructAssetUrl: (file: string) => string,
-    testState?: MediaSurfaceState,
+    initialState: MediaSurfaceState = {},
+    private mediaPreloader: MediaPreloader = new MediaPreloader(constructAssetUrl),
   ) {
     this._element = document.createElement('div');
     this._element.className = 'surface-manager';
     this._element.style.width = '100%';
     this._element.style.height = '100%';
 
-    this._state = testState || {};
+    this._state = initialState || {};
     this.update();
   }
 
@@ -80,10 +82,10 @@ export class SurfaceManager {
               resource.manager = new ImageManager(this._element, resource.element, clip, this.constructAssetUrl);
               break;
             case 'audio':
-              resource.manager = new AudioManager(this._element, resource.element, clip, this.constructAssetUrl);
+              resource.manager = new AudioManager(this._element, resource.element, clip, this.constructAssetUrl, this.mediaPreloader);
               break;
             case 'video':
-              resource.manager = new VideoManager(this._element, resource.element, clip, this.constructAssetUrl);
+              resource.manager = new VideoManager(this._element, resource.element, clip, this.constructAssetUrl, this.mediaPreloader);
               break;
           }
         } else {

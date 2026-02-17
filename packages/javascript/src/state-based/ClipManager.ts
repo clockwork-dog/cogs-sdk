@@ -46,6 +46,9 @@ export abstract class ClipManager<T extends MediaClipState> {
 
   protected _state: T;
   setState(newState: T) {
+    if (this._state.file !== newState.file) {
+      throw new Error(`Cannot change from ${this._state.file} to ${newState.file}.  Create a new clip instead.`);
+    }
     this._state = newState;
     clearTimeout(this.timeout);
     this.loop();

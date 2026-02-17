@@ -1,4 +1,4 @@
-import { CogsConnection, CogsMessageEvent, MediaSchema, SurfaceManager } from '@clockworkdog/cogs-client';
+import { CogsConnection, CogsMessageEvent, MediaPreloader, MediaSchema, SurfaceManager } from '@clockworkdog/cogs-client';
 import React, { useEffect, useRef, useState } from 'react';
 
 export interface MediaSurfaceProps {
@@ -11,7 +11,15 @@ export function MediaSurface({ cogsConnection }: MediaSurfaceProps) {
 
   // Create and attach new surface manager
   useEffect(() => {
-    const sm = new SurfaceManager(cogsConnection.getAssetUrl);
+    const mediaPreloader = new MediaPreloader(cogsConnection.getAssetUrl);
+    const sm = new SurfaceManager(cogsConnection.getAssetUrl, {}, mediaPreloader);
+
+    cogsConnection.addEventListener('message', ({ message }) => {
+      if (message.type === 'media_config_update') {
+        mediaPreloader.setState(message.files);
+      }
+    });
+
     surfaceManagerRef.current = sm;
     surfaceElem?.replaceChildren(sm.element);
     return () => {

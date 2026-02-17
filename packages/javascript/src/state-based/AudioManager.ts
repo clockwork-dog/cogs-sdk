@@ -1,6 +1,7 @@
 import { AudioState, defaultAudioOptions } from '../types/MediaSchema';
 import { getStateAtTime } from '../utils/getStateAtTime';
 import { ClipManager } from './ClipManager';
+import { MediaPreloader } from './MediaPreloader';
 
 const DEFAULT_AUDIO_POLLING = 1_000;
 const TARGET_SYNC_THRESHOLD_MS = 10; // If we're closer than this we're good enough
@@ -17,14 +18,20 @@ export class AudioManager extends ClipManager<AudioState> {
   private audioElement?: HTMLAudioElement;
   private isSeeking = false;
 
-  constructor(surfaceElement: HTMLElement, clipElement: HTMLElement, state: AudioState, constructAssetURL: (file: string) => string) {
+  constructor(
+    surfaceElement: HTMLElement,
+    clipElement: HTMLElement,
+    state: AudioState,
+    constructAssetURL: (file: string) => string,
+    private mediaPreloader: MediaPreloader,
+  ) {
     super(surfaceElement, clipElement, state, constructAssetURL);
     this.clipElement = clipElement;
   }
 
   private updateAudioElement() {
-    this.destroy();
-    this.audioElement = document.createElement('audio');
+    const element = this.mediaPreloader.getElement(this._state.file, 'audio');
+    this.audioElement = element as HTMLAudioElement;
     this.clipElement.replaceChildren(this.audioElement);
   }
 
@@ -65,7 +72,7 @@ export class AudioManager extends ClipManager<AudioState> {
     // this.videoElement.src will be a fully qualified URL
     const assetURL = this.constructAssetURL(this._state.file);
     if (!this.audioElement.src.includes(assetURL)) {
-      this.audioElement.src = assetURL;
+      this.updateAudioElement();
     }
     if (this.audioElement.volume !== volume) {
       this.audioElement.volume = volume;
@@ -119,7 +126,6 @@ export class AudioManager extends ClipManager<AudioState> {
 
   destroy(): void {
     if (this.audioElement) {
-      this.audioElement.src = '';
       this.audioElement.remove();
     }
   }
