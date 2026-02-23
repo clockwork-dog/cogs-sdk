@@ -6,7 +6,7 @@ const ffmpeg = 'ffmpeg';
  *   This is the directory we'll use to save all video frames
  * - Then run `yarn cy:generate`
  *   This will run the generate procedure in the e2e test
- *   It will save screenshots to cypres/screenshots
+ *   It will save screenshots to cypress/screenshots
  * - Finally run this file to create a test video
  */
 
