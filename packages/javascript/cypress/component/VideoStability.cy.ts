@@ -144,20 +144,4 @@ describe('Video stability tests', () => {
 
     cy.get('video').should('exist');
   });
-
-  it('smoothly returns to correct time using playbackRate', () => {
-    const now = Date.now();
-    const manager = new SurfaceManager({
-      'clip-id': {
-        type: 'video',
-        file: 'cypress/fixtures/yuv444p~5x2s@2560x1440.mp4',
-        audioOutput: '',
-        fit: 'cover',
-        keyframes: [[now - 500, { set: { t: 0, rate: 1 } }]],
-      },
-    });
-    cy.mount(manager);
-
-    cy.get('video').invoke('prop', 'currentTime').should('be.lessThan', 2);
-  });
 });

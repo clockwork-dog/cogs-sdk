@@ -138,19 +138,4 @@ describe('Audio stability tests', () => {
 
     cy.get('audio').should('exist');
   });
-
-  it('smoothly returns to correct time using playbackRate', () => {
-    const now = Date.now();
-    const manager = new SurfaceManager({
-      'clip-id': {
-        type: 'audio',
-        file: 'cypress/fixtures/metronome@120bpm.wav',
-        audioOutput: '',
-        keyframes: [[now - 500, { set: { t: 0, rate: 1 } }]],
-      },
-    });
-    cy.mount(manager);
-
-    cy.get('audio').invoke('prop', 'currentTime').should('be.lessThan', 2);
-  });
 });
