@@ -45,5 +45,6 @@ child.on('close', (code) => {
     console.log('Created video');
   } else {
     console.error('Failed to create video');
+    process.exit(code ?? 1);
   }
 });

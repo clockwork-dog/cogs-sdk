@@ -15,7 +15,7 @@ export class ImageManager extends ClipManager<ImageState> {
     this.clipElement.replaceChildren(this.imageElement);
     this.imageElement.style.position = 'absolute';
     this.imageElement.style.height = '100%';
-    this.imageElement.style.widows = '100%';
+    this.imageElement.style.width = '100%';
   }
 
   protected update(): void {
@@ -33,7 +33,7 @@ export class ImageManager extends ClipManager<ImageState> {
     if (!this.imageElement || !currentState) return;
 
     // this.imageElement.src will be a fully qualified URL
-    if (!this.imageElement.src.startsWith(this._state.file)) {
+    if (!this.imageElement.src.endsWith(this._state.file)) {
       this.imageElement.src = this._state.file;
     }
     if (this.imageElement.style.objectFit !== this._state.fit) {
