@@ -35,7 +35,10 @@ export class VideoManager extends ClipManager<VideoState> {
    * Helper function to seek to a specified time.
    * Works with the update loop to poll until seeked event has fired.
    */
-  private seekTo(time: number) {
+  private seekTo(ms: number) {
+    this.delay = 10;
+    this.isSeeking = true;
+
     if (!this.videoElement) return;
     this.videoElement.addEventListener(
       'seeked',
@@ -44,7 +47,7 @@ export class VideoManager extends ClipManager<VideoState> {
       },
       { once: true, passive: true },
     );
-    this.videoElement.currentTime = time / 1_000;
+    this.videoElement.currentTime = ms / 1_000;
   }
 
   protected update(): void {
@@ -72,6 +75,10 @@ export class VideoManager extends ClipManager<VideoState> {
     }
     if (this.videoElement.style.objectFit !== this._state.fit) {
       this.videoElement.style.objectFit = this._state.fit;
+    }
+    const opacityString = String(currentState.opacity);
+    if (this.videoElement.style.opacity !== opacityString) {
+      this.videoElement.style.opacity = opacityString;
     }
     if (this.videoElement.volume !== volume) {
       this.videoElement.volume = volume;
@@ -115,9 +122,7 @@ export class VideoManager extends ClipManager<VideoState> {
           this.videoElement.playbackRate = rate;
         }
 
-        // delay to poll until seeked
-        this.delay = 10;
-        this.seekTo(t + rate * (SEEK_LOOKAHEAD_MS / 1000));
+        this.seekTo(t + rate * SEEK_LOOKAHEAD_MS);
         break;
       }
     }

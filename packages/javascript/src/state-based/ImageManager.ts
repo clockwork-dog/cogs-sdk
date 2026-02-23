@@ -40,9 +40,9 @@ export class ImageManager extends ClipManager<ImageState> {
       this.imageElement.style.objectFit = this._state.fit;
     }
 
-    const { opacity } = currentState;
-    if (typeof opacity === 'string' && opacity !== this.imageElement.style.opacity) {
-      this.imageElement.style.opacity = opacity;
+    const opacityString = String(currentState.opacity);
+    if (this.imageElement.style.opacity !== opacityString) {
+      this.imageElement.style.opacity = opacityString;
     }
   }
 
