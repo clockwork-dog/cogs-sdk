@@ -2,7 +2,9 @@ import { AudioState, defaultAudioOptions } from '../types/MediaSchema';
 import { getStateAtTime } from '../utils/getStateAtTime';
 import { ClipManager } from './ClipManager';
 
-const DEFAULT_AUDIO_POLLING = 1_000;
+const NO_AUDIO_POLLING = 1_000;
+const AUDIO_PLAYBACK_POLLING = 100;
+const SEEKING_POLLING = 10;
 const TARGET_SYNC_THRESHOLD_MS = 10; // If we're closer than this we're good enough
 const MAX_SYNC_THRESHOLD_MS = 1_000; // If we're further away than this, we'll seek instead
 const SEEK_LOOKAHEAD_MS = 200; // We won't seek ahead instantly, so lets seek ahead
@@ -34,6 +36,9 @@ export class AudioManager extends ClipManager<AudioState> {
    */
   private seekTo(time: number) {
     if (!this.audioElement) return;
+    this.delay = SEEKING_POLLING;
+    this.isSeeking = true;
+
     this.audioElement.addEventListener(
       'seeked',
       () => {
@@ -47,7 +52,7 @@ export class AudioManager extends ClipManager<AudioState> {
   protected update(): void {
     // Update loop used to poll until seek finished
     if (this.isSeeking) return;
-    this.delay = DEFAULT_AUDIO_POLLING;
+    this.delay = NO_AUDIO_POLLING;
 
     // Does the <audio /> element need adding/removing?
     const currentState = getStateAtTime(this._state, Date.now());
@@ -80,7 +85,7 @@ export class AudioManager extends ClipManager<AudioState> {
     const currentTime = this.audioElement.currentTime * 1000;
     const deltaTime = currentTime - t;
     const deltaTimeAbs = Math.abs(deltaTime);
-    this.delay = 100;
+    this.delay = AUDIO_PLAYBACK_POLLING;
     switch (true) {
       case deltaTimeAbs <= TARGET_SYNC_THRESHOLD_MS:
         // We are on course:

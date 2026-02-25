@@ -2,7 +2,9 @@ import { defaultVideoOptions, VideoState } from '../types/MediaSchema';
 import { getStateAtTime } from '../utils/getStateAtTime';
 import { ClipManager } from './ClipManager';
 
-const DEFAULT_VIDEO_POLLING = 1_000;
+const NO_VIDEO_POLLING = 1_000;
+const VIDEO_PLAYBACK_POLLING = 100;
+const SEEKING_POLLING = 10;
 const TARGET_SYNC_THRESHOLD_MS = 10; // If we're closer than this we're good enough
 const MAX_SYNC_THRESHOLD_MS = 1_000; // If we're further away than this, we'll seek instead
 const SEEK_LOOKAHEAD_MS = 200; // We won't seek ahead instantly, so lets seek ahead
@@ -36,10 +38,9 @@ export class VideoManager extends ClipManager<VideoState> {
    * Works with the update loop to poll until seeked event has fired.
    */
   private seekTo(ms: number) {
-    this.delay = 10;
-    this.isSeeking = true;
-
     if (!this.videoElement) return;
+    this.delay = SEEKING_POLLING;
+    this.isSeeking = true;
     this.videoElement.addEventListener(
       'seeked',
       () => {
@@ -53,7 +54,7 @@ export class VideoManager extends ClipManager<VideoState> {
   protected update(): void {
     // Update loop used to poll until seek finished
     if (this.isSeeking) return;
-    this.delay = DEFAULT_VIDEO_POLLING;
+    this.delay = NO_VIDEO_POLLING;
 
     // Does the <video /> element need adding/removing?
     const currentState = getStateAtTime(this._state, Date.now());
@@ -94,7 +95,7 @@ export class VideoManager extends ClipManager<VideoState> {
     const currentTime = this.videoElement.currentTime * 1000;
     const deltaTime = currentTime - t;
     const deltaTimeAbs = Math.abs(deltaTime);
-    this.delay = 100;
+    this.delay = VIDEO_PLAYBACK_POLLING;
     switch (true) {
       case deltaTimeAbs <= TARGET_SYNC_THRESHOLD_MS:
         // We are on course:
