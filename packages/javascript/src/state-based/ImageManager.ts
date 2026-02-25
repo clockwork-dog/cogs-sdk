@@ -1,4 +1,4 @@
-import { ImageState } from '../types/MediaSchema';
+import { defaultImageOptions, ImageState } from '../types/MediaSchema';
 import { getStateAtTime } from '../utils/getStateAtTime';
 import { ClipManager } from './ClipManager';
 
@@ -38,6 +38,13 @@ export class ImageManager extends ClipManager<ImageState> {
     }
     if (this.imageElement.style.objectFit !== this._state.fit) {
       this.imageElement.style.objectFit = this._state.fit;
+    }
+    if (parseFloat(this.imageElement.style.opacity) !== currentState.opacity) {
+      this.imageElement.style.opacity = String(currentState.opacity ?? defaultImageOptions.opacity);
+    }
+    const z = Math.round(currentState.zIndex ?? defaultImageOptions.zIndex);
+    if (parseInt(this.imageElement.style.zIndex) !== z) {
+      this.imageElement.style.zIndex = String(z);
     }
 
     const opacityString = String(currentState.opacity);
