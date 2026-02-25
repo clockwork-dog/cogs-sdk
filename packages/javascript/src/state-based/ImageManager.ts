@@ -1,0 +1,52 @@
+import { ImageState } from '../types/MediaSchema';
+import { getStateAtTime } from '../utils/getStateAtTime';
+import { ClipManager } from './ClipManager';
+
+export class ImageManager extends ClipManager<ImageState> {
+  private imageElement?: HTMLImageElement;
+
+  constructor(surfaceElement: HTMLElement, clipElement: HTMLElement, state: ImageState) {
+    super(surfaceElement, clipElement, state);
+    this.clipElement = clipElement;
+  }
+
+  private updateImageElement() {
+    this.imageElement = document.createElement('img');
+    this.clipElement.replaceChildren(this.imageElement);
+    this.imageElement.style.position = 'absolute';
+    this.imageElement.style.height = '100%';
+    this.imageElement.style.width = '100%';
+  }
+
+  protected update(): void {
+    const currentState = getStateAtTime(this._state, Date.now());
+
+    // Does the <img /> element need adding/removing?
+    if (currentState) {
+      if (!this.imageElement || !this.isConnected(this.imageElement)) {
+        this.updateImageElement();
+      }
+    } else {
+      this.imageElement?.remove();
+      this.imageElement = undefined;
+    }
+    if (!this.imageElement || !currentState) return;
+
+    // this.imageElement.src will be a fully qualified URL
+    if (!this.imageElement.src.endsWith(this._state.file)) {
+      this.imageElement.src = this._state.file;
+    }
+    if (this.imageElement.style.objectFit !== this._state.fit) {
+      this.imageElement.style.objectFit = this._state.fit;
+    }
+
+    const opacityString = String(currentState.opacity);
+    if (this.imageElement.style.opacity !== opacityString) {
+      this.imageElement.style.opacity = opacityString;
+    }
+  }
+
+  destroy(): void {
+    this.imageElement?.remove();
+  }
+}

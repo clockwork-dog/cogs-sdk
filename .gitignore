@@ -1,3 +1,6 @@
 docs/javascript/
 docs/react/
 node_modules/
+
+# Incremental compilation that speeds up monorepo builds
+*.tsbuildinfo
