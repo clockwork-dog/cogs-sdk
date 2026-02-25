@@ -8,7 +8,7 @@ const TemporalProperties = z.object({
 export type VisualProperties = z.infer<typeof VisualProperties>;
 const VisualProperties = z.object({
   opacity: z.number().gte(0).lte(1),
-  zIndex: z.number(),
+  zIndex: z.number().default(0),
 });
 export type AudialProperties = z.infer<typeof AudialProperties>;
 const AudialProperties = z.object({
