@@ -1,8 +1,6 @@
 import { MediaClipState, MediaSurfaceState } from '../types/MediaSchema';
-import { ClipManager } from './ClipManager';
-import { ImageManager } from './ImageManager';
-import { VideoManager } from './VideoManager';
-import { AudioManager } from './AudioManager';
+import { AudioManager, ImageManager, MediaClipManager, VideoManager } from './MediaClipManager';
+import { MediaPreloader } from './MediaPreloader';
 
 export const DATA_CLIP_ID = 'data-clip-id';
 type TaggedElement = HTMLElement & { [DATA_CLIP_ID]?: string };
@@ -23,11 +21,12 @@ export class SurfaceManager {
     return this._element;
   }
 
-  private resources: { [clipId: string]: { element: HTMLElement; manager?: ClipManager<MediaClipState> } } = {};
+  private resources: { [clipId: string]: { element: HTMLElement; manager?: MediaClipManager<MediaClipState> } } = {};
 
   constructor(
     private constructAssetUrl: (file: string) => string,
     testState?: MediaSurfaceState,
+    private mediaPreloader: MediaPreloader = new MediaPreloader(constructAssetUrl),
   ) {
     this._element = document.createElement('div');
     this._element.className = 'surface-manager';
@@ -77,13 +76,13 @@ export class SurfaceManager {
         if (!resource.manager) {
           switch (clip.type) {
             case 'image':
-              resource.manager = new ImageManager(this._element, resource.element, clip, this.constructAssetUrl);
+              resource.manager = new ImageManager(this._element, resource.element, clip, this.constructAssetUrl, this.mediaPreloader);
               break;
             case 'audio':
-              resource.manager = new AudioManager(this._element, resource.element, clip, this.constructAssetUrl);
+              resource.manager = new AudioManager(this._element, resource.element, clip, this.constructAssetUrl, this.mediaPreloader);
               break;
             case 'video':
-              resource.manager = new VideoManager(this._element, resource.element, clip, this.constructAssetUrl);
+              resource.manager = new VideoManager(this._element, resource.element, clip, this.constructAssetUrl, this.mediaPreloader);
               break;
           }
         } else {

@@ -1,5 +1,6 @@
 // Utilities
 export { default as CogsConnectionProvider, useCogsConnection, useAudioPlayer, useVideoPlayer } from './providers/CogsConnectionProvider';
+export { MediaSurface, MediaSurfaceProps } from './components/MediaSurface';
 export { default as useIsConnected } from './hooks/useIsConnected';
 export { default as useCogsConfig } from './hooks/useCogsConfig';
 export { default as useCogsEvent } from './hooks/useCogsEvent';
