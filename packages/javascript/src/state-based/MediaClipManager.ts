@@ -21,6 +21,7 @@ export abstract class MediaClipManager<T extends MediaClipState> {
     protected clipElement: HTMLElement,
     state: T,
     protected constructAssetURL: (file: string) => string,
+    protected getAudioOutput: (outputLabel: string) => string,
     protected mediaPreloader: MediaPreloader,
   ) {
     this._state = state;
@@ -295,7 +296,8 @@ export class AudioManager extends MediaClipManager<AudioState> {
 
     if (!currentState || !this.audioElement) return;
 
-    assertAudialProperties(this.audioElement, currentState as AudialProperties, this._state.audioOutput);
+    const sinkId = this.getAudioOutput(this._state.audioOutput);
+    assertAudialProperties(this.audioElement, currentState as AudialProperties, sinkId);
     const nextSyncState = assertTemporalProperties(this.audioElement, currentState as TemporalProperties, this._state.keyframes, this.syncState);
     if (this.syncState.state !== 'seeking' && nextSyncState.state === 'seeking') {
       this.audioElement.addEventListener(
@@ -336,8 +338,9 @@ export class VideoManager extends MediaClipManager<VideoState> {
 
     if (!currentState || !this.videoElement) return;
 
+    const sinkId = this.getAudioOutput(this._state.audioOutput);
     assertVisualProperties(this.videoElement, currentState as VisualProperties, this._state.fit);
-    assertAudialProperties(this.videoElement, currentState as AudialProperties, this._state.audioOutput);
+    assertAudialProperties(this.videoElement, currentState as AudialProperties, sinkId);
     const nextSyncState = assertTemporalProperties(this.videoElement, currentState as TemporalProperties, this._state.keyframes, this.syncState);
     if (this.syncState.state !== 'seeking' && nextSyncState.state === 'seeking') {
       this.videoElement.addEventListener(

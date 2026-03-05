@@ -30,7 +30,7 @@ export function MediaSurface({ cogsConnection }: MediaSurfaceProps) {
   useEffect(() => {
     const sm = new SurfaceManager(
       (url: string) => cogsConnection.getAssetUrl(url),
-      (outputLabel: string) => audioOutputs.current[outputLabel],
+      (outputLabel: string) => audioOutputs.current[outputLabel] ?? '',
     );
     surfaceManagerRef.current = sm;
     surfaceElem?.replaceChildren(sm.element);

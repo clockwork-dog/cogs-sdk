@@ -77,13 +77,34 @@ export class SurfaceManager {
         if (!resource.manager) {
           switch (clip.type) {
             case 'image':
-              resource.manager = new ImageManager(this._element, resource.element, clip, this.constructAssetUrl, this.mediaPreloader);
+              resource.manager = new ImageManager(
+                this._element,
+                resource.element,
+                clip,
+                this.constructAssetUrl,
+                this.getAudioOutput,
+                this.mediaPreloader,
+              );
               break;
             case 'audio':
-              resource.manager = new AudioManager(this._element, resource.element, clip, this.constructAssetUrl, this.mediaPreloader);
+              resource.manager = new AudioManager(
+                this._element,
+                resource.element,
+                clip,
+                this.constructAssetUrl,
+                this.getAudioOutput,
+                this.mediaPreloader,
+              );
               break;
             case 'video':
-              resource.manager = new VideoManager(this._element, resource.element, clip, this.constructAssetUrl, this.mediaPreloader);
+              resource.manager = new VideoManager(
+                this._element,
+                resource.element,
+                clip,
+                this.constructAssetUrl,
+                this.getAudioOutput,
+                this.mediaPreloader,
+              );
               break;
           }
         } else {
