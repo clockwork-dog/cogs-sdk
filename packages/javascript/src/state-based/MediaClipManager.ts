@@ -25,8 +25,6 @@ export abstract class MediaClipManager<T extends MediaClipState> {
     protected mediaPreloader: MediaPreloader,
   ) {
     this._state = state;
-    // Allow the class to be constructed, then call the loop
-    setTimeout(this.loop);
   }
 
   protected abstract update(): void;
@@ -56,7 +54,8 @@ export abstract class MediaClipManager<T extends MediaClipState> {
   }
 
   private timeout: ReturnType<typeof setTimeout> | undefined;
-  private loop = async () => {
+  public loop = async () => {
+    clearTimeout(this.timeout);
     if (this.isConnected()) {
       this.update();
       this.timeout = setTimeout(this.loop, INNER_TARGET_SYNC_THRESHOLD_MS);

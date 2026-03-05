@@ -85,6 +85,7 @@ export class SurfaceManager {
                 this.getAudioOutput,
                 this.mediaPreloader,
               );
+              resource.manager.loop();
               break;
             case 'audio':
               resource.manager = new AudioManager(
@@ -95,6 +96,7 @@ export class SurfaceManager {
                 this.getAudioOutput,
                 this.mediaPreloader,
               );
+              resource.manager.loop();
               break;
             case 'video':
               resource.manager = new VideoManager(
@@ -105,6 +107,7 @@ export class SurfaceManager {
                 this.getAudioOutput,
                 this.mediaPreloader,
               );
+              resource.manager.loop();
               break;
           }
         } else {
