@@ -3,10 +3,11 @@ const INDIAN_RED = { r: 191, g: 99, b: 96 };
 const ROYAL_BLUE = { r: 75, g: 104, b: 218 };
 
 const constructAssetURL = (file: string) => `cypress/fixtures/${file}`;
+const getAudioOutput = () => '';
 describe('Surface layer tests', () => {
   it('can take a known screenshot', () => {
     const now = Date.now();
-    const manager = new SurfaceManager(constructAssetURL, {
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       red: {
         file: 'indianred@2560x1440.png',
         type: 'image',
@@ -28,7 +29,7 @@ describe('Surface layer tests', () => {
 
   it('respects z-index', () => {
     const now = Date.now();
-    const manager = new SurfaceManager(constructAssetURL, {
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       red: {
         file: 'indianred@2560x1440.png',
         type: 'image',

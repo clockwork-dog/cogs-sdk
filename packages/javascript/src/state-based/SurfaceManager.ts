@@ -25,6 +25,7 @@ export class SurfaceManager {
 
   constructor(
     private constructAssetUrl: (file: string) => string,
+    private getAudioOutput: (outputLabel: string) => string,
     testState?: MediaSurfaceState,
     private mediaPreloader: MediaPreloader = new MediaPreloader(constructAssetUrl),
   ) {

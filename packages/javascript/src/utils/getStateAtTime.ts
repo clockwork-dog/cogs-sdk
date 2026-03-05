@@ -1,6 +1,12 @@
 import { defaultAudioOptions, defaultImageOptions, defaultVideoOptions, MediaClipState, TemporalProperties } from '../types/MediaSchema';
 
 export function getStateAtTime<State extends MediaClipState>(state: State, time: number): State['keyframes'][0][1]['set'] | undefined {
+  //If there are any null keyframes the clip has been terminated
+  const nullKeyframes = state.keyframes.filter((kf) => kf[1] === null);
+  if (nullKeyframes.some((kf) => kf[0] <= time)) {
+    return undefined;
+  }
+
   switch (state.type) {
     case 'image': {
       const firstTimestamp = state.keyframes[0][0];

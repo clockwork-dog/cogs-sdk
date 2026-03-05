@@ -1,9 +1,10 @@
 import { DATA_CLIP_ID, SurfaceManager } from '../../src/state-based/SurfaceManager';
 
 const constructAssetURL = (file: string) => `cypress/fixtures/${file}`;
+const getAudioOutput = () => '';
 describe('Updating surface state', () => {
   it('adds and removes a video clip', () => {
-    const manager = new SurfaceManager(constructAssetURL, {});
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {});
     cy.mount(manager);
 
     cy.get('video')
@@ -36,7 +37,7 @@ describe('Updating surface state', () => {
 
   it('adds multiple media', () => {
     const now = Date.now();
-    const manager = new SurfaceManager(constructAssetURL, {});
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {});
     cy.mount(manager);
     expect(manager.element.children.length).to.eq(0);
 

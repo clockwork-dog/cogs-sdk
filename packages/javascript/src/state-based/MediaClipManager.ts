@@ -52,8 +52,6 @@ export abstract class MediaClipManager<T extends MediaClipState> {
   protected _state: T;
   setState(newState: T) {
     this._state = newState;
-    clearTimeout(this.timeout);
-    this.loop();
   }
 
   private timeout: ReturnType<typeof setTimeout> | undefined;
@@ -75,21 +73,29 @@ export function assertElement(
   preloader: MediaPreloader,
 ): HTMLElement {
   let element: HTMLMediaElement | HTMLImageElement;
+  const assetURL = constructAssetURL(clip.file);
   switch (clip.type) {
     case 'image':
       {
         element = mediaElement instanceof HTMLImageElement ? mediaElement : document.createElement('img');
-        const assetURL = constructAssetURL(clip.file);
         if (!element.src.includes(assetURL)) {
           element.src = assetURL;
         }
       }
       break;
     case 'audio':
-      element = mediaElement instanceof HTMLAudioElement ? mediaElement : preloader.getElement(clip.file, clip.type);
+      if (mediaElement instanceof HTMLAudioElement && mediaElement.src.includes(assetURL)) {
+        element = mediaElement;
+      } else {
+        element = preloader.getElement(clip.file, clip.type);
+      }
       break;
     case 'video':
-      element = mediaElement instanceof HTMLVideoElement ? mediaElement : preloader.getElement(clip.file, clip.type);
+      if (mediaElement instanceof HTMLVideoElement && mediaElement.src.includes(assetURL)) {
+        element = mediaElement;
+      } else {
+        element = preloader.getElement(clip.file, clip.type);
+      }
       break;
   }
   parentElement.replaceChildren(element);
@@ -122,9 +128,14 @@ export function assertAudialProperties(mediaElement: HTMLMediaElement, propertie
     mediaElement.volume = properties.volume;
   }
   if (mediaElement.sinkId !== sinkId) {
-    mediaElement.setSinkId(sinkId).catch(() => {
+    try {
+      mediaElement.setSinkId(sinkId).catch(() => {
+        /* Do nothing, will be tried in next loop */
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_) {
       /* Do nothing, will be tried in next loop */
-    });
+    }
   }
 }
 

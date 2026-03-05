@@ -1,10 +1,11 @@
 import { SurfaceManager } from '../../src/state-based/SurfaceManager';
 
 const constructAssetURL = (file: string) => `cypress/fixtures/${file}`;
+const getAudioOutput = () => '';
 describe('Audio stability tests', () => {
   it('can wait without playing', () => {
     const now = Date.now();
-    const manager = new SurfaceManager(constructAssetURL, {
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
         file: 'sinwave@440hz.wav',
         type: 'audio',
@@ -23,7 +24,7 @@ describe('Audio stability tests', () => {
 
   it('recovers from a pause', () => {
     const now = Date.now();
-    const manager = new SurfaceManager(constructAssetURL, {
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
         file: 'metronome@120bpm.wav',
         type: 'audio',
@@ -47,7 +48,7 @@ describe('Audio stability tests', () => {
 
   it('recovers from a play', () => {
     const now = Date.now();
-    const manager = new SurfaceManager(constructAssetURL, {
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
         file: 'metronome@120bpm.wav',
         type: 'audio',
@@ -78,7 +79,7 @@ describe('Audio stability tests', () => {
 
   it('recovers from a seek', () => {
     const now = Date.now();
-    const manager = new SurfaceManager(constructAssetURL, {
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
         file: 'metronome@120bpm.wav',
         type: 'audio',
@@ -101,7 +102,7 @@ describe('Audio stability tests', () => {
     const INITIAL_VOLUME = 0;
     const CHANGED_VOLUME = 1;
     const now = Date.now();
-    const manager = new SurfaceManager(constructAssetURL, {
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
         type: 'audio',
         file: 'sinwave@440hz.wav',
@@ -121,7 +122,7 @@ describe('Audio stability tests', () => {
 
   it('recovers from audio element deletion', () => {
     const now = Date.now();
-    const manager = new SurfaceManager(constructAssetURL, {
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
         type: 'audio',
         file: 'sinwave@440hz.wav',

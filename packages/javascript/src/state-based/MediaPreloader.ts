@@ -21,7 +21,12 @@ export class MediaPreloader {
     // Clean up previous elements
     for (const [filename, media] of Object.entries(this._elements)) {
       if (!(filename in this._state)) {
+        if (media.inUse) {
+          console.warn(`Failed to clean up element ${media.element.src}`);
+          continue;
+        }
         media.element.src = '';
+        media.element.load();
         delete this._elements[filename];
       }
       media.inUse = media.element.isConnected;
@@ -67,7 +72,9 @@ export class MediaPreloader {
     } else {
       const element = document.createElement(type);
       element.src = this._constructAssetURL(file);
-      this._elements[file] = { element, type, inUse: true };
+      if (type === 'video') {
+        this._elements[file] = { element, type, inUse: true };
+      }
       return element;
     }
   }
