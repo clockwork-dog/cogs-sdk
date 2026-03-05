@@ -59,7 +59,7 @@ export abstract class MediaClipManager<T extends MediaClipState> {
   private loop = async () => {
     if (this.isConnected()) {
       this.update();
-      this.timeout = setTimeout(this.loop, 0);
+      this.timeout = setTimeout(this.loop, INNER_TARGET_SYNC_THRESHOLD_MS);
     } else {
       this.destroy();
     }
@@ -223,7 +223,6 @@ export function assertTemporalProperties(
 
     case syncState.state === 'intercepting' && Math.sign(deltaTime) === Math.sign(mediaElement.playbackRate - properties.rate): {
       // We have missed our interception.  Go back to idle to try again.
-      console.warn(deltaTime, 'missed intercept');
       return { state: 'idle' };
     }
 
