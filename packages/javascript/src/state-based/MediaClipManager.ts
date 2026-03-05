@@ -98,7 +98,9 @@ export function assertElement(
       }
       break;
   }
-  parentElement.replaceChildren(element);
+  if (parentElement.children.length !== 1 || parentElement.childNodes[0] !== element) {
+    parentElement.replaceChildren(element);
+  }
   element.style.position = 'absolute';
   element.style.width = '100%';
   element.style.height = '100%';
