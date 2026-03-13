@@ -34,7 +34,7 @@ describe('Image stability tests', () => {
   });
 
   it('recovers from img element src change', () => {
-    const ORIGINAL_SRC = 'cypress/fixtures/indianred@2560x1440.png';
+    const ORIGINAL_SRC = 'indianred@2560x1440.png';
     const CHANGED_SRC = '404.png';
     const now = Date.now();
     const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
