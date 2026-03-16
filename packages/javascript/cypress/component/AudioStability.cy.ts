@@ -1,6 +1,6 @@
 import { SurfaceManager } from '../../src/state-based/SurfaceManager';
 
-const constructAssetURL = (file: string) => `cypress/fixtures/${file}`;
+const constructAssetURL = (file: string) => `http://localhost:5173/__cypress/iframes/cypress/fixtures/${file}`;
 const getAudioOutput = () => '';
 describe('Audio stability tests', () => {
   it('can wait without playing', () => {

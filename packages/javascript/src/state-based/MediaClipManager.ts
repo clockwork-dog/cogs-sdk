@@ -11,6 +11,17 @@ import {
 import { getStateAtTime } from '../utils/getStateAtTime';
 import { MediaPreloader } from './MediaPreloader';
 
+const getPath = (url: string): string | undefined => {
+  try {
+    const { pathname } = new URL(url, window.location.href);
+    return pathname;
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_) {
+    return undefined;
+  }
+};
+
 /**
  * Each instance of a MediaClipManager is responsible for displaying
  * an image/audio/video clip in the correct state.
@@ -65,39 +76,49 @@ export abstract class MediaClipManager<T extends MediaClipState> {
   };
 }
 
+/**
+ * Makes sure that the child media element exists and is of the correct type
+ * - If it isn't or doesn't exist we'll get a new one
+ * - If it is audio or video we'll try and get a preloaded media element
+ * - Otherwise we'll directly create and set the src
+ */
 export function assertElement(
-  mediaElement: HTMLElement | undefined,
+  mediaElement: HTMLMediaElement | HTMLImageElement | undefined,
   parentElement: HTMLElement,
   clip: MediaClipState,
   constructAssetURL: (file: string) => string,
   preloader: MediaPreloader,
 ): HTMLElement {
-  let element: HTMLMediaElement | HTMLImageElement;
+  let element: HTMLMediaElement | HTMLImageElement | undefined = undefined;
   const assetURL = constructAssetURL(clip.file);
+  const assetPath = getPath(assetURL);
+
   switch (clip.type) {
     case 'image':
       {
         element = mediaElement instanceof HTMLImageElement ? mediaElement : document.createElement('img');
-        if (!element.src.includes(assetURL)) {
+        const elementPath = getPath(element.src);
+        if (elementPath !== assetPath) {
           element.src = assetURL;
         }
       }
       break;
     case 'audio':
-      if (mediaElement instanceof HTMLAudioElement && mediaElement.src.includes(assetURL)) {
-        element = mediaElement;
-      } else {
+    case 'video': {
+      if (mediaElement !== undefined) {
+        const path = getPath(mediaElement.src);
+        if (mediaElement.tagName.toLowerCase() === clip.type && path !== undefined && path === assetPath) {
+          element = mediaElement;
+        }
+      }
+
+      if (!element) {
         element = preloader.getElement(clip.file, clip.type);
       }
       break;
-    case 'video':
-      if (mediaElement instanceof HTMLVideoElement && mediaElement.src.includes(assetURL)) {
-        element = mediaElement;
-      } else {
-        element = preloader.getElement(clip.file, clip.type);
-      }
-      break;
+    }
   }
+
   if (parentElement.children.length !== 1 || parentElement.childNodes[0] !== element) {
     parentElement.replaceChildren(element);
   }
@@ -107,6 +128,10 @@ export function assertElement(
   return element;
 }
 
+/**
+ * Makes sure that the element looks correct.
+ * - If the opacity, zIndex or fit are incorrect, we'll set again
+ */
 export function assertVisualProperties(
   mediaElement: HTMLMediaElement | HTMLImageElement,
   properties: VisualProperties,
@@ -125,6 +150,10 @@ export function assertVisualProperties(
   }
 }
 
+/**
+ * Makes sure that the element sounds correct.
+ * - It should have the right volume, and play out the correct speaker.
+ */
 export function assertAudialProperties(mediaElement: HTMLMediaElement, properties: AudialProperties, sinkId: string) {
   if (mediaElement.volume !== properties.volume) {
     mediaElement.volume = properties.volume;
@@ -156,6 +185,11 @@ interface TemporalSyncState {
   state: 'idle' | 'seeking' | 'intercepting';
 }
 
+/**
+ * Makes sure the media is at the correct time and speed.
+ * - If we fall slightly behind, we will lightly adjust the speed to catch up.
+ * - If we are too far away to smoothly realign, we will seek to the correct time.
+ */
 export function assertTemporalProperties(
   mediaElement: HTMLMediaElement,
   properties: TemporalProperties,
@@ -311,7 +345,11 @@ export class AudioManager extends MediaClipManager<AudioState> {
   }
 
   public destroy(): void {
-    this.audioElement?.remove();
+    if (this.audioElement) {
+      this.audioElement.volume = 0;
+      this.audioElement.pause();
+      this.audioElement.remove();
+    }
     this.audioElement = undefined;
   }
 }
@@ -354,7 +392,11 @@ export class VideoManager extends MediaClipManager<VideoState> {
   }
 
   public destroy(): void {
-    this.videoElement?.remove();
+    if (this.videoElement) {
+      this.videoElement.volume = 0;
+      this.videoElement.pause();
+      this.videoElement.remove();
+    }
     this.videoElement = undefined;
   }
 }

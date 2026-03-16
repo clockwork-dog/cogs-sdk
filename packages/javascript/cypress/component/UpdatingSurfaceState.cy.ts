@@ -1,6 +1,6 @@
 import { DATA_CLIP_ID, SurfaceManager } from '../../src/state-based/SurfaceManager';
 
-const constructAssetURL = (file: string) => `cypress/fixtures/${file}`;
+const constructAssetURL = (file: string) => `http://localhost:5173/__cypress/iframes/cypress/fixtures/${file}`;
 const getAudioOutput = () => '';
 describe('Updating surface state', () => {
   it('adds and removes a video clip', () => {

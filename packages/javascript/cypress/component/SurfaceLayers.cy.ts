@@ -2,7 +2,7 @@ import { SurfaceManager } from '../../src/state-based/SurfaceManager';
 const INDIAN_RED = { r: 191, g: 99, b: 96 };
 const ROYAL_BLUE = { r: 75, g: 104, b: 218 };
 
-const constructAssetURL = (file: string) => `cypress/fixtures/${file}`;
+const constructAssetURL = (file: string) => `http://localhost:5173/__cypress/iframes/cypress/fixtures/${file}`;
 const getAudioOutput = () => '';
 describe('Surface layer tests', () => {
   it('can take a known screenshot', () => {

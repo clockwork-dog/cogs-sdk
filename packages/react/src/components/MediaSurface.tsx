@@ -1,4 +1,4 @@
-import { CogsConnection, CogsMessageEvent, MediaSchema, SurfaceManager } from '@clockworkdog/cogs-client';
+import { CogsConnection, CogsMessageEvent, MediaPreloader, MediaSchema, SurfaceManager } from '@clockworkdog/cogs-client';
 import React, { useEffect, useRef, useState } from 'react';
 
 export interface MediaSurfaceProps {
@@ -7,6 +7,7 @@ export interface MediaSurfaceProps {
 export function MediaSurface({ cogsConnection }: MediaSurfaceProps) {
   const surfaceManagerRef = useRef<SurfaceManager | undefined>(undefined);
   const surfaceStateRef = useRef<MediaSchema.MediaSurfaceState | undefined>(undefined);
+  const mediaPreloaderRef = useRef<MediaPreloader | null>(null);
   const [surfaceElem, setSurfaceElem] = useState<HTMLDivElement | null>(null);
 
   // Keep updated list of audio outputs
@@ -14,6 +15,12 @@ export function MediaSurface({ cogsConnection }: MediaSurfaceProps) {
   useEffect(() => {
     async function updateAudioOutputs() {
       const audioOutputs: Record<string, string> = {};
+
+      if (!navigator.mediaDevices) {
+        // `navigator.mediaDevices` is undefined on COGS AV <= 4.5 because of secure origin permissions
+        return;
+      }
+
       const devices = await navigator.mediaDevices.enumerateDevices();
       const outputs = devices.filter((device) => device.kind === 'audiooutput');
       outputs.forEach((output) => {
@@ -28,11 +35,18 @@ export function MediaSurface({ cogsConnection }: MediaSurfaceProps) {
 
   // Create and attach new surface manager
   useEffect(() => {
-    const sm = new SurfaceManager(
-      (url: string) => cogsConnection.getAssetUrl(url),
-      (outputLabel: string) => audioOutputs.current[outputLabel] ?? '',
-    );
+    const constructURL = (url: string) => cogsConnection.getAssetUrl(url);
+
+    const preloader = new MediaPreloader(constructURL);
+    mediaPreloaderRef.current = preloader;
+    const files = cogsConnection.mediaConfig?.files;
+    if (files) {
+      preloader.setState(files);
+    }
+
+    const sm = new SurfaceManager(constructURL, (outputLabel: string) => audioOutputs.current[outputLabel] ?? '', {}, preloader);
     surfaceManagerRef.current = sm;
+
     surfaceElem?.replaceChildren(sm.element);
     return () => {
       surfaceManagerRef.current?.setState({});
@@ -43,15 +57,20 @@ export function MediaSurface({ cogsConnection }: MediaSurfaceProps) {
 
   // Listen to messages
   useEffect(() => {
-    function updateSurfaceState({ message }: CogsMessageEvent) {
+    function handleMessages({ message }: CogsMessageEvent) {
       if (message.type === 'media_state' && message.media_strategy === 'state' && surfaceManagerRef.current) {
         surfaceStateRef.current = message.state;
         surfaceManagerRef.current.setState(message.state);
       }
+
+      const preloader = mediaPreloaderRef.current;
+      if (message.type === 'media_config_update' && preloader) {
+        preloader.setState(message.files);
+      }
     }
 
-    cogsConnection.addEventListener('message', updateSurfaceState);
-    return () => cogsConnection.removeEventListener('message', updateSurfaceState);
+    cogsConnection.addEventListener('message', handleMessages);
+    return () => cogsConnection.removeEventListener('message', handleMessages);
   }, [cogsConnection]);
 
   return <div className="media-surface" ref={setSurfaceElem}></div>;
