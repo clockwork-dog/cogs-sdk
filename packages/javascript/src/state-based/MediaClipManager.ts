@@ -349,6 +349,7 @@ export class AudioManager extends MediaClipManager<AudioState> {
       this.audioElement.volume = 0;
       this.audioElement.pause();
       this.audioElement.remove();
+      this.mediaPreloader.releaseElement(this.audioElement);
     }
     this.audioElement = undefined;
   }
@@ -396,6 +397,7 @@ export class VideoManager extends MediaClipManager<VideoState> {
       this.videoElement.volume = 0;
       this.videoElement.pause();
       this.videoElement.remove();
+      this.mediaPreloader.releaseElement(this.videoElement);
     }
     this.videoElement = undefined;
   }

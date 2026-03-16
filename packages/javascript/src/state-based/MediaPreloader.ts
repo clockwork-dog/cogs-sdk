@@ -79,16 +79,16 @@ export class MediaPreloader {
     }
   }
 
-  releaseElement(resource: string | HTMLMediaElement) {
+  releaseElement(resource: string | HTMLElement) {
     if (typeof resource === 'string') {
       const media = this._elements[resource];
       if (media) {
         media.inUse = false;
       }
     } else {
-      Object.entries(this._elements).forEach(([file, media]) => {
+      Object.values(this._elements).forEach((media) => {
         if (media.element === resource) {
-          delete this._elements[file];
+          media.inUse = false;
         }
       });
     }
