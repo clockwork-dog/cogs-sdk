@@ -154,8 +154,8 @@ export function assertVisualProperties(
  * Makes sure that the element sounds correct.
  * - It should have the right volume, and play out the correct speaker.
  */
-export function assertAudialProperties(mediaElement: HTMLMediaElement, properties: AudialProperties, sinkId: string, volume: number) {
-  const clipVolume = properties.volume * volume;
+export function assertAudialProperties(mediaElement: HTMLMediaElement, properties: AudialProperties, sinkId: string, surfaceVolume: number) {
+  const clipVolume = properties.volume * surfaceVolume;
   if (mediaElement.volume !== clipVolume) {
     mediaElement.volume = clipVolume;
   }
