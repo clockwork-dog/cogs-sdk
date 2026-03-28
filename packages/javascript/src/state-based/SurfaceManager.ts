@@ -16,6 +16,20 @@ export class SurfaceManager {
     this._state = newState;
     this.update();
   }
+
+  private _volume = 1;
+  public get volume() {
+    return this._volume;
+  }
+  public set volume(newVolume: number) {
+    this._volume = newVolume;
+    Object.values(this.resources).forEach(({ manager }) => {
+      if (manager instanceof AudioManager || manager instanceof VideoManager) {
+        manager.volume = newVolume;
+      }
+    });
+  }
+
   private _element: HTMLDivElement;
   public get element() {
     return this._element;
@@ -87,8 +101,8 @@ export class SurfaceManager {
               );
               resource.manager.loop();
               break;
-            case 'audio':
-              resource.manager = new AudioManager(
+            case 'audio': {
+              const audioManager = new AudioManager(
                 this._element,
                 resource.element,
                 clip,
@@ -96,10 +110,13 @@ export class SurfaceManager {
                 this.getAudioOutput,
                 this.mediaPreloader,
               );
-              resource.manager.loop();
+              resource.manager = audioManager;
+              audioManager.volume = this._volume;
+              audioManager.loop();
               break;
-            case 'video':
-              resource.manager = new VideoManager(
+            }
+            case 'video': {
+              const videoManager = new VideoManager(
                 this._element,
                 resource.element,
                 clip,
@@ -107,8 +124,11 @@ export class SurfaceManager {
                 this.getAudioOutput,
                 this.mediaPreloader,
               );
-              resource.manager.loop();
+              resource.manager = videoManager;
+              videoManager.volume = this._volume;
+              videoManager.loop();
               break;
+            }
           }
         } else {
           resource.manager.setState(clip);

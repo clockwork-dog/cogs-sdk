@@ -7,6 +7,7 @@ export interface MediaSurfaceProps {
 export function MediaSurface({ cogsConnection }: MediaSurfaceProps) {
   const surfaceManagerRef = useRef<SurfaceManager | undefined>(undefined);
   const surfaceStateRef = useRef<MediaSchema.MediaSurfaceState | undefined>(undefined);
+  const volumeRef = useRef<number | undefined>(cogsConnection.mediaConfig?.globalVolume);
   const mediaPreloaderRef = useRef<MediaPreloader | null>(null);
   const [surfaceElem, setSurfaceElem] = useState<HTMLDivElement | null>(null);
 
@@ -45,6 +46,9 @@ export function MediaSurface({ cogsConnection }: MediaSurfaceProps) {
     }
 
     const sm = new SurfaceManager(constructURL, (outputLabel: string) => audioOutputs.current[outputLabel] ?? '', {}, preloader);
+    if (volumeRef.current !== undefined) {
+      sm.volume = volumeRef.current;
+    }
     surfaceManagerRef.current = sm;
 
     surfaceElem?.replaceChildren(sm.element);
@@ -58,14 +62,22 @@ export function MediaSurface({ cogsConnection }: MediaSurfaceProps) {
   // Listen to messages
   useEffect(() => {
     function handleMessages({ message }: CogsMessageEvent) {
-      if (message.type === 'media_state' && message.media_strategy === 'state' && surfaceManagerRef.current) {
+      const preloader = mediaPreloaderRef.current;
+      const manager = surfaceManagerRef.current;
+
+      if (message.type === 'media_state' && message.media_strategy === 'state' && manager) {
         surfaceStateRef.current = message.state;
-        surfaceManagerRef.current.setState(message.state);
+        manager.setState(message.state);
       }
 
-      const preloader = mediaPreloaderRef.current;
-      if (message.type === 'media_config_update' && preloader) {
-        preloader.setState(message.files);
+      if (message.type === 'media_config_update') {
+        volumeRef.current = message.globalVolume;
+        if (preloader) {
+          preloader.setState(message.files);
+        }
+        if (manager) {
+          manager.volume = message.globalVolume;
+        }
       }
     }
 

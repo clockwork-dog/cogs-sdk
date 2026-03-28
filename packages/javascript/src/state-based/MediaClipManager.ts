@@ -154,9 +154,10 @@ export function assertVisualProperties(
  * Makes sure that the element sounds correct.
  * - It should have the right volume, and play out the correct speaker.
  */
-export function assertAudialProperties(mediaElement: HTMLMediaElement, properties: AudialProperties, sinkId: string) {
-  if (mediaElement.volume !== properties.volume) {
-    mediaElement.volume = properties.volume;
+export function assertAudialProperties(mediaElement: HTMLMediaElement, properties: AudialProperties, sinkId: string, surfaceVolume: number) {
+  const clipVolume = properties.volume * surfaceVolume;
+  if (mediaElement.volume !== clipVolume) {
+    mediaElement.volume = clipVolume;
   }
   if (mediaElement.sinkId !== sinkId) {
     try {
@@ -311,6 +312,7 @@ export class ImageManager extends MediaClipManager<ImageState> {
 export class AudioManager extends MediaClipManager<AudioState> {
   private syncState: TemporalSyncState = { state: 'idle' };
   private audioElement: HTMLAudioElement | undefined;
+  public volume = 1;
 
   protected update(): void {
     const currentState = getStateAtTime(this._state, Date.now());
@@ -329,7 +331,7 @@ export class AudioManager extends MediaClipManager<AudioState> {
     if (!currentState || !this.audioElement) return;
 
     const sinkId = this.getAudioOutput(this._state.audioOutput);
-    assertAudialProperties(this.audioElement, currentState as AudialProperties, sinkId);
+    assertAudialProperties(this.audioElement, currentState as AudialProperties, sinkId, this.volume);
     const nextSyncState = assertTemporalProperties(this.audioElement, currentState as TemporalProperties, this._state.keyframes, this.syncState);
     if (this.syncState.state !== 'seeking' && nextSyncState.state === 'seeking') {
       this.audioElement.addEventListener(
@@ -358,6 +360,7 @@ export class AudioManager extends MediaClipManager<AudioState> {
 export class VideoManager extends MediaClipManager<VideoState> {
   private syncState: TemporalSyncState = { state: 'idle' };
   private videoElement?: HTMLVideoElement;
+  public volume = 1;
 
   protected update(): void {
     const currentState = getStateAtTime(this._state, Date.now());
@@ -377,7 +380,7 @@ export class VideoManager extends MediaClipManager<VideoState> {
 
     const sinkId = this.getAudioOutput(this._state.audioOutput);
     assertVisualProperties(this.videoElement, currentState as VisualProperties, this._state.fit);
-    assertAudialProperties(this.videoElement, currentState as AudialProperties, sinkId);
+    assertAudialProperties(this.videoElement, currentState as AudialProperties, sinkId, this.volume);
     const nextSyncState = assertTemporalProperties(this.videoElement, currentState as TemporalProperties, this._state.keyframes, this.syncState);
     if (this.syncState.state !== 'seeking' && nextSyncState.state === 'seeking') {
       this.videoElement.addEventListener(
