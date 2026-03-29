@@ -6,7 +6,6 @@
     "typescript"
   ],
   "editor.formatOnSave": true,
-  "typescript.tsdk": "node_modules/typescript/lib",
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"
   },
@@ -14,5 +13,6 @@
     "clockworkdog",
     "fullscreen",
     "typedoc"
-  ]
+  ],
+  "js/ts.tsdk.path": "node_modules/typescript/lib"
 }
