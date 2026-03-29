@@ -1,8 +1,10 @@
 import { DATA_CLIP_ID, SurfaceManager } from '../../src/state-based/SurfaceManager';
 
+const constructAssetURL = (file: string) => `http://localhost:5173/__cypress/iframes/cypress/fixtures/${file}`;
+const getAudioOutput = () => '';
 describe('Updating surface state', () => {
   it('adds and removes a video clip', () => {
-    const manager = new SurfaceManager({});
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {});
     cy.mount(manager);
 
     cy.get('video')
@@ -11,7 +13,7 @@ describe('Updating surface state', () => {
         const now = Date.now();
         manager.setState({
           'clip-id': {
-            file: 'cypress/fixtures/2x2s@2560x1440.mp4',
+            file: '2x2s@2560x1440.mp4',
             type: 'video',
             audioOutput: '',
             fit: 'cover',
@@ -35,14 +37,14 @@ describe('Updating surface state', () => {
 
   it('adds multiple media', () => {
     const now = Date.now();
-    const manager = new SurfaceManager({});
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {});
     cy.mount(manager);
     expect(manager.element.children.length).to.eq(0);
 
     manager.setState({
       'image-background': {
         type: 'image',
-        file: 'cypress/fixtures/indianred@2560x1440.png',
+        file: 'indianred@2560x1440.png',
         fit: 'cover',
         keyframes: [[now, {}]],
       },
@@ -50,7 +52,7 @@ describe('Updating surface state', () => {
         type: 'video',
         fit: 'contain',
         audioOutput: '',
-        file: 'cypress/fixtures/yuv444p~5x2s@2560x1440.mp4',
+        file: 'yuv444p~5x2s@2560x1440.mp4',
         keyframes: [[now, {}]],
       },
     });

@@ -1,8 +1,6 @@
 import { MediaClipState, MediaSurfaceState } from '../types/MediaSchema';
-import { ClipManager } from './ClipManager';
-import { ImageManager } from './ImageManager';
-import { VideoManager } from './VideoManager';
-import { AudioManager } from './AudioManager';
+import { AudioManager, ImageManager, MediaClipManager, VideoManager } from './MediaClipManager';
+import { MediaPreloader } from './MediaPreloader';
 
 export const DATA_CLIP_ID = 'data-clip-id';
 type TaggedElement = HTMLElement & { [DATA_CLIP_ID]?: string };
@@ -18,15 +16,35 @@ export class SurfaceManager {
     this._state = newState;
     this.update();
   }
+
+  private _volume = 1;
+  public get volume() {
+    return this._volume;
+  }
+  public set volume(newVolume: number) {
+    this._volume = newVolume;
+    Object.values(this.resources).forEach(({ manager }) => {
+      if (manager instanceof AudioManager || manager instanceof VideoManager) {
+        manager.volume = newVolume;
+      }
+    });
+  }
+
   private _element: HTMLDivElement;
   public get element() {
     return this._element;
   }
 
-  private resources: { [clipId: string]: { element: HTMLElement; manager?: ClipManager<MediaClipState> } } = {};
+  private resources: { [clipId: string]: { element: HTMLElement; manager?: MediaClipManager<MediaClipState> } } = {};
 
-  constructor(testState?: MediaSurfaceState) {
+  constructor(
+    private constructAssetUrl: (file: string) => string,
+    private getAudioOutput: (outputLabel: string) => string,
+    testState?: MediaSurfaceState,
+    private mediaPreloader: MediaPreloader = new MediaPreloader(constructAssetUrl),
+  ) {
     this._element = document.createElement('div');
+    this._element.className = 'surface-manager';
     this._element.style.width = '100%';
     this._element.style.height = '100%';
 
@@ -73,14 +91,44 @@ export class SurfaceManager {
         if (!resource.manager) {
           switch (clip.type) {
             case 'image':
-              resource.manager = new ImageManager(this._element, resource.element, clip);
+              resource.manager = new ImageManager(
+                this._element,
+                resource.element,
+                clip,
+                this.constructAssetUrl,
+                this.getAudioOutput,
+                this.mediaPreloader,
+              );
+              resource.manager.loop();
               break;
-            case 'audio':
-              resource.manager = new AudioManager(this._element, resource.element, clip);
+            case 'audio': {
+              const audioManager = new AudioManager(
+                this._element,
+                resource.element,
+                clip,
+                this.constructAssetUrl,
+                this.getAudioOutput,
+                this.mediaPreloader,
+              );
+              resource.manager = audioManager;
+              audioManager.volume = this._volume;
+              audioManager.loop();
               break;
-            case 'video':
-              resource.manager = new VideoManager(this._element, resource.element, clip);
+            }
+            case 'video': {
+              const videoManager = new VideoManager(
+                this._element,
+                resource.element,
+                clip,
+                this.constructAssetUrl,
+                this.getAudioOutput,
+                this.mediaPreloader,
+              );
+              resource.manager = videoManager;
+              videoManager.volume = this._volume;
+              videoManager.loop();
               break;
+            }
           }
         } else {
           resource.manager.setState(clip);

@@ -1,11 +1,13 @@
 import { SurfaceManager } from '../../src/state-based/SurfaceManager';
 
+const constructAssetURL = (file: string) => `http://localhost:5173/__cypress/iframes/cypress/fixtures/${file}`;
+const getAudioOutput = () => '';
 describe('Video stability tests', () => {
   it('can wait without playing', () => {
     const now = Date.now();
-    const manager = new SurfaceManager({
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
-        file: 'cypress/fixtures/yuv444p~5x2s@2560x1440.mp4',
+        file: 'yuv444p~5x2s@2560x1440.mp4',
         type: 'video',
         audioOutput: '',
         fit: 'cover',
@@ -23,9 +25,9 @@ describe('Video stability tests', () => {
 
   it('recovers from a pause', () => {
     const now = Date.now();
-    const manager = new SurfaceManager({
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
-        file: 'cypress/fixtures/yuv444p~5x2s@2560x1440.mp4',
+        file: 'yuv444p~5x2s@2560x1440.mp4',
         type: 'video',
         audioOutput: '',
         fit: 'cover',
@@ -48,9 +50,9 @@ describe('Video stability tests', () => {
 
   it('recovers from a play', () => {
     const now = Date.now();
-    const manager = new SurfaceManager({
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
-        file: 'cypress/fixtures/yuv444p~5x2s@2560x1440.mp4',
+        file: 'yuv444p~5x2s@2560x1440.mp4',
         type: 'video',
         audioOutput: '',
         fit: 'cover',
@@ -80,9 +82,9 @@ describe('Video stability tests', () => {
 
   it('recovers from a seek', () => {
     const now = Date.now();
-    const manager = new SurfaceManager({
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
-        file: 'cypress/fixtures/yuv444p~5x2s@2560x1440.mp4',
+        file: 'yuv444p~5x2s@2560x1440.mp4',
         type: 'video',
         audioOutput: '',
         fit: 'cover',
@@ -104,10 +106,10 @@ describe('Video stability tests', () => {
     const INITIAL_VOLUME = 0;
     const CHANGED_VOLUME = 1;
     const now = Date.now();
-    const manager = new SurfaceManager({
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
         type: 'video',
-        file: 'cypress/fixtures/yuv444p~5x2s@2560x1440.mp4',
+        file: 'yuv444p~5x2s@2560x1440.mp4',
         audioOutput: '',
         fit: 'cover',
         keyframes: [[now, { set: { t: 0, rate: 1, volume: INITIAL_VOLUME } }]],
@@ -125,10 +127,10 @@ describe('Video stability tests', () => {
 
   it('recovers from video element deletion', () => {
     const now = Date.now();
-    const manager = new SurfaceManager({
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
         type: 'video',
-        file: 'cypress/fixtures/yuv444p~5x2s@2560x1440.mp4',
+        file: 'yuv444p~5x2s@2560x1440.mp4',
         audioOutput: '',
         fit: 'cover',
         keyframes: [[now, { set: { t: 0, rate: 1 } }]],

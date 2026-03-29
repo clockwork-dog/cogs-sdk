@@ -1,11 +1,13 @@
 import { SurfaceManager } from '../../src/state-based/SurfaceManager';
 
+const constructAssetURL = (file: string) => `http://localhost:5173/__cypress/iframes/cypress/fixtures/${file}`;
+const getAudioOutput = () => '';
 describe('Audio stability tests', () => {
   it('can wait without playing', () => {
     const now = Date.now();
-    const manager = new SurfaceManager({
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
-        file: 'cypress/fixtures/sinwave@440hz.wav',
+        file: 'sinwave@440hz.wav',
         type: 'audio',
         audioOutput: '',
         keyframes: [
@@ -22,9 +24,9 @@ describe('Audio stability tests', () => {
 
   it('recovers from a pause', () => {
     const now = Date.now();
-    const manager = new SurfaceManager({
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
-        file: 'cypress/fixtures/metronome@120bpm.wav',
+        file: 'metronome@120bpm.wav',
         type: 'audio',
         audioOutput: '',
         keyframes: [[now, { set: { t: 0, rate: 1 } }]],
@@ -46,9 +48,9 @@ describe('Audio stability tests', () => {
 
   it('recovers from a play', () => {
     const now = Date.now();
-    const manager = new SurfaceManager({
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
-        file: 'cypress/fixtures/metronome@120bpm.wav',
+        file: 'metronome@120bpm.wav',
         type: 'audio',
         audioOutput: '',
         keyframes: [[now, { set: { t: 1_500, rate: 0 } }]],
@@ -77,9 +79,9 @@ describe('Audio stability tests', () => {
 
   it('recovers from a seek', () => {
     const now = Date.now();
-    const manager = new SurfaceManager({
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
-        file: 'cypress/fixtures/metronome@120bpm.wav',
+        file: 'metronome@120bpm.wav',
         type: 'audio',
         audioOutput: '',
         keyframes: [[now, { set: { t: 0, rate: 1 } }]],
@@ -100,10 +102,10 @@ describe('Audio stability tests', () => {
     const INITIAL_VOLUME = 0;
     const CHANGED_VOLUME = 1;
     const now = Date.now();
-    const manager = new SurfaceManager({
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
         type: 'audio',
-        file: 'cypress/fixtures/sinwave@440hz.wav',
+        file: 'sinwave@440hz.wav',
         audioOutput: '',
         keyframes: [[now, { set: { t: 0, rate: 1, volume: INITIAL_VOLUME } }]],
       },
@@ -120,10 +122,10 @@ describe('Audio stability tests', () => {
 
   it('recovers from audio element deletion', () => {
     const now = Date.now();
-    const manager = new SurfaceManager({
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
         type: 'audio',
-        file: 'cypress/fixtures/sinwave@440hz.wav',
+        file: 'sinwave@440hz.wav',
         audioOutput: '',
         keyframes: [[now, { set: { t: 0, rate: 1 } }]],
       },

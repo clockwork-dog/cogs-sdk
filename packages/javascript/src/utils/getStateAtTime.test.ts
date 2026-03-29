@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { getPropertiesAtTime, getTemporalPropertiesAtTime } from './getStateAtTime';
+import { getPropertiesAtTime, getStateAtTime, getTemporalPropertiesAtTime } from './getStateAtTime';
+import { AudioState, ImageState } from '../types/MediaSchema';
 
 describe('getPropertiesAtTime()', () => {
   it('gives back initial values', () => {
@@ -123,5 +124,40 @@ describe('getTemporalPropertiesAtTime()', () => {
     expect(getTemporalPropertiesAtTime(playPausePlayPausePlay, 350)).toEqual({ t: 200, rate: 0 });
     expect(getTemporalPropertiesAtTime(playPausePlayPausePlay, 400)).toEqual({ t: 200, rate: 1 });
     expect(getTemporalPropertiesAtTime(playPausePlayPausePlay, 450)).toEqual({ t: 250, rate: 1 });
+  });
+});
+
+describe('getStateAtTime()', () => {
+  it('removes an image', () => {
+    const clip: ImageState = {
+      type: 'image',
+      file: 'img.png',
+      fit: 'contain',
+      keyframes: [
+        [0, { set: { opacity: 1 } }],
+        [100, null],
+      ],
+    };
+    expect(getStateAtTime(clip, 0)).toMatchObject({ opacity: 1 });
+    expect(getStateAtTime(clip, 99)).toMatchObject({ opacity: 1 });
+    expect(getStateAtTime(clip, 100)).toBeUndefined();
+    expect(getStateAtTime(clip, 101)).toBeUndefined();
+  });
+  it('fades out audio', () => {
+    const clip: AudioState = {
+      type: 'audio',
+      audioOutput: '',
+      file: 'img.png',
+      keyframes: [
+        [0, { set: { t: 0, rate: 1, volume: 1 } }],
+        [100, { lerp: { volume: 0 } }],
+        [100, null],
+      ],
+    };
+    expect(getStateAtTime(clip, 0)).toMatchObject({ t: 0, rate: 1, volume: 1 });
+    expect(getStateAtTime(clip, 50)).toMatchObject({ t: 50, rate: 1, volume: 0.5 });
+    expect(getStateAtTime(clip, 75)).toMatchObject({ t: 75, rate: 1, volume: 0.25 });
+    expect(getStateAtTime(clip, 99)).toMatchObject({ t: 99, rate: 1 });
+    expect(getStateAtTime(clip, 100)).toBeUndefined();
   });
 });
