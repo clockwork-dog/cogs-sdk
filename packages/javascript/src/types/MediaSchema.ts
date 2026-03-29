@@ -192,6 +192,7 @@ export type AudioState = {
   type: 'audio';
   file: string;
   audioOutput: string;
+  disablePlaybackRateAdjustment?: boolean;
   keyframes: [InitialAudioKeyframe, ...Array<AudioKeyframe | NullKeyframe>];
 };
 export type VideoState = {
@@ -199,6 +200,7 @@ export type VideoState = {
   file: string;
   fit: 'cover' | 'contain' | 'none';
   audioOutput: string;
+  disablePlaybackRateAdjustment?: boolean;
   keyframes: [InitialVideoKeyframe, ...Array<VideoKeyframe | NullKeyframe>];
 };
 
