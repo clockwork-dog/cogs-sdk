@@ -172,6 +172,7 @@ export function assertAudialProperties(mediaElement: HTMLMediaElement, propertie
 }
 
 const OUTER_TARGET_SYNC_THRESHOLD_MS = 50; // When outside of this range we attempt to sync playback
+const OUTER_TARGET_SYNC_NO_PLAYBACK_RATE_ADJUSTMENT_THRESHOLD_MS = 500; // When outside of this range we attempt to sync playback (when playback rate adjustment not allowed)
 const INNER_TARGET_SYNC_THRESHOLD_MS = 5; // When attempting to sync playback, we aim for this accuracy
 const MAX_SYNC_THRESHOLD_MS = 1_000; // If we are further than this, we will seek instead
 const SEEK_LOOKAHEAD_MS = 5; // If it takes time to seek, we should seek ahead a little
@@ -196,6 +197,7 @@ export function assertTemporalProperties(
   properties: TemporalProperties,
   keyframes: VideoState['keyframes'],
   syncState: TemporalSyncState,
+  disablePlaybackRateAdjustment?: boolean,
 ): TemporalSyncState {
   if (mediaElement.paused && properties.rate > 0) {
     mediaElement.play().catch(() => {
@@ -232,6 +234,20 @@ export function assertTemporalProperties(
       return { state: 'idle' };
 
     case syncState.state === 'idle' &&
+      properties.rate > 0 &&
+      disablePlaybackRateAdjustment === true &&
+      deltaTimeAbs <= OUTER_TARGET_SYNC_NO_PLAYBACK_RATE_ADJUSTMENT_THRESHOLD_MS:
+      // If we aren't able to adjust playback rate, we are more forgiving
+      // in our "synced" check to avoid the clip being seeked forward
+      // in normal playback where we expect to be a little out of sync
+      // due to network and startup latency
+      if (mediaElement.playbackRate !== properties.rate) {
+        mediaElement.playbackRate = properties.rate;
+      }
+      return { state: 'idle' };
+
+    case syncState.state === 'idle' &&
+      disablePlaybackRateAdjustment !== true && // Never adjust playback rate if disabled for this clip
       properties.rate > 0 &&
       deltaTimeAbs > OUTER_TARGET_SYNC_THRESHOLD_MS &&
       deltaTimeAbs <= MAX_SYNC_THRESHOLD_MS: {
@@ -332,7 +348,13 @@ export class AudioManager extends MediaClipManager<AudioState> {
 
     const sinkId = this.getAudioOutput(this._state.audioOutput);
     assertAudialProperties(this.audioElement, currentState as AudialProperties, sinkId, this.volume);
-    const nextSyncState = assertTemporalProperties(this.audioElement, currentState as TemporalProperties, this._state.keyframes, this.syncState);
+    const nextSyncState = assertTemporalProperties(
+      this.audioElement,
+      currentState as TemporalProperties,
+      this._state.keyframes,
+      this.syncState,
+      this._state.disablePlaybackRateAdjustment,
+    );
     if (this.syncState.state !== 'seeking' && nextSyncState.state === 'seeking') {
       this.audioElement.addEventListener(
         'seeked',
@@ -382,7 +404,13 @@ export class VideoManager extends MediaClipManager<VideoState> {
     const sinkId = this.getAudioOutput(this._state.audioOutput);
     assertVisualProperties(this.videoElement, currentState as VisualProperties, this._state.fit);
     assertAudialProperties(this.videoElement, currentState as AudialProperties, sinkId, this.volume);
-    const nextSyncState = assertTemporalProperties(this.videoElement, currentState as TemporalProperties, this._state.keyframes, this.syncState);
+    const nextSyncState = assertTemporalProperties(
+      this.videoElement,
+      currentState as TemporalProperties,
+      this._state.keyframes,
+      this.syncState,
+      this._state.disablePlaybackRateAdjustment,
+    );
     if (this.syncState.state !== 'seeking' && nextSyncState.state === 'seeking') {
       this.videoElement.addEventListener(
         'seeked',
