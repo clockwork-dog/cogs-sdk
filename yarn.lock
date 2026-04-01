@@ -77,14 +77,12 @@ __metadata:
     "@clockworkdog/timesync": "workspace:^"
     "@cypress/mount-utils": "npm:^4.1.2"
     "@eslint/js": "npm:^9.17.0"
-    "@types/howler": "npm:2.2.12"
     "@types/jsdom": "npm:^27"
     "@types/node": "npm:^22.10.2"
     cypress: "npm:^14.5.4"
     eslint: "npm:^9.17.0"
     eslint-config-prettier: "npm:^9.1.0"
     eslint-plugin-prettier: "npm:^5.2.1"
-    howler: "clockwork-dog/howler.js#fix-looping-clips"
     jsdom: "npm:^27.1.0"
     prettier: "npm:^3.4.2"
     react: "npm:^19.1.1"
@@ -1203,13 +1201,6 @@ __metadata:
   dependencies:
     "@types/unist": "npm:*"
   checksum: 10c0/3249781a511b38f1d330fd1e3344eed3c4e7ea8eff82e835d35da78e637480d36fad37a78be5a7aed8465d237ad0446abc1150859d0fde395354ea634decf9f7
-  languageName: node
-  linkType: hard
-
-"@types/howler@npm:2.2.12":
-  version: 2.2.12
-  resolution: "@types/howler@npm:2.2.12"
-  checksum: 10c0/fb30e8c137ec03aa6a1e739be11b9d5b973f5f19d9f8a92eb11cff466170c9b5a314d73b8b34bb9a435e309ae880ba4847dee1029ec37d08c3f64b2219add462
   languageName: node
   linkType: hard
 
@@ -3757,13 +3748,6 @@ __metadata:
   dependencies:
     function-bind: "npm:^1.1.2"
   checksum: 10c0/3769d434703b8ac66b209a4cca0737519925bbdb61dd887f93a16372b14694c63ff4e797686d87c90f08168e81082248b9b028bad60d4da9e0d1148766f56eb9
-  languageName: node
-  linkType: hard
-
-"howler@clockwork-dog/howler.js#fix-looping-clips":
-  version: 2.2.1
-  resolution: "howler@https://github.com/clockwork-dog/howler.js.git#commit=63acd807dfc232129bfaa2da57af7fb2d33d57a3"
-  checksum: 10c0/0adf04f9a401b96ccf78593be2d9c0604fd2c9922f80337f38861cb4a19f9b98c594999f661ae469e0a34fac7fabb2feef5060cee82cc02d74fa2a5e7f12ea1b
   languageName: node
   linkType: hard
 

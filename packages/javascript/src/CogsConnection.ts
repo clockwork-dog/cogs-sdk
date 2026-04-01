@@ -2,8 +2,6 @@ import ShowPhase from './types/ShowPhase';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import CogsClientMessage, { MediaClientConfig } from './types/CogsClientMessage';
 import { COGS_SERVER_PORT, assetUrl } from './utils/urls';
-import MediaClipStateMessage from './types/MediaClipStateMessage';
-import AllMediaClipStatesMessage from './types/AllMediaClipStatesMessage';
 import { CogsPluginManifest, PluginManifestEventJson } from './types/CogsPluginManifest';
 import * as ManifestTypes from './types/ManifestTypes';
 import { DeepReadonly } from './types/utils';
@@ -238,18 +236,6 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
 
   public getAudioSinkId(audioOutput: string): string | undefined {
     return audioOutput ? this.audioOutputs?.find(({ label }) => label === audioOutput)?.deviceId : '';
-  }
-
-  sendInitialMediaClipStates(allMediaClipStates: AllMediaClipStatesMessage): void {
-    if (this.isConnected) {
-      this.websocket.send(JSON.stringify({ allMediaClipStates }));
-    }
-  }
-
-  sendMediaClipState(mediaClipState: MediaClipStateMessage): void {
-    if (this.isConnected) {
-      this.websocket.send(JSON.stringify({ mediaClipState }));
-    }
   }
 
   sendAudioOutputs(audioOutputs: MediaDeviceInfo[]): void {
