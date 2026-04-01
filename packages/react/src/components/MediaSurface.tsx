@@ -17,7 +17,7 @@ export function MediaSurface({ cogsConnection }: MediaSurfaceProps) {
     async function updateAudioOutputs() {
       const audioOutputs: Record<string, string> = {};
 
-      if (!navigator.mediaDevices) {
+      if (!navigator?.mediaDevices) {
         // `navigator.mediaDevices` is undefined on COGS AV <= 4.5 because of secure origin permissions
         return;
       }
@@ -30,8 +30,8 @@ export function MediaSurface({ cogsConnection }: MediaSurfaceProps) {
     }
 
     updateAudioOutputs();
-    navigator.mediaDevices.addEventListener('devicechange', updateAudioOutputs);
-    return () => navigator.mediaDevices.removeEventListener('devicechange', updateAudioOutputs);
+    navigator?.mediaDevices?.addEventListener('devicechange', updateAudioOutputs);
+    return () => navigator?.mediaDevices?.removeEventListener('devicechange', updateAudioOutputs);
   }, []);
 
   // Create and attach new surface manager
