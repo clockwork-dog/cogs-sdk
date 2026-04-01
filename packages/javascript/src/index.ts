@@ -1,15 +1,10 @@
 export { default as CogsConnection } from './CogsConnection';
 export * from './CogsConnection';
 export type { default as CogsClientMessage, MediaClientConfig } from './types/CogsClientMessage';
-export type { default as MediaClipStateMessage } from './types/MediaClipStateMessage';
 export type { default as ShowPhase } from './types/ShowPhase';
-export type { default as MediaObjectFit } from './types/MediaObjectFit';
 export * as MediaSchema from './types/MediaSchema';
-export { default as CogsAudioPlayer } from './AudioPlayer';
-export { default as CogsVideoPlayer } from './VideoPlayer';
 export { SurfaceManager } from './state-based/SurfaceManager';
 export { MediaPreloader } from './state-based/MediaPreloader';
-export * from './types/AudioState';
 export { assetUrl, preloadUrl } from './utils/urls';
 export { getStateAtTime } from './utils/getStateAtTime';
 export * from './types/CogsPluginManifest';

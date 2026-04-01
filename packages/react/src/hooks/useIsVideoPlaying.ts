@@ -1,19 +1,19 @@
 import { useEffect, useState } from 'react';
-import { useCogsConnection } from '../providers/CogsConnectionProvider';
 import { CogsMessageEvent, getStateAtTime } from '@clockworkdog/cogs-client';
+import { useCogsConnection } from '..';
 
-export function useIsAudioPlaying(): boolean {
-  const [isAudioPlaying, setAudioPlaying] = useState(false);
+export function useIsVideoPlaying(): boolean {
+  const [isVideoPlaying, setVideoPlaying] = useState(false);
   const cogsConnection = useCogsConnection();
 
   // Listen to messages
   useEffect(() => {
     function handleMessages({ message }: CogsMessageEvent) {
       if (message.type === 'media_state' && message.media_strategy === 'state') {
-        const audioPlaybackRates = Object.values(message.state)
-          .filter((clip) => clip.type === 'audio')
+        const videoPlaybackRates = Object.values(message.state)
+          .filter((clip) => clip.type === 'video')
           .map((clip) => getStateAtTime(clip, Date.now())?.rate);
-        setAudioPlaying(audioPlaybackRates.some((rate) => rate !== 0));
+        setVideoPlaying(videoPlaybackRates.some((rate) => rate !== 0));
       }
     }
 
@@ -21,5 +21,5 @@ export function useIsAudioPlaying(): boolean {
     return () => cogsConnection.removeEventListener('message', handleMessages);
   }, [cogsConnection]);
 
-  return isAudioPlaying;
+  return isVideoPlaying;
 }
