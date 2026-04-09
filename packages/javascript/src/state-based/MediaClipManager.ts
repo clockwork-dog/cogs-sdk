@@ -116,6 +116,12 @@ export function assertElement(
       if (!element) {
         element = preloader.getElement(clip.file, clip.type);
       }
+
+      // Required for iOS
+      if (element instanceof HTMLVideoElement && !element.playsInline) {
+        element.playsInline = true;
+      }
+
       break;
     }
   }
