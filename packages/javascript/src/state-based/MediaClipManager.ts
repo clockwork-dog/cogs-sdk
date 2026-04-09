@@ -9,6 +9,7 @@ import {
   VisualProperties,
 } from '../types/MediaSchema';
 import { getStateAtTime } from '../utils/getStateAtTime';
+import { IS_IOS } from '../utils/device';
 import { MediaPreloader } from './MediaPreloader';
 
 const getPath = (url: string): string | undefined => {
@@ -115,6 +116,12 @@ export function assertElement(
       if (!element) {
         element = preloader.getElement(clip.file, clip.type);
       }
+
+      // Required for iOS
+      if (element instanceof HTMLVideoElement && !element.playsInline) {
+        element.playsInline = true;
+      }
+
       break;
     }
   }
@@ -156,17 +163,30 @@ export function assertVisualProperties(
  */
 export function assertAudialProperties(mediaElement: HTMLMediaElement, properties: AudialProperties, sinkId: string, surfaceVolume: number) {
   const clipVolume = properties.volume * surfaceVolume;
-  if (mediaElement.volume !== clipVolume) {
-    mediaElement.volume = clipVolume;
-  }
-  if (mediaElement.sinkId !== sinkId) {
-    try {
-      mediaElement.setSinkId(sinkId).catch(() => {
+  if (IS_IOS) {
+    // For iOS devices HTMLMediaElement.volume is readonly
+    // The best we can do is mute if the volume should be 0
+    if (clipVolume === 0 && !mediaElement.muted) {
+      mediaElement.muted = true;
+    } else if (clipVolume > 0 && mediaElement.muted) {
+      mediaElement.muted = false;
+    }
+  } else {
+    if (mediaElement.muted) {
+      mediaElement.muted = false;
+    }
+    if (mediaElement.volume !== clipVolume) {
+      mediaElement.volume = clipVolume;
+    }
+    if (mediaElement.sinkId !== sinkId) {
+      try {
+        mediaElement.setSinkId(sinkId).catch(() => {
+          /* Do nothing, will be tried in next loop */
+        });
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (_) {
         /* Do nothing, will be tried in next loop */
-      });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (_) {
-      /* Do nothing, will be tried in next loop */
+      }
     }
   }
 }
