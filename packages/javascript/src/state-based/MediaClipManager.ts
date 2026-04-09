@@ -199,6 +199,7 @@ const SEEK_LOOKAHEAD_MS = 5; // If it takes time to seek, we should seek ahead a
 const LOOPING_EPSILON_MS = 5;
 const PLAYBACK_ADJUSTMENT_SMOOTHING = 0.3;
 const MAX_PLAYBACK_RATE_ADJUSTMENT = 0.1;
+const NATURAL_PLAYBACK_RATE_AVOIDANCE = 0.01; // When we will perform playackRate adjustment, we avoid 1x playback rate to ensure we don't have crackling audio.
 function playbackSmoothing(deltaTime: number) {
   return Math.sign(deltaTime) * Math.pow(Math.abs(deltaTime) / MAX_SYNC_THRESHOLD_MS, PLAYBACK_ADJUSTMENT_SMOOTHING) * MAX_PLAYBACK_RATE_ADJUSTMENT;
 }
@@ -244,14 +245,19 @@ export function assertTemporalProperties(
   const deltaTimeAbs = Math.abs(deltaTime);
 
   switch (true) {
-    case syncState.state === 'idle' && properties.rate > 0 && deltaTimeAbs <= OUTER_TARGET_SYNC_THRESHOLD_MS:
+    case syncState.state === 'idle' && properties.rate > 0 && deltaTimeAbs <= OUTER_TARGET_SYNC_THRESHOLD_MS: {
       // We are on course:
       //   - The video is within accepted latency of the server time
       //   - The playback rate is aligned with the server rate
-      if (mediaElement.playbackRate !== properties.rate) {
-        mediaElement.playbackRate = properties.rate;
+      let playbackRate = properties.rate;
+      if (!disablePlaybackRateAdjustment && playbackRate === 1) {
+        playbackRate += NATURAL_PLAYBACK_RATE_AVOIDANCE;
+      }
+      if (mediaElement.playbackRate !== playbackRate) {
+        mediaElement.playbackRate = playbackRate;
       }
       return { state: 'idle' };
+    }
 
     case syncState.state === 'idle' &&
       properties.rate > 0 &&
@@ -285,8 +291,12 @@ export function assertTemporalProperties(
 
     case syncState.state === 'intercepting' && properties.rate > 0 && deltaTimeAbs <= INNER_TARGET_SYNC_THRESHOLD_MS: {
       // We have intercepted, we can now play normally
-      if (mediaElement.playbackRate !== properties.rate) {
-        mediaElement.playbackRate = properties.rate;
+      let playbackRate = properties.rate;
+      if (!disablePlaybackRateAdjustment && properties.rate === 1) {
+        playbackRate += NATURAL_PLAYBACK_RATE_AVOIDANCE;
+      }
+      if (mediaElement.playbackRate !== playbackRate) {
+        mediaElement.playbackRate = playbackRate;
       }
       return { state: 'idle' };
     }
