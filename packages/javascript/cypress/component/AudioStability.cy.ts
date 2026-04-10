@@ -18,7 +18,8 @@ describe('Audio stability tests', () => {
     });
     cy.mount(manager);
 
-    cy.get('audio').should('have.prop', 'paused', true);
+    cy.get('audio').should('have.prop', 'currentTime', 0);
+    cy.wait(500);
     cy.get('audio').should('have.prop', 'currentTime', 0);
   });
 
@@ -46,7 +47,7 @@ describe('Audio stability tests', () => {
     cy.get('audio').invoke('prop', 'currentTime').should('be.greaterThan', 1.5);
   });
 
-  it('recovers from a play', () => {
+  it('recovers from a playbackRate change', () => {
     const now = Date.now();
     const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
@@ -64,10 +65,9 @@ describe('Audio stability tests', () => {
       .should(($time) => expect(parseFloat($time)).to.be.closeTo(1.5, 0.1));
 
     cy.log('Interfere with audio element');
-    cy.get('audio').invoke('prop', 'paused').should('be.true');
+    cy.get('audio').invoke('prop', 'playbackRate').should('equal', 0);
     cy.get('audio').invoke('prop', 'playbackRate', 1);
     cy.get('audio').then(($audio) => $audio.get(0).play().catch(/* do nothing*/));
-    cy.get('audio').invoke('prop', 'paused').should('be.false');
 
     cy.wait(1000);
 
@@ -75,6 +75,7 @@ describe('Audio stability tests', () => {
     cy.get('audio')
       .invoke('prop', 'currentTime')
       .should(($time) => expect(parseFloat($time)).to.be.closeTo(1.5, 0.1));
+    cy.get('audio').invoke('prop', 'playbackRate').should('equal', 0);
   });
 
   it('recovers from a seek', () => {
