@@ -1,6 +1,28 @@
-import { defaultAudioOptions, defaultImageOptions, defaultVideoOptions, MediaClipState, TemporalProperties } from '../types/MediaSchema';
+import {
+  AudioState,
+  defaultAudioOptions,
+  defaultImageOptions,
+  defaultVideoOptions,
+  ImageState,
+  TemporalProperties,
+  VideoState,
+} from '../types/MediaSchema';
 
-export function getStateAtTime<State extends MediaClipState>(state: State, time: number): State['keyframes'][0][1]['set'] | undefined {
+export type MinimalClipState =
+  | {
+      type: 'image';
+      keyframes: ImageState['keyframes'];
+    }
+  | {
+      type: 'audio';
+      keyframes: AudioState['keyframes'];
+    }
+  | {
+      type: 'video';
+      keyframes: VideoState['keyframes'];
+    };
+
+export function getStateAtTime<State extends MinimalClipState>(state: State, time: number): State['keyframes'][0][1]['set'] | undefined {
   //If there are any null keyframes the clip has been terminated
   const nullKeyframes = state.keyframes.filter((kf) => kf[1] === null);
   if (nullKeyframes.some((kf) => kf[0] <= time)) {
