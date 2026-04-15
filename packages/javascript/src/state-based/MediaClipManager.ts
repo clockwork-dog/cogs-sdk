@@ -217,7 +217,7 @@ export function assertTemporalProperties(
   properties: TemporalProperties,
   keyframes: VideoState['keyframes'],
   syncState: TemporalSyncState,
-  disablePlaybackRateAdjustment?: boolean,
+  enablePlaybackRateAdjustment: boolean,
 ): TemporalSyncState {
   if (mediaElement.paused && properties.rate > 0) {
     mediaElement.play().catch(() => {
@@ -255,7 +255,7 @@ export function assertTemporalProperties(
 
     case syncState.state === 'idle' &&
       properties.rate > 0 &&
-      disablePlaybackRateAdjustment === true &&
+      !enablePlaybackRateAdjustment &&
       deltaTimeAbs <= OUTER_TARGET_SYNC_NO_PLAYBACK_RATE_ADJUSTMENT_THRESHOLD_MS:
       // If we aren't able to adjust playback rate, we are more forgiving
       // in our "synced" check to avoid the clip being seeked forward
@@ -267,7 +267,7 @@ export function assertTemporalProperties(
       return { state: 'idle' };
 
     case syncState.state === 'idle' &&
-      disablePlaybackRateAdjustment !== true && // Never adjust playback rate if disabled for this clip
+      enablePlaybackRateAdjustment && // Never adjust playback rate if disabled for this clip
       properties.rate > 0 &&
       deltaTimeAbs > OUTER_TARGET_SYNC_THRESHOLD_MS &&
       deltaTimeAbs <= MAX_SYNC_THRESHOLD_MS: {
@@ -373,7 +373,7 @@ export class AudioManager extends MediaClipManager<AudioState> {
       currentState as TemporalProperties,
       this._state.keyframes,
       this.syncState,
-      this._state.disablePlaybackRateAdjustment,
+      this._state.enablePlaybackRateAdjustment,
     );
     if (this.syncState.state !== 'seeking' && nextSyncState.state === 'seeking') {
       this.audioElement.addEventListener(
@@ -429,7 +429,7 @@ export class VideoManager extends MediaClipManager<VideoState> {
       currentState as TemporalProperties,
       this._state.keyframes,
       this.syncState,
-      this._state.disablePlaybackRateAdjustment,
+      this._state.enablePlaybackRateAdjustment,
     );
     if (this.syncState.state !== 'seeking' && nextSyncState.state === 'seeking') {
       this.videoElement.addEventListener(
