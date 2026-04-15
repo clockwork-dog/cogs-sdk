@@ -10,6 +10,7 @@ import {
 } from '../types/MediaSchema';
 import { getStateAtTime } from '../utils/getStateAtTime';
 import { IS_IOS } from '../utils/device';
+import { modulo, moduloDiff } from '../utils/modulo';
 import { MediaPreloader } from './MediaPreloader';
 
 const getPath = (url: string): string | undefined => {
@@ -252,12 +253,13 @@ export function assertTemporalProperties(
 ): TemporalSyncState {
   // At the end of the media, is it set back to the start?
   // Sounds like looping to me!
+  let isLooping = false;
   if (mediaElement.duration) {
     const nextTemporalKeyframe = keyframes.filter(([t, kf]) => t > properties.t && (kf?.set?.t !== undefined || kf?.set?.rate !== undefined))[0];
     if (nextTemporalKeyframe?.[1]?.set?.t === 0) {
       const timeRemaining = (mediaElement.duration - properties.t) / properties.rate;
       const timeUntilKeyframe = nextTemporalKeyframe[0] - properties.t;
-      const isLooping = Math.abs(timeRemaining - timeUntilKeyframe) <= LOOPING_EPSILON_MS;
+      isLooping = Math.abs(timeRemaining - timeUntilKeyframe) <= LOOPING_EPSILON_MS;
       if (mediaElement.loop !== isLooping) {
         mediaElement.loop = isLooping;
       }
@@ -265,7 +267,10 @@ export function assertTemporalProperties(
   }
 
   const currentTime = mediaElement.currentTime * 1000;
-  const deltaTime = currentTime - properties.t;
+  const deltaTime =
+    isLooping && mediaElement.duration !== undefined
+      ? moduloDiff(currentTime, properties.t, mediaElement.duration * 1000)
+      : currentTime - properties.t;
   const deltaTimeAbs = Math.abs(deltaTime);
 
   switch (true) {
@@ -276,9 +281,13 @@ export function assertTemporalProperties(
      * We'll try to press play once and leave it to continue.
      */
     case disablePlaybackRateAdjustment && syncState.state === 'idle' && properties.rate > 0 && deltaTimeAbs > NO_SYNC_SEEK_AHEAD_OUTER_THRESHOLD_MS: {
+      const target = (properties.t + properties.rate * NO_SYNC_SEEK_LOOKAHEAD_MS) / 1000;
+      if (mediaElement.duration !== undefined && target > mediaElement.duration && !isLooping) {
+        // We're not looping, and this is past the end of the video
+        return { state: 'idle' };
+      }
       assertPlaybackRate(mediaElement, 0);
-      const target = properties.t + properties.rate * NO_SYNC_SEEK_LOOKAHEAD_MS;
-      mediaElement.currentTime = target / 1000;
+      mediaElement.currentTime = isLooping ? modulo(target, mediaElement.duration * 1000) : target;
       return { state: 'seeking-ahead' };
     }
     case syncState.state === 'seeking-ahead' && mediaElement.seeking === true:
@@ -289,11 +298,16 @@ export function assertTemporalProperties(
       return { state: 'seeked-ahead' };
     }
     case syncState.state === 'seeked-ahead' && deltaTime < -NO_SYNC_SEEK_AHEAD_INNER_THRESHOLD_MS: {
+      assertPlaybackRate(mediaElement, properties.rate);
       console.warn('Failed to seek ahead in time');
       return { state: 'idle' };
     }
     case syncState.state === 'seeked-ahead' && deltaTimeAbs <= NO_SYNC_SEEK_AHEAD_INNER_THRESHOLD_MS: {
       assertPlaybackRate(mediaElement, properties.rate);
+      return { state: 'idle' };
+    }
+    case syncState.state === 'seeked-ahead' && deltaTimeAbs > NO_SYNC_SEEK_AHEAD_OUTER_THRESHOLD_MS * 1.5: {
+      console.warn('Failed to seek ahead');
       return { state: 'idle' };
     }
     case syncState.state === 'seeked-ahead':
@@ -322,6 +336,7 @@ export function assertTemporalProperties(
     }
     // Intercept went too far
     case syncState.state === 'intercepting' && Math.sign(deltaTime) === Math.sign(mediaElement.playbackRate - properties.rate): {
+      assertPlaybackRate(mediaElement, properties.rate);
       return { state: 'idle' };
     }
     // We're still on course
@@ -329,6 +344,7 @@ export function assertTemporalProperties(
       return { state: 'intercepting' };
     // We're way off track
     case syncState.state === 'intercepting':
+      assertPlaybackRate(mediaElement, properties.rate);
       return { state: 'idle' };
 
     /**
@@ -337,8 +353,8 @@ export function assertTemporalProperties(
      * We address larger deviations with a seek, hoping to land close enough so we can finely adjust with playbackRate.
      */
     case !disablePlaybackRateAdjustment && syncState.state === 'idle' && deltaTimeAbs > SYNC_MAX_THRESHOLD_MS: {
-      const seekTarget = properties.t + properties.rate * SYNC_SEEK_LOOKAHEAD_MS;
-      mediaElement.currentTime = seekTarget / 1000;
+      const seekTarget = (properties.t + properties.rate * SYNC_SEEK_LOOKAHEAD_MS) / 1000;
+      mediaElement.currentTime = isLooping ? modulo(seekTarget, mediaElement.duration * 1000) : seekTarget;
       assertPlaybackRate(mediaElement, properties.rate);
       return { state: 'seeking' };
     }
