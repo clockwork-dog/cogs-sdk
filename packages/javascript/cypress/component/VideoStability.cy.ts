@@ -11,6 +11,7 @@ describe('Video stability tests', () => {
         type: 'video',
         audioOutput: '',
         fit: 'cover',
+        enablePlaybackRateAdjustment: true,
         keyframes: [
           [now, { set: { t: 0, rate: 0 } }], // paused at start
           [now + 60_000, { set: { rate: 1 } }], // play in 1 minute
@@ -32,6 +33,7 @@ describe('Video stability tests', () => {
         type: 'video',
         audioOutput: '',
         fit: 'cover',
+        enablePlaybackRateAdjustment: true,
         keyframes: [[now, { set: { t: 0, rate: 1 } }]],
       },
     });
@@ -57,6 +59,7 @@ describe('Video stability tests', () => {
         type: 'video',
         audioOutput: '',
         fit: 'cover',
+        enablePlaybackRateAdjustment: true,
         keyframes: [[now, { set: { t: 1_500, rate: 0 } }]],
       },
     });
@@ -89,6 +92,7 @@ describe('Video stability tests', () => {
         type: 'video',
         audioOutput: '',
         fit: 'cover',
+        enablePlaybackRateAdjustment: true,
         keyframes: [[now, { set: { t: 0, rate: 1 } }]],
       },
     });
@@ -113,6 +117,7 @@ describe('Video stability tests', () => {
         file: 'yuv444p~5x2s@2560x1440.mp4',
         audioOutput: '',
         fit: 'cover',
+        enablePlaybackRateAdjustment: true,
         keyframes: [[now, { set: { t: 0, rate: 1, volume: INITIAL_VOLUME } }]],
       },
     });
@@ -134,6 +139,7 @@ describe('Video stability tests', () => {
         file: 'yuv444p~5x2s@2560x1440.mp4',
         audioOutput: '',
         fit: 'cover',
+        enablePlaybackRateAdjustment: true,
         keyframes: [[now, { set: { t: 0, rate: 1 } }]],
       },
     });
