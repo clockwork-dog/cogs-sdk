@@ -9,7 +9,7 @@ import {
   VisualProperties,
 } from '../types/MediaSchema';
 import { getStateAtTime } from '../utils/getStateAtTime';
-import { IS_IOS } from '../utils/device';
+import { IS_IOS, IS_WEBKIT } from '../utils/device';
 import { modulo, moduloDiff } from '../utils/modulo';
 import { MediaPreloader } from './MediaPreloader';
 
@@ -251,6 +251,10 @@ export function assertTemporalProperties(
   syncState: TemporalSyncState,
   enablePlaybackRateAdjustment: boolean,
 ): TemporalSyncState {
+  // On Webkit (using the simulator on safari and COGS mobile app on iOS) changes to currentTime and playbackRate are much less responsive.
+  // We make sure we only do lower frequency updates, and don't change playbackRate.
+  const playbackRateSync = enablePlaybackRateAdjustment && !IS_WEBKIT;
+
   // At the end of the media, is it set back to the start?
   // Sounds like looping to me!
   let isLooping = false;
@@ -280,7 +284,7 @@ export function assertTemporalProperties(
      * We'll make sure everything is buffered and ready, then wait until we're on time.
      * We'll try to press play once and leave it to continue.
      */
-    case !enablePlaybackRateAdjustment && syncState.state === 'idle' && properties.rate > 0 && deltaTimeAbs > NO_SYNC_SEEK_AHEAD_OUTER_THRESHOLD_MS: {
+    case !playbackRateSync && syncState.state === 'idle' && properties.rate > 0 && deltaTimeAbs > NO_SYNC_SEEK_AHEAD_OUTER_THRESHOLD_MS: {
       const target = (properties.t + properties.rate * NO_SYNC_SEEK_LOOKAHEAD_MS) / 1000;
       if (mediaElement.duration !== undefined && target > mediaElement.duration && !isLooping) {
         // We're not looping, and this is past the end of the video
@@ -307,6 +311,7 @@ export function assertTemporalProperties(
       return { state: 'idle' };
     }
     case syncState.state === 'seeked-ahead' && deltaTimeAbs > NO_SYNC_SEEK_AHEAD_OUTER_THRESHOLD_MS * 1.5: {
+      // This is an escape mechanism for this behavior.  This may happen if the state changes after we've seeked ahead.
       console.warn('Failed to seek ahead');
       return { state: 'idle' };
     }
@@ -319,7 +324,7 @@ export function assertTemporalProperties(
      * We address larger deviations with a seek, hoping to land close enough so we can finely adjust with playbackRate.
      */
     // Start intercept
-    case enablePlaybackRateAdjustment &&
+    case playbackRateSync &&
       syncState.state === 'idle' &&
       properties.rate > 0 &&
       deltaTimeAbs > SYNC_OUTER_TARGET_THRESHOLD_MS &&
@@ -352,7 +357,7 @@ export function assertTemporalProperties(
      * When playbackRate adjustment is enabled we will address small deviations in time by ramping speed up and down.
      * We address larger deviations with a seek, hoping to land close enough so we can finely adjust with playbackRate.
      */
-    case enablePlaybackRateAdjustment && syncState.state === 'idle' && deltaTimeAbs > SYNC_MAX_THRESHOLD_MS: {
+    case playbackRateSync && syncState.state === 'idle' && deltaTimeAbs > SYNC_MAX_THRESHOLD_MS: {
       const seekTarget = (properties.t + properties.rate * SYNC_SEEK_LOOKAHEAD_MS) / 1000;
       mediaElement.currentTime = isLooping ? modulo(seekTarget, mediaElement.duration * 1000) : seekTarget;
       assertPlaybackRate(mediaElement, properties.rate);
