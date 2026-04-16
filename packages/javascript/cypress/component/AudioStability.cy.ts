@@ -10,6 +10,7 @@ describe('Audio stability tests', () => {
         file: 'sinwave@440hz.wav',
         type: 'audio',
         audioOutput: '',
+        enablePlaybackRateAdjustment: true,
         keyframes: [
           [now, { set: { t: 0, rate: 0 } }], // paused at start
           [now + 60_000, { set: { rate: 1 } }], // play in 1 minute
@@ -29,6 +30,7 @@ describe('Audio stability tests', () => {
         file: 'metronome@120bpm.wav',
         type: 'audio',
         audioOutput: '',
+        enablePlaybackRateAdjustment: true,
         keyframes: [[now, { set: { t: 0, rate: 1 } }]],
       },
     });
@@ -53,6 +55,7 @@ describe('Audio stability tests', () => {
         file: 'metronome@120bpm.wav',
         type: 'audio',
         audioOutput: '',
+        enablePlaybackRateAdjustment: true,
         keyframes: [[now, { set: { t: 1_500, rate: 0 } }]],
       },
     });
@@ -84,6 +87,7 @@ describe('Audio stability tests', () => {
         file: 'metronome@120bpm.wav',
         type: 'audio',
         audioOutput: '',
+        enablePlaybackRateAdjustment: true,
         keyframes: [[now, { set: { t: 0, rate: 1 } }]],
       },
     });
@@ -107,6 +111,7 @@ describe('Audio stability tests', () => {
         type: 'audio',
         file: 'sinwave@440hz.wav',
         audioOutput: '',
+        enablePlaybackRateAdjustment: true,
         keyframes: [[now, { set: { t: 0, rate: 1, volume: INITIAL_VOLUME } }]],
       },
     });
@@ -127,6 +132,7 @@ describe('Audio stability tests', () => {
         type: 'audio',
         file: 'sinwave@440hz.wav',
         audioOutput: '',
+        enablePlaybackRateAdjustment: true,
         keyframes: [[now, { set: { t: 0, rate: 1 } }]],
       },
     });

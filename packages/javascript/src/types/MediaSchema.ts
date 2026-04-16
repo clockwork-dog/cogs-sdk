@@ -26,12 +26,14 @@ const AudioMetadata = z.object({
   type: z.literal('audio'),
   file: z.string(),
   audioOutput: z.string(),
+  enablePlaybackRateAdjustment: z.boolean(),
 });
 export type VideoMetadata = z.infer<typeof VideoMetadata>;
 const VideoMetadata = z.object({
   type: z.literal('video'),
   file: z.string(),
   audioOutput: z.string(),
+  enablePlaybackRateAdjustment: z.boolean(),
   fit: z.union([z.literal('contain'), z.literal('cover'), z.literal('none')]),
 });
 export type NullKeyframe = z.infer<typeof NullKeyframe>;
@@ -192,7 +194,7 @@ export type AudioState = {
   type: 'audio';
   file: string;
   audioOutput: string;
-  disablePlaybackRateAdjustment?: boolean;
+  enablePlaybackRateAdjustment: boolean;
   keyframes: [InitialAudioKeyframe, ...Array<AudioKeyframe | NullKeyframe>];
 };
 export type VideoState = {
@@ -200,7 +202,7 @@ export type VideoState = {
   file: string;
   fit: 'cover' | 'contain' | 'none';
   audioOutput: string;
-  disablePlaybackRateAdjustment?: boolean;
+  enablePlaybackRateAdjustment: boolean;
   keyframes: [InitialVideoKeyframe, ...Array<VideoKeyframe | NullKeyframe>];
 };
 
