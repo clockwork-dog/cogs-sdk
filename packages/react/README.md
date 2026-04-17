@@ -48,8 +48,8 @@ import {
   VideoContainer,
   Timer,
   Hint,
+  MediaSurface,
   useIsConnected,
-  useAudioPlayer,
   useIsAudioPlaying,
 } from '@clockworkdog/cogs-client-react';
 ```
@@ -60,10 +60,10 @@ or
 const {
   CogsConnectionProvider,
   VideoContainer,
-  Hint,
   Timer,
+  Hint,
+  MediaSurface,
   useIsConnected,
-  useAudioPlayer,
   useIsAudioPlaying,
 } = require('@clockworkdog/cogs-client-react');
 ```
@@ -75,7 +75,7 @@ import * as manifest from './public/cogs-plugin-manifest.js'; // For Typescript 
 
 function App() {
   return (
-    <CogsConnectionProvider manifest={manifest} audioPlayer videoPlayer>
+    <CogsConnectionProvider manifest={manifest}>
       <MyComponent />
     </CogsConnectionProvider>
   );
@@ -84,9 +84,7 @@ function App() {
 function MyComponent() {
   const cogsConnection = useCogsConnection<typeof manifest>();
   const isConnected = useIsConnected(cogsConnection);
-
-  const audioPlayer = useAudioPlayer();
-  const isAudioPlaying = useIsAudioPlaying(audioPlayer);
+  const isAudioPlaying = useIsAudioPlaying();
 
   return (
     <div>
@@ -100,8 +98,7 @@ function MyComponent() {
         {/* The latest text hint as a string */}
         <Hint />
       </div>
-      {/* Specify where you want the video to be displayed. Leave this out for default fullscreen behavior */}
-      <VideoContainer style={{ position: 'absolute', top: 100, left: 100, width: 400, height: 300 }} />
+      <MediaSurface cogsConnection={cogsConnection}/>
     </div>
   );
 }
