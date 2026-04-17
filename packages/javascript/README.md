@@ -10,7 +10,7 @@ We'll make an annoying bell that rings every second.
     ```bash
     mkdir plugins/test-plugin
     ```
-1. Create a manifest file at `plugins/test-plugin/cogs-plugin-manifest.json`    This tells COGS about your plugin.
+1. Create a manifest file at `plugins/test-plugin/cogs-plugin-manifest.json`.  This tells COGS about your plugin.
     ```json
     {
         "name": "test-plugin",
@@ -39,7 +39,7 @@ We'll make an annoying bell that rings every second.
         </head>
         <body>
             <script type="module">
-                const { CogsConnection, CogsAudioPlayer } = COGS;
+                const { CogsConnection } = COGS;
                 const manifest = await (await fetch('./cogs-plugin-manifest.json')).json();
                 
                 let interval;
@@ -148,19 +148,19 @@ module.exports =
 #### Browser
 
 ```js
-const { CogsConnection, CogsAudioPlayer } = COGS;
+const { CogsConnection } = COGS;
 ```
 
 #### Javascript
 
 ```js
-const { CogsConnection, CogsAudioPlayer } = require('@clockworkdog/cogs-client');
+const { CogsConnection } = require('@clockworkdog/cogs-client');
 ```
 
 #### Typescript / ES6
 
 ```ts
-import { CogsConnection, CogsAudioPlayer } from '@clockworkdog/cogs-client';
+import { CogsConnection } from '@clockworkdog/cogs-client';
 ```
 
 ### Connect to COGS
@@ -240,14 +240,25 @@ Add `audio` to `cogs-plugin-manifest.js`:
 }
 ```
 
-Add [CogsAudioPlayer](https://clockwork-dog.github.io/cogs-sdk/javascript/classes/CogsAudioPlayer.html) to your page:
+Add a [SurfaceManager](https://clockwork-dog.github.io/cogs-sdk/javascript/classes/SurfaceManager.html) to your page:
 
 ```ts
-const audioPlayer = new CogsAudioPlayer(cogsConnection);
+import { CogsConnection, SurfaceManager } from '@clockworkdog/cogs-client'
+import * as manifest from './cogs-plugin-manifest.js'; // Requires `"allowJs": true` in `tsconfig.json`
+
+const cogsConnection = new CogsConnection(manifest);
+const constructURL = (url: string) => cogsConnection.getAssetUrl(url);
+const surfaceManager = new SurfaceManager(constructURL);
 
 // Optional
-audioPlayer.addEventListener('state', (audioState) => {
-    // Handle audio state changes. See `types/AudioState.ts`
+cogsConnection.addEventListener('message', (message) => {
+    if (message.type === 'media_state') {
+        // (preferred) Listen to media states
+    }
+
+    if ('media_strategy' in message && message.media_strategy === 'events') {
+        // Listen to media events
+    }
 });
 ```
 
