@@ -6,7 +6,7 @@ const OriginalDateConstructor = globalThis.Date;
  * Patch `Date.now()` and `new Date()` given the current time is @param now
  */
 export function setDate(now: number) {
-  const nowDelta = now - OriginalDateConstructor.now();
+  const nowDelta = Math.round(now - OriginalDateConstructor.now());
 
   function Date(...args: [string | number | Date] | []) {
     if (args.length === 0) {
