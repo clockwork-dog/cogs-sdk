@@ -24,11 +24,6 @@ interface TextHintsUpdateMessage {
   lastSentHint: string;
 }
 
-interface CogsEnvironmentMessage {
-  type: 'cogs_environment';
-  cogsVersion: string;
-}
-
 export interface DataStoreItemsClientMessage {
   type: 'data_store_items';
   items: { [key: string]: unknown };
@@ -94,7 +89,6 @@ export type CogsClientMessage<CustomConfig = {}> =
   | AdjustableTimerUpdateMessage
   | TextHintsUpdateMessage
   | (MediaClientConfigMessage & CustomConfig)
-  | CogsEnvironmentMessage
   | MediaClientMessage
   | DataStoreItemsClientMessage;
 
