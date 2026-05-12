@@ -16,7 +16,7 @@ const child = spawn(ffmpeg, [
   '60',
   // Specify the input files
   '-i',
-  'cypress/screenshots/generate-test-video-frames.cy.ts/%d.png',
+  'cypress/screenshots/%d.png',
   // Set the output framerate
   '-r',
   '60',
