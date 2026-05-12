@@ -7,7 +7,7 @@ describe('Video stability tests', () => {
     const now = Date.now();
     const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
-        file: 'yuv444p~5x2s@2560x1440.mp4',
+        file: 'yuv420p~60fps~10s@2560x1440.mp4',
         type: 'video',
         audioOutput: '',
         fit: 'cover',
@@ -29,7 +29,7 @@ describe('Video stability tests', () => {
     const now = Date.now();
     const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
-        file: 'yuv444p~5x2s@2560x1440.mp4',
+        file: 'yuv420p~60fps~10s@2560x1440.mp4',
         type: 'video',
         audioOutput: '',
         fit: 'cover',
@@ -55,7 +55,7 @@ describe('Video stability tests', () => {
     const now = Date.now();
     const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
-        file: 'yuv444p~5x2s@2560x1440.mp4',
+        file: 'yuv420p~60fps~10s@2560x1440.mp4',
         type: 'video',
         audioOutput: '',
         fit: 'cover',
@@ -88,7 +88,7 @@ describe('Video stability tests', () => {
     const now = Date.now();
     const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
-        file: 'yuv444p~5x2s@2560x1440.mp4',
+        file: 'yuv420p~60fps~10s@2560x1440.mp4',
         type: 'video',
         audioOutput: '',
         fit: 'cover',
@@ -114,7 +114,7 @@ describe('Video stability tests', () => {
     const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
         type: 'video',
-        file: 'yuv444p~5x2s@2560x1440.mp4',
+        file: 'yuv420p~60fps~10s@2560x1440.mp4',
         audioOutput: '',
         fit: 'cover',
         enablePlaybackRateAdjustment: true,
@@ -136,7 +136,7 @@ describe('Video stability tests', () => {
     const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
       'clip-id': {
         type: 'video',
-        file: 'yuv444p~5x2s@2560x1440.mp4',
+        file: 'yuv420p~60fps~10s@2560x1440.mp4',
         audioOutput: '',
         fit: 'cover',
         enablePlaybackRateAdjustment: true,

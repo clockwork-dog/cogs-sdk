@@ -1,7 +1,6 @@
-const LOOP_DURATION = 2_000;
+const LOOP_DURATION = 10_000;
 const FPS = 60;
-const TOTAL_LOOPS = 2;
-const TOTAL_FRAMES = Math.floor(LOOP_DURATION * (FPS / 1000) * TOTAL_LOOPS);
+const TOTAL_FRAMES = Math.floor(LOOP_DURATION * (FPS / 1000));
 
 describe('template spec', () => {
   it('testing', { baseUrl: null }, () => {
@@ -11,7 +10,7 @@ describe('template spec', () => {
 
     while (frame < TOTAL_FRAMES) {
       // Debug log for long running tasks
-      cy.task('log', `[frame: ${frame + 1}/${TOTAL_FRAMES}] [ms: ${ms.toFixed(2)}/${TOTAL_LOOPS * LOOP_DURATION}]`);
+      cy.task('log', `[frame: ${frame + 1}/${TOTAL_FRAMES}] [ms: ${ms.toFixed(2)}/${LOOP_DURATION}]`);
       // Go to new frame of the video
       cy.visit(`cypress/e2e/test-video.html?loopDurationMs=${LOOP_DURATION}&currentMs=${ms}`);
       // Capture screenshot

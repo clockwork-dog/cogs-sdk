@@ -54,7 +54,7 @@ describe('Updating surface state', () => {
         fit: 'contain',
         audioOutput: '',
         enablePlaybackRateAdjustment: true,
-        file: 'yuv444p~5x2s@2560x1440.mp4',
+        file: 'yuv420p~60fps~10s@2560x1440.mp4',
         keyframes: [[now, {}]],
       },
     });
