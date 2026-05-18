@@ -15,8 +15,7 @@ export function MediaSurface({ cogsConnection }: MediaSurfaceProps) {
   const audioOutputs = useRef<Record<string, string>>({});
   useEffect(() => {
     async function updateAudioOutputs() {
-      const audioOutputs: Record<string, string> = {};
-
+      audioOutputs.current = {};
       if (!navigator?.mediaDevices) {
         // `navigator.mediaDevices` is undefined on COGS AV <= 4.5 because of secure origin permissions
         return;
@@ -25,7 +24,7 @@ export function MediaSurface({ cogsConnection }: MediaSurfaceProps) {
       const devices = await navigator.mediaDevices.enumerateDevices();
       const outputs = devices.filter((device) => device.kind === 'audiooutput');
       outputs.forEach((output) => {
-        audioOutputs[output.label] = output.deviceId;
+        audioOutputs.current[output.label] = output.deviceId;
       });
     }
 
