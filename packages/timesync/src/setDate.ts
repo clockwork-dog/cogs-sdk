@@ -4,9 +4,13 @@ const OriginalDateConstructor = globalThis.Date;
 
 /**
  * Patch `Date.now()` and `new Date()` given the current time is @param now
+ *
+ * It is critical that we keep a delta between the given time and `performance.now()`.
+ * Date.now() isn't continuous, and can change at runtime
+ * however performance.now() IS continuous
  */
 export function setDate(now: number) {
-  const nowDelta = Math.round(now - OriginalDateConstructor.now());
+  const nowDelta = now - performance.now();
 
   function Date(...args: [string | number | Date] | []) {
     if (args.length === 0) {
@@ -23,7 +27,7 @@ export function setDate(now: number) {
 
   // override Date.now to return the adjusted time
   Date.now = function () {
-    return OriginalDateConstructor.now() + nowDelta;
+    return Math.round(performance.now() + nowDelta);
   };
 
   (globalThis as { Date: unknown }).Date = Date;
