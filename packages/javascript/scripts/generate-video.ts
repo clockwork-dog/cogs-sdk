@@ -4,6 +4,7 @@ const ffmpeg = 'ffmpeg';
 /**
  * - First make sure cypress/screenshots is empty
  *   This is the directory we'll use to save all video frames
+ *   $ rm -rf cypress/screenshots/*
  * - Then run `yarn cy:generate`
  *   This will run the generate procedure in the e2e test
  *   It will save screenshots to cypress/screenshots
@@ -14,21 +15,29 @@ const child = spawn(ffmpeg, [
   // Set the input framerate
   '-framerate',
   '60',
-  // Specify the input files
+  // Specify the input image files
   '-i',
   'cypress/screenshots/%d.png',
+  // Specify the input audio
+  '-i',
+  'cypress/fixtures/metronome@120bpm.wav',
+  // Cut the audio track to length (1min to 10s)
+  '-shortest',
   // Set the output framerate
   '-r',
   '60',
-  // specify the codec
+  // Specify the video codec
   '-c:v',
-  'libx264',
-  // pixel format
+  'libx265',
+  // Specify the audio codec
+  '-c:a',
+  'aac',
+  // Specify the pixel format
   '-pix_fmt',
   'yuv420p',
-  // automatically overwrite
+  // Automatically overwrite
   '-y',
-  // destination
+  // Destination
   'out.mp4',
 ]);
 
