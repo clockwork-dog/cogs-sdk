@@ -153,4 +153,36 @@ describe('Video stability tests', () => {
 
     cy.get('video').should('exist');
   });
+
+  it('toggles looping', () => {
+    const now = Date.now();
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
+      'clip-id': {
+        type: 'video',
+        file: 'yuv420p~60fps~10s@2560x1440.mp4',
+        audioOutput: '',
+        fit: 'cover',
+        enablePlaybackRateAdjustment: true,
+        keyframes: [[now, { set: { t: 0, rate: 1 } }]],
+      },
+    });
+    cy.mount(manager);
+    cy.get('video').should('not.have.attr', 'loop');
+
+    manager.setState({
+      'clip-id': {
+        type: 'video',
+        file: 'yuv420p~60fps~10s@2560x1440.mp4',
+        audioOutput: '',
+        fit: 'cover',
+        enablePlaybackRateAdjustment: true,
+        keyframes: [
+          [now, { set: { t: 0, rate: 1 } }],
+          [now + 10_000, { set: { t: 0 } }],
+          [now + 20_000, { set: { t: 0 } }],
+        ],
+      },
+    });
+    cy.get('video').should('have.attr', 'loop');
+  });
 });
