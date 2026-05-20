@@ -215,7 +215,8 @@ const SYNC_MAX_THRESHOLD_MS = 1_000;
 const SYNC_SEEK_LOOKAHEAD_MS = 10;
 
 // If the media is scheduled to go back to the start close in time to the end of the video, we'll use the loop attribute.
-const LOOPING_EPSILON_MS = 5;
+// This value allows disagreement between HTMLVideoElement.duration and the length of the different audio streams we have in COGS.
+const LOOPING_EPSILON_MS = 100;
 
 const PLAYBACK_ADJUSTMENT_SMOOTHING = 0.3;
 const MAX_PLAYBACK_RATE_ADJUSTMENT = 0.1;
@@ -248,6 +249,7 @@ export function assertTemporalProperties(
   mediaElement: HTMLMediaElement,
   properties: TemporalProperties,
   keyframes: VideoState['keyframes'],
+  currentTime: number,
   syncState: TemporalSyncState,
   enablePlaybackRateAdjustment: boolean,
 ): TemporalSyncState {
@@ -259,10 +261,14 @@ export function assertTemporalProperties(
   // Sounds like looping to me!
   let isLooping = false;
   if (mediaElement.duration) {
-    const nextTemporalKeyframe = keyframes.filter(([t, kf]) => t > properties.t && (kf?.set?.t !== undefined || kf?.set?.rate !== undefined))[0];
+    const futureTemporalKeyframes = keyframes
+      .filter(([t]) => t > keyframes[0][0] && t > currentTime)
+      .filter(([, props]) => props?.set?.t !== undefined || props?.set?.rate !== undefined);
+    const nextTemporalKeyframe = futureTemporalKeyframes[0];
+
     if (nextTemporalKeyframe?.[1]?.set?.t === 0) {
-      const timeRemaining = (mediaElement.duration - properties.t) / properties.rate;
-      const timeUntilKeyframe = nextTemporalKeyframe[0] - properties.t;
+      const timeRemaining = (mediaElement.duration * 1000 - properties.t) / properties.rate;
+      const timeUntilKeyframe = nextTemporalKeyframe[0] - currentTime;
       isLooping = Math.abs(timeRemaining - timeUntilKeyframe) <= LOOPING_EPSILON_MS;
       if (mediaElement.loop !== isLooping) {
         mediaElement.loop = isLooping;
@@ -270,11 +276,11 @@ export function assertTemporalProperties(
     }
   }
 
-  const currentTime = mediaElement.currentTime * 1000;
+  const currentMediaTime = mediaElement.currentTime * 1000;
   const deltaTime =
     isLooping && mediaElement.duration !== undefined
-      ? moduloDiff(currentTime, properties.t, mediaElement.duration * 1000)
-      : currentTime - properties.t;
+      ? moduloDiff(currentMediaTime, properties.t, mediaElement.duration * 1000)
+      : currentMediaTime - properties.t;
   const deltaTimeAbs = Math.abs(deltaTime);
 
   switch (true) {
@@ -426,7 +432,8 @@ export class AudioManager extends MediaClipManager<AudioState> {
   public volume = 1;
 
   protected update(): void {
-    const currentState = getStateAtTime(this._state, Date.now());
+    const now = Date.now();
+    const currentState = getStateAtTime(this._state, now);
     if (currentState) {
       this.audioElement = assertElement(
         this.audioElement,
@@ -447,6 +454,7 @@ export class AudioManager extends MediaClipManager<AudioState> {
       this.audioElement,
       currentState as TemporalProperties,
       this._state.keyframes,
+      now,
       this.syncState,
       this._state.enablePlaybackRateAdjustment,
     );
@@ -471,7 +479,8 @@ export class VideoManager extends MediaClipManager<VideoState> {
   public volume = 1;
 
   protected update(): void {
-    const currentState = getStateAtTime(this._state, Date.now());
+    const now = Date.now();
+    const currentState = getStateAtTime(this._state, now);
     if (currentState) {
       this.videoElement = assertElement(
         this.videoElement,
@@ -493,6 +502,7 @@ export class VideoManager extends MediaClipManager<VideoState> {
       this.videoElement,
       currentState as TemporalProperties,
       this._state.keyframes,
+      now,
       this.syncState,
       this._state.enablePlaybackRateAdjustment,
     );
