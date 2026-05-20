@@ -147,4 +147,35 @@ describe('Audio stability tests', () => {
 
     cy.get('audio').should('exist');
   });
+
+  it('toggles looping', () => {
+    const now = Date.now();
+    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
+      'clip-id': {
+        type: 'audio',
+        file: 'sinwave@440hz.wav',
+        audioOutput: '',
+        enablePlaybackRateAdjustment: true,
+        keyframes: [[now, { set: { t: 0, rate: 1 } }]],
+      },
+    });
+    cy.mount(manager);
+    cy.get('audio').should('not.have.attr', 'loop');
+
+    manager.setState({
+      'clip-id': {
+        type: 'audio',
+        file: 'sinwave@440hz.wav',
+        audioOutput: '',
+        enablePlaybackRateAdjustment: true,
+        keyframes: [
+          [now, { set: { t: 0, rate: 1 } }],
+          [now + 10_000, { set: { t: 0, rate: 1 } }],
+          [now + 20_000, { set: { t: 0, rate: 1 } }],
+        ],
+      },
+    });
+
+    cy.get('audio').should('have.attr', 'loop');
+  });
 });
