@@ -34,6 +34,25 @@ export default defineConfig({
           return null;
         },
       });
+
+      // Adapted from https://www.cypress.io/blog/generate-high-resolution-videos-and-screenshots
+      on('before:browser:launch', (browser, launchOptions) => {
+        const width = 3840;
+        const height = 2160;
+        console.debug('setting the browser window size to %d x %d', width, height);
+
+        if (browser.name === 'chrome' && browser.isHeadless) {
+          launchOptions.args.push(`--window-size=${width},${height}`);
+
+          // force screen to be non-retina and just use our given resolution
+          launchOptions.args.push('--force-device-scale-factor=1');
+        } else {
+          throw new Error(`Unknown browser ${browser.displayName}, only headless chrome implemented`);
+        }
+
+        // IMPORTANT: return the updated browser launch options
+        return launchOptions;
+      });
     },
   },
 });
