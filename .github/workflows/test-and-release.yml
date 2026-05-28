@@ -20,8 +20,10 @@ jobs:
   test-packages:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      # actions/checkout@v6
+      - uses: actions/checkout@900f2210b1d28bbbd0bd22d17926b9e224e8f231
+        # actions/setup-node@v6
+      - uses: actions/setup-node@670825a89dc0abd596e7a3abd0f5e3f6e5faf37c
         with:
           node-version-file: .node-version
           cache: yarn
@@ -41,8 +43,10 @@ jobs:
         working-directory: template
     steps:
       - name: Sparse checkout just the template
-        uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+        # actions/checkout@v6
+        uses: actions/checkout@900f2210b1d28bbbd0bd22d17926b9e224e8f231
+        # actions/setup-node@v6
+      - uses: actions/setup-node@670825a89dc0abd596e7a3abd0f5e3f6e5faf37c
         with:
           node-version-file: .node-version
       - name: Create an empty yarn.lock in the template folder to allow it to be treated separate from the parent directory project
@@ -75,10 +79,12 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      # actions/checkout@v6
+      - uses: actions/checkout@900f2210b1d28bbbd0bd22d17926b9e224e8f231
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+        # actions/setup-node@v6
+      - uses: actions/setup-node@670825a89dc0abd596e7a3abd0f5e3f6e5faf37c
         with:
           node-version-file: .node-version
           cache: yarn
@@ -106,8 +112,10 @@ jobs:
     steps:
       - if: ${{ env.ACT }}
         run: apt-get update && apt-get install -y git rsync
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      # actions/checkout@v6
+      - uses: actions/checkout@900f2210b1d28bbbd0bd22d17926b9e224e8f231
+        # actions/setup-node@v6
+      - uses: actions/setup-node@670825a89dc0abd596e7a3abd0f5e3f6e5faf37c
         with:
           node-version-file: .node-version
           cache: yarn
@@ -118,7 +126,8 @@ jobs:
       - name: Build docs
         run: yarn run build-docs
       - name: Release docs
-        uses: JamesIves/github-pages-deploy-action@v4
+        # JamesIves/github-pages-deploy-action@v4
+        uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f
         with:
           branch: docs
           folder: docs
