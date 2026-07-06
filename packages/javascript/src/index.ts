@@ -7,6 +7,7 @@ export { SurfaceManager } from './state-based/SurfaceManager';
 export { MediaPreloader } from './state-based/MediaPreloader';
 export { assetUrl, preloadUrl } from './utils/urls';
 export { getStateAtTime } from './utils/getStateAtTime';
+export { matchesNetworkHostPattern } from './utils/matchesNetworkHostPattern';
 export * from './types/CogsPluginManifest';
 export * as ManifestTypes from './types/ManifestTypes';
 export * from './DataStore';
