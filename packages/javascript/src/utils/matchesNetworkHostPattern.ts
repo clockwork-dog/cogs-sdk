@@ -1,4 +1,4 @@
-import { Address4 } from 'ip-address';
+import { Address4, Address6 } from 'ip-address';
 
 /**
  * Checks whether `host` and `port` are matched by a single host pattern from a
@@ -20,8 +20,6 @@ export function matchesNetworkHostPattern(pattern: string, host: string, port: n
   return matchesHost(patternHost, host) && (patternPort === '*' || Number(patternPort) === port);
 }
 
-const LOCALHOST_HOSTS = ['localhost', '127.0.0.1', '::1', '[::1]'];
-
 function matchesHost(patternHost: string, host: string): boolean {
   // Hostnames are case-insensitive; IP literals are unaffected by lowercasing.
   patternHost = patternHost.toLowerCase();
@@ -31,7 +29,7 @@ function matchesHost(patternHost: string, host: string): boolean {
     return true;
   }
   if (patternHost === 'localhost') {
-    return LOCALHOST_HOSTS.includes(host);
+    return host === 'localhost' || isLoopback(host);
   }
   if (patternHost === 'private') {
     return isPrivateIpv4(host);
@@ -49,4 +47,20 @@ function matchesHost(patternHost: string, host: string): boolean {
  */
 function isPrivateIpv4(host: string): boolean {
   return Address4.isValid(host) && new Address4(host).isPrivate();
+}
+
+/**
+ * Loopback ranges: `127.0.0.0/8` (RFC 5735) and `::1` (RFC 4291). Strips the brackets from a
+ * bracketed IPv6 literal (e.g. `"[::1]"`), since `Address6` doesn't accept them.
+ */
+function isLoopback(host: string): boolean {
+  const unbracketed = host.startsWith('[') && host.endsWith(']') ? host.slice(1, -1) : host;
+
+  if (Address4.isValid(unbracketed)) {
+    return new Address4(unbracketed).isLoopback();
+  }
+  if (Address6.isValid(unbracketed)) {
+    return new Address6(unbracketed).isLoopback();
+  }
+  return false;
 }
