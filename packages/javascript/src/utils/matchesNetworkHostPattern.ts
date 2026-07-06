@@ -50,17 +50,14 @@ function isPrivateIpv4(host: string): boolean {
 }
 
 /**
- * Loopback ranges: `127.0.0.0/8` (RFC 5735) and `::1` (RFC 4291). Strips the brackets from a
- * bracketed IPv6 literal (e.g. `"[::1]"`), since `Address6` doesn't accept them.
+ * Loopback ranges: `127.0.0.0/8` (RFC 5735) and `::1` (RFC 4291).
  */
 function isLoopback(host: string): boolean {
-  const unbracketed = host.startsWith('[') && host.endsWith(']') ? host.slice(1, -1) : host;
+  // Only IPv6 literals are ever bracketed (e.g. "[::1]"); `Address6` doesn't accept the brackets itself.
+  if (host.startsWith('[') && host.endsWith(']')) {
+    const address = host.slice(1, -1);
+    return Address6.isValid(address) && new Address6(address).isLoopback();
+  }
 
-  if (Address4.isValid(unbracketed)) {
-    return new Address4(unbracketed).isLoopback();
-  }
-  if (Address6.isValid(unbracketed)) {
-    return new Address6(unbracketed).isLoopback();
-  }
-  return false;
+  return (Address4.isValid(host) && new Address4(host).isLoopback()) || (Address6.isValid(host) && new Address6(host).isLoopback());
 }
