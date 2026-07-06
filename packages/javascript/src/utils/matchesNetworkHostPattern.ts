@@ -1,3 +1,5 @@
+import { Address4 } from 'ip-address';
+
 /**
  * Checks whether `host` and `port` are matched by a single host pattern from a
  * `PluginManifestNetworkAccessRuleJson`'s `hosts` array (e.g. `"private:443"`, `"*.vendor.com:443"`).
@@ -42,19 +44,9 @@ function matchesHost(patternHost: string, host: string): boolean {
   return patternHost === host;
 }
 
-const IPV4_OCTET = '(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)';
-const IPV4_PATTERN = new RegExp(`^${IPV4_OCTET}\\.${IPV4_OCTET}\\.${IPV4_OCTET}\\.${IPV4_OCTET}$`);
-
 /**
  * RFC 1918 private address ranges: `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`.
  */
 function isPrivateIpv4(host: string): boolean {
-  const match = IPV4_PATTERN.exec(host);
-  if (!match) {
-    return false;
-  }
-
-  const [a, b] = match.slice(1).map(Number);
-
-  return a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168);
+  return Address4.isValid(host) && new Address4(host).isPrivate();
 }
