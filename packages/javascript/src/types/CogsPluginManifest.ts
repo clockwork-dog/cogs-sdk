@@ -48,6 +48,42 @@ export type PluginManifestStateJson = {
   writableFromClient?: true;
 };
 
+export type PluginManifestNetworkAccessRuleJson = {
+  /**
+   * Host patterns this rule grants outbound network access to.
+   *
+   * Every pattern must include an explicit port.
+   *
+   * | Pattern | Meaning |
+   * | --- | --- |
+   * | `"localhost:8080"` | Port 8080 on `localhost` / `127.0.0.1` / `::1` |
+   * | `"private:443"` | Port 443 on any RFC 1918 private address range (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`) |
+   * | `"api.vendor.com:443"` | An exact hostname and port |
+   * | `"*.vendor.com:443"` | A wildcard subdomain, exact port |
+   * | `"foo.example.com:*"` | Any port on an exact hostname |
+   * | `"[fd00::1]:443"` | An IPv6 literal, using bracket syntax |
+   * | `"*:*"` | Any host, any port |
+   *
+   * CIDR ranges (e.g. `"192.168.1.0/24:443"`) are not supported.
+   *
+   * Every port on `localhost` / `127.0.0.1` / `::1` is always implicitly reachable regardless of
+   * these rules, since plugins connect to the COGS server at `localhost:12095` — a `"localhost:*"`
+   * pattern here is never required.
+   */
+  hosts: string[];
+
+  /**
+   * Paths, relative to the root of the packaged `.cogsplugin` archive, of PEM-encoded CA
+   * certificates to trust for HTTPS connections to the hosts matched by `hosts`.
+   *
+   * Use this to reach local devices with vendor-issued certificates that aren't in the system CA
+   * store (e.g. a Philips Hue bridge). For matched hosts, the certificate chain is verified
+   * against these CAs instead of the system store; all other hosts continue to use the system
+   * store.
+   */
+  caCertificates?: string[];
+};
+
 /**
  * `cogs-plugin-manifest.json` is a JSON manifest file describing the content of a COGS plugin or COGS Media Master custom content.
  *
@@ -156,6 +192,29 @@ export interface CogsPluginManifestJson {
          */
         persistValue?: boolean;
       };
+    };
+  };
+
+  /**
+   * Elevated permissions for this plugin.
+   *
+   * Added in COGS 5.11.0
+   *
+   * **Only applies to verified, packaged (`.cogsplugin`) plugins.** It is ignored for plugins
+   * loaded from a folder, to maintain compatibility with the existing folder-based plugin
+   * structure.
+   */
+  permissions?: {
+    network?: {
+      /**
+       * Rules granting this plugin outbound network access to specific hosts, optionally with
+       * a bundled CA certificate for hosts using vendor-issued (rather than publicly-trusted)
+       * TLS certificates.
+       *
+       * Requests to hosts not matched by any rule here are blocked. By default a plugin has no
+       * network access beyond the COGS server itself.
+       */
+      access?: PluginManifestNetworkAccessRuleJson[];
     };
   };
 }
