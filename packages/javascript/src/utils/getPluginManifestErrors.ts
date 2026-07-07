@@ -58,16 +58,16 @@ const cogsValueTypeNumberWithDefaultSchema = (options: { defaultRequired: boolea
   (options.defaultRequired
     ? z.strictObject({
         type: z.literal('number'),
-        integer: z.boolean().nullable().optional(),
-        min: z.number().nullable().optional(),
-        max: z.number().nullable().optional(),
+        integer: z.boolean().optional(),
+        min: z.number().optional(),
+        max: z.number().optional(),
         default: z.number(),
       })
     : z.strictObject({
         type: z.literal('number'),
-        integer: z.boolean().nullable().optional(),
-        min: z.number().nullable().optional(),
-        max: z.number().nullable().optional(),
+        integer: z.boolean().optional(),
+        min: z.number().optional(),
+        max: z.number().optional(),
         default: z.number().optional(),
       })) as z.ZodType<CogsValueTypeNumberWithDefault>;
 
