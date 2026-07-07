@@ -157,6 +157,22 @@ const cogsPluginManifestJsonSchema: z.ZodType<CogsPluginManifestJson> = z.strict
         .optional(),
     })
     .optional(),
+  permissions: z
+    .strictObject({
+      network: z
+        .strictObject({
+          access: z
+            .array(
+              z.strictObject({
+                hosts: z.array(z.templateLiteral([z.string(), z.literal(':'), z.union([z.uint32(), z.literal('*')])])),
+                caCertificate: z.string().optional(),
+              }),
+            )
+            .optional(),
+        })
+        .optional(),
+    })
+    .optional(),
 });
 
 const validate = cogsPluginManifestJsonSchema;

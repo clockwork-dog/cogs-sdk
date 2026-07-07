@@ -58,16 +58,48 @@ describe('validate plugin manifest', () => {
       ).toHaveLength(1);
     });
 
-    test('invalid permissions', () => {
-      expect(
-        validatePluginManifest({
-          name: 'test plugin',
-          version: '0.0.1',
-          permissions: {
-            root: true,
-          } as never,
-        }),
-      ).toHaveLength(1);
+    describe('permissions', () => {
+      test('invalid permissions', () => {
+        expect(
+          validatePluginManifest({
+            name: 'test plugin',
+            version: '0.0.1',
+            permissions: {
+              root: true,
+            } as never,
+          }),
+        ).toHaveLength(1);
+      });
+
+      test('valid network access rule', () => {
+        expect(
+          validatePluginManifest({
+            name: 'test plugin',
+            version: '0.0.1',
+            permissions: {
+              network: {
+                access: [{ hosts: ['api.vendor.com:80'] }],
+              },
+            },
+          }),
+        ).toBeNull();
+      });
+
+      test('invalid network access rule', () => {
+        expect(
+          validatePluginManifest({
+            name: 'test plugin',
+            version: '0.0.1',
+            permissions: {
+              network: {
+                access: [
+                  { hosts: ['api.vendor.com'] }, // missing port
+                ],
+              },
+            },
+          }),
+        ).toHaveLength(1);
+      });
     });
   });
 });
