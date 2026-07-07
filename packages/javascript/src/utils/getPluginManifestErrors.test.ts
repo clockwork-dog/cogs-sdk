@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { CogsPluginManifestJson } from '@clockworkdog/cogs-client';
-import { validatePluginManifest } from './validatePluginManifest';
+import { getPluginManifestErrors } from './getPluginManifestErrors';
 
 describe('validate plugin manifest', () => {
   test('valid', () => {
@@ -36,13 +36,13 @@ describe('validate plugin manifest', () => {
         },
       },
     };
-    expect(validatePluginManifest(manifest)).toBeNull();
+    expect(getPluginManifestErrors(manifest)).toBeNull();
   });
 
   describe('invalid', () => {
     test('entirely different', () => {
       expect(
-        validatePluginManifest({
+        getPluginManifestErrors({
           invalid: 'this is incorrect',
           'very bad': 666,
         } as never),
@@ -51,7 +51,7 @@ describe('validate plugin manifest', () => {
 
     test('invalid version', () => {
       expect(
-        validatePluginManifest({
+        getPluginManifestErrors({
           name: 'test plugin',
           version: 'invalid' as never,
         }),
@@ -61,7 +61,7 @@ describe('validate plugin manifest', () => {
     describe('permissions', () => {
       test('invalid permissions', () => {
         expect(
-          validatePluginManifest({
+          getPluginManifestErrors({
             name: 'test plugin',
             version: '0.0.1',
             permissions: {
@@ -73,7 +73,7 @@ describe('validate plugin manifest', () => {
 
       test('valid network access rule', () => {
         expect(
-          validatePluginManifest({
+          getPluginManifestErrors({
             name: 'test plugin',
             version: '0.0.1',
             permissions: {
@@ -87,7 +87,7 @@ describe('validate plugin manifest', () => {
 
       test('invalid network access rule', () => {
         expect(
-          validatePluginManifest({
+          getPluginManifestErrors({
             name: 'test plugin',
             version: '0.0.1',
             permissions: {

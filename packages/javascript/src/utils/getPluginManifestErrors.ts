@@ -177,7 +177,7 @@ const cogsPluginManifestJsonSchema: z.ZodType<CogsPluginManifestJson> = z.strict
 
 const validate = cogsPluginManifestJsonSchema;
 
-export function validatePluginManifest(manifest: CogsPluginManifestJson): string[] | null {
+export function getPluginManifestErrors(manifest: CogsPluginManifestJson): string[] | null {
   const result = validate.safeParse(manifest);
   if (result.success) return null;
 
