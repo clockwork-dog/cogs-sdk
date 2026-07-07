@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@clockworkdog/timesync": "workspace:^",
+    "ip-address": "^10.2.0",
     "reconnecting-websocket": "^4.4.0",
     "zod": "^4.1.13"
   },

@@ -1,3 +1,5 @@
+import { Address4, Address6 } from 'ip-address';
+
 /**
  * Checks whether `host` and `port` are matched by a single host pattern from a
  * `PluginManifestNetworkAccessRuleJson`'s `hosts` array (e.g. `"private:443"`, `"*.vendor.com:443"`).
@@ -18,8 +20,6 @@ export function matchesNetworkHostPattern(pattern: string, host: string, port: n
   return matchesHost(patternHost, host) && (patternPort === '*' || Number(patternPort) === port);
 }
 
-const LOCALHOST_HOSTS = ['localhost', '127.0.0.1', '::1', '[::1]'];
-
 function matchesHost(patternHost: string, host: string): boolean {
   // Hostnames are case-insensitive; IP literals are unaffected by lowercasing.
   patternHost = patternHost.toLowerCase();
@@ -29,7 +29,7 @@ function matchesHost(patternHost: string, host: string): boolean {
     return true;
   }
   if (patternHost === 'localhost') {
-    return LOCALHOST_HOSTS.includes(host);
+    return host === 'localhost' || isLoopback(host);
   }
   if (patternHost === 'private') {
     return isPrivateIpv4(host);
@@ -42,19 +42,22 @@ function matchesHost(patternHost: string, host: string): boolean {
   return patternHost === host;
 }
 
-const IPV4_OCTET = '(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)';
-const IPV4_PATTERN = new RegExp(`^${IPV4_OCTET}\\.${IPV4_OCTET}\\.${IPV4_OCTET}\\.${IPV4_OCTET}$`);
-
 /**
  * RFC 1918 private address ranges: `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`.
  */
 function isPrivateIpv4(host: string): boolean {
-  const match = IPV4_PATTERN.exec(host);
-  if (!match) {
-    return false;
+  return Address4.isValid(host) && new Address4(host).isPrivate();
+}
+
+/**
+ * Loopback ranges: `127.0.0.0/8` (RFC 5735) and `::1` (RFC 4291).
+ */
+function isLoopback(host: string): boolean {
+  // Only IPv6 literals are ever bracketed (e.g. "[::1]"); `Address6` doesn't accept the brackets itself.
+  if (host.startsWith('[') && host.endsWith(']')) {
+    const address = host.slice(1, -1);
+    return Address6.isValid(address) && new Address6(address).isLoopback();
   }
 
-  const [a, b] = match.slice(1).map(Number);
-
-  return a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168);
+  return (Address4.isValid(host) && new Address4(host).isLoopback()) || (Address6.isValid(host) && new Address6(host).isLoopback());
 }
