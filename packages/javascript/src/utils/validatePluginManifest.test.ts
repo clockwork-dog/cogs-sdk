@@ -45,7 +45,7 @@ describe('validate plugin manifest', () => {
         validatePluginManifest({
           invalid: 'this is incorrect',
           'very bad': 666,
-        } as any),
+        } as never),
       ).toHaveLength(3); // version missing, name missing, unrecognized keys
     });
 
@@ -53,7 +53,7 @@ describe('validate plugin manifest', () => {
       expect(
         validatePluginManifest({
           name: 'test plugin',
-          version: 'invalid' as any,
+          version: 'invalid' as never,
         }),
       ).toHaveLength(1);
     });
@@ -65,7 +65,7 @@ describe('validate plugin manifest', () => {
           version: '0.0.1',
           permissions: {
             root: true,
-          } as any,
+          } as never,
         }),
       ).toHaveLength(1);
     });
