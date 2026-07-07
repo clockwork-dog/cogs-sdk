@@ -198,8 +198,6 @@ export interface CogsPluginManifestJson {
   /**
    * Elevated permissions for this plugin.
    *
-   * Added in COGS 5.11.0
-   *
    * **Only applies to verified, packaged (`.cogsplugin`) plugins.** It is ignored for plugins
    * loaded from a folder, to maintain compatibility with the existing folder-based plugin
    * structure.
@@ -213,6 +211,8 @@ export interface CogsPluginManifestJson {
        *
        * Requests to hosts not matched by any rule here are blocked. By default a plugin has no
        * network access beyond the COGS server itself.
+       *
+       * Added in COGS 5.11.0
        */
       access?: PluginManifestNetworkAccessRuleJson[];
     };
