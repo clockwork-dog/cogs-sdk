@@ -36,7 +36,7 @@ function matchesHost(patternHost: string, host: string): boolean {
   }
   if (patternHost.startsWith('*.')) {
     // The leading dot in the suffix guarantees a full-label boundary, so "*.vendor.com"
-    // matches "api.vendor.com" but not "notvendor.com" or "vendor.com" itself.
+    // matches "api.vendor.com" but not "vendor.com".
     return host.endsWith(patternHost.slice(1));
   }
   return patternHost === host;
