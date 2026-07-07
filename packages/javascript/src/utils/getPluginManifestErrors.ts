@@ -15,6 +15,7 @@ import {
   PluginManifestStateJson,
 } from '../types/CogsPluginManifest';
 import { z } from 'zod/v4';
+import semver from 'semver';
 import { NetworkHostPattern } from './NetworkHostPattern';
 
 const uniqueStringArray = z.array(z.string().min(1)).refine((items) => new Set(items).size === items.length, {
@@ -122,68 +123,85 @@ const validateNetworkHostPattern = (pattern: string): boolean => {
   }
 };
 
-const cogsPluginManifestJsonSchema: z.ZodType<CogsPluginManifestJson> = z.strictObject({
-  version: z.union([
-    z.templateLiteral([z.uint32()]),
-    z.templateLiteral([z.uint32(), z.literal('.'), z.uint32()]),
-    z.templateLiteral([z.uint32(), z.literal('.'), z.uint32(), z.literal('.'), z.uint32()]),
-  ]),
-  name: z.string(),
-  minCogsVersion: z.templateLiteral([z.uint32(), z.literal('.'), z.uint32(), z.literal('.'), z.uint32()]).optional(),
-  description: z.string().optional(),
-  icon: z.string().optional(),
-  indexPath: z.string().optional(),
-  window: z
-    .object({
-      width: z.number().gt(0).int(),
-      height: z.number().gt(0).int(),
-      visible: z.boolean().optional(),
-    })
-    .optional(),
-  config: z.array(pluginManifestConfigJsonSchema).optional(),
-  events: z
-    .object({
-      fromCogs: z.array(pluginManifestEventJsonSchema).optional(),
-      toCogs: z.array(pluginManifestEventJsonSchema).optional(),
-    })
-    .optional(),
-  state: z.array(pluginManifestStateJsonSchema).optional(),
-  media: z
-    .object({
-      audio: z.literal(true).optional(),
-      video: z.literal(true).optional(),
-      images: z.literal(true).optional(),
-    })
-    .optional(),
-  store: z
-    .object({
-      items: z
-        .record(
-          z.string(),
-          z.strictObject({
-            persistValue: z.boolean().optional(),
-          }),
-        )
-        .optional(),
-    })
-    .optional(),
-  permissions: z
-    .strictObject({
-      network: z
-        .strictObject({
-          access: z
-            .array(
-              z.strictObject({
-                hosts: z.array(z.string().refine(validateNetworkHostPattern, { error: 'Invalid network host pattern' })).min(1),
-                caCertificate: z.string().optional(),
-              }),
-            )
-            .optional(),
-        })
-        .optional(),
-    })
-    .optional(),
-});
+const cogsPluginManifestJsonSchema: z.ZodType<CogsPluginManifestJson> = z
+  .strictObject({
+    version: z.union([
+      z.templateLiteral([z.uint32()]),
+      z.templateLiteral([z.uint32(), z.literal('.'), z.uint32()]),
+      z.templateLiteral([z.uint32(), z.literal('.'), z.uint32(), z.literal('.'), z.uint32()]),
+    ]),
+    name: z.string(),
+    minCogsVersion: z.templateLiteral([z.uint32(), z.literal('.'), z.uint32(), z.literal('.'), z.uint32()]).optional(),
+    description: z.string().optional(),
+    icon: z.string().optional(),
+    indexPath: z.string().optional(),
+    window: z
+      .object({
+        width: z.number().gt(0).int(),
+        height: z.number().gt(0).int(),
+        visible: z.boolean().optional(),
+      })
+      .optional(),
+    config: z.array(pluginManifestConfigJsonSchema).optional(),
+    events: z
+      .object({
+        fromCogs: z.array(pluginManifestEventJsonSchema).optional(),
+        toCogs: z.array(pluginManifestEventJsonSchema).optional(),
+      })
+      .optional(),
+    state: z.array(pluginManifestStateJsonSchema).optional(),
+    media: z
+      .object({
+        audio: z.literal(true).optional(),
+        video: z.literal(true).optional(),
+        images: z.literal(true).optional(),
+      })
+      .optional(),
+    store: z
+      .object({
+        items: z
+          .record(
+            z.string(),
+            z.strictObject({
+              persistValue: z.boolean().optional(),
+            }),
+          )
+          .optional(),
+      })
+      .optional(),
+    permissions: z
+      .strictObject({
+        network: z
+          .strictObject({
+            access: z
+              .array(
+                z.strictObject({
+                  hosts: z.array(z.string().refine(validateNetworkHostPattern, { error: 'Invalid network host pattern' })).min(1),
+                  caCertificate: z.string().optional(),
+                }),
+              )
+              .optional(),
+          })
+          .optional(),
+      })
+      .optional(),
+  })
+  // Check that network access rules are only present if minCogsVersion is at least 5.11.0
+  .refine(
+    (manifest) => {
+      if (!manifest.permissions?.network?.access) {
+        return true;
+      }
+      if (manifest.minCogsVersion && semver.gte(manifest.minCogsVersion, '5.11.0')) {
+        return true;
+      }
+      return false;
+    },
+    {
+      path: ['permissions', 'network', 'access'],
+      message: 'minCogsVersion must be at least 5.11.0',
+    },
+  );
 
 const validate = cogsPluginManifestJsonSchema;
 

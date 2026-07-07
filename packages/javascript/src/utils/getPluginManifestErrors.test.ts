@@ -71,11 +71,12 @@ describe('validate plugin manifest', () => {
         ).toHaveLength(1);
       });
 
-      test('valid network access rule', () => {
+      test.each(['5.11.0', '5.12.2'] as const)('valid network access rule (%s)', (minCogsVersion) => {
         expect(
           getPluginManifestErrors({
             name: 'test plugin',
             version: '0.0.1',
+            minCogsVersion,
             permissions: {
               network: {
                 access: [{ hosts: ['api.vendor.com:80'] }],
@@ -85,11 +86,27 @@ describe('validate plugin manifest', () => {
         ).toBeNull();
       });
 
+      test.each(['5.9.0', '5.10.0', undefined] as const)('network access rule requires COGS 5.11 (%s)', (minCogsVersion) => {
+        expect(
+          getPluginManifestErrors({
+            name: 'test plugin',
+            version: '0.0.1',
+            minCogsVersion,
+            permissions: {
+              network: {
+                access: [{ hosts: ['api.vendor.com:80'] }],
+              },
+            },
+          }),
+        ).toHaveLength(1);
+      });
+
       test('invalid network access rule', () => {
         expect(
           getPluginManifestErrors({
             name: 'test plugin',
             version: '0.0.1',
+            minCogsVersion: '5.11.0',
             permissions: {
               network: {
                 access: [
