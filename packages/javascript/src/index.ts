@@ -11,3 +11,4 @@ export { matchesNetworkHostPattern } from './utils/matchesNetworkHostPattern';
 export * from './types/CogsPluginManifest';
 export * as ManifestTypes from './types/ManifestTypes';
 export * from './DataStore';
+export { validatePluginManifest } from './utils/validatePluginManifest';
