@@ -15,6 +15,7 @@ import {
   PluginManifestStateJson,
 } from '../types/CogsPluginManifest';
 import { z } from 'zod/v4';
+import { NetworkHostPattern } from './NetworkHostPattern';
 
 const uniqueStringArray = z.array(z.string().min(1)).refine((items) => new Set(items).size === items.length, {
   message: 'Array items must be unique',
@@ -112,6 +113,15 @@ const pluginManifestStateJsonSchema: z.ZodType<PluginManifestStateJson> = z.stri
   writableFromClient: z.literal(true).optional(),
 });
 
+const validateNetworkHostPattern = (pattern: string): boolean => {
+  try {
+    new NetworkHostPattern(pattern);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const cogsPluginManifestJsonSchema: z.ZodType<CogsPluginManifestJson> = z.strictObject({
   version: z.union([
     z.templateLiteral([z.uint32()]),
@@ -164,7 +174,7 @@ const cogsPluginManifestJsonSchema: z.ZodType<CogsPluginManifestJson> = z.strict
           access: z
             .array(
               z.strictObject({
-                hosts: z.array(z.templateLiteral([z.string(), z.literal(':'), z.union([z.uint32(), z.literal('*')])])),
+                hosts: z.array(z.stringFormat('network host pattern', validateNetworkHostPattern)).min(1),
                 caCertificate: z.string().optional(),
               }),
             )
