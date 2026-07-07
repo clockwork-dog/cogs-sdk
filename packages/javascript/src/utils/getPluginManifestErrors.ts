@@ -174,7 +174,7 @@ const cogsPluginManifestJsonSchema: z.ZodType<CogsPluginManifestJson> = z.strict
           access: z
             .array(
               z.strictObject({
-                hosts: z.array(z.stringFormat('network host pattern', validateNetworkHostPattern)).min(1),
+                hosts: z.array(z.string().refine(validateNetworkHostPattern, { error: 'Invalid network host pattern' })).min(1),
                 caCertificate: z.string().optional(),
               }),
             )
