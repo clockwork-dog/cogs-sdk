@@ -18,113 +18,116 @@ import { z } from 'zod/v4';
 import semver from 'semver';
 import { NetworkHostPattern } from './NetworkHostPattern';
 
-const uniqueStringArray = z.array(z.string().min(1)).refine((items) => new Set(items).size === items.length, {
+const uniqueStringArraySchema = z.array(z.string().min(1)).refine((items) => new Set(items).size === items.length, {
   message: 'Array items must be unique',
 });
 
-const cogsValueTypeStringSchema: z.ZodType<CogsValueTypeString> = z.strictObject({
-  type: z.literal('string'),
-});
+/** Returns a schema either allowing object to have on not have extra keys */
+function createManifestSchema(objectSchemaFactory: typeof z.strictObject | typeof z.object) {
+  // This function should always use `objectSchemaFactory` to create objects instead of `z.object` or `z.strictObject`
 
-const cogsValueTypeNumberSchema: z.ZodType<CogsValueTypeNumber> = z.strictObject({
-  type: z.literal('number'),
-  integer: z.literal(true).optional(),
-  min: z.number().optional(),
-  max: z.number().optional(),
-});
+  const cogsValueTypeStringSchema: z.ZodType<CogsValueTypeString> = objectSchemaFactory({
+    type: z.literal('string'),
+  });
 
-const cogsValueTypeBooleanSchema: z.ZodType<CogsValueTypeBoolean> = z.strictObject({
-  type: z.literal('boolean'),
-});
+  const cogsValueTypeNumberSchema: z.ZodType<CogsValueTypeNumber> = objectSchemaFactory({
+    type: z.literal('number'),
+    integer: z.literal(true).optional(),
+    min: z.number().optional(),
+    max: z.number().optional(),
+  });
 
-const cogsValueTypeOptionSchema: z.ZodType<CogsValueTypeOption<string[]>> = z.strictObject({
-  type: z.literal('option'),
-  options: uniqueStringArray,
-});
+  const cogsValueTypeBooleanSchema: z.ZodType<CogsValueTypeBoolean> = objectSchemaFactory({
+    type: z.literal('boolean'),
+  });
 
-const pluginCogsValueTypeJsonSchema: z.ZodType<CogsValueType> = z.union([
-  cogsValueTypeStringSchema,
-  cogsValueTypeNumberSchema,
-  cogsValueTypeBooleanSchema,
-  cogsValueTypeOptionSchema,
-]);
+  const cogsValueTypeOptionSchema: z.ZodType<CogsValueTypeOption<string[]>> = objectSchemaFactory({
+    type: z.literal('option'),
+    options: uniqueStringArraySchema,
+  });
 
-const cogsValueTypeStringWithDefaultSchema = (options: { defaultRequired: boolean }): z.ZodType<CogsValueTypeStringWithDefault> =>
-  (options.defaultRequired
-    ? z.strictObject({ type: z.literal('string'), default: z.string() })
-    : z.strictObject({ type: z.literal('string'), default: z.string().optional() })) as z.ZodType<CogsValueTypeStringWithDefault>;
-
-const cogsValueTypeNumberWithDefaultSchema = (options: { defaultRequired: boolean }): z.ZodType<CogsValueTypeNumberWithDefault> =>
-  (options.defaultRequired
-    ? z.strictObject({
-        type: z.literal('number'),
-        integer: z.boolean().optional(),
-        min: z.number().optional(),
-        max: z.number().optional(),
-        default: z.number(),
-      })
-    : z.strictObject({
-        type: z.literal('number'),
-        integer: z.boolean().optional(),
-        min: z.number().optional(),
-        max: z.number().optional(),
-        default: z.number().optional(),
-      })) as z.ZodType<CogsValueTypeNumberWithDefault>;
-
-const cogsValueTypeBooleanWithDefaultSchema = (options: { defaultRequired: boolean }): z.ZodType<CogsValueTypeBooleanWithDefault> =>
-  (options.defaultRequired
-    ? z.strictObject({ type: z.literal('boolean'), default: z.boolean() })
-    : z.strictObject({ type: z.literal('boolean'), default: z.boolean().optional() })) as z.ZodType<CogsValueTypeBooleanWithDefault>;
-
-export const cogsValueTypeOptionWithDefaultSchema = (options: { defaultRequired: boolean }): z.ZodType<CogsValueTypeOptionWithDefault> =>
-  (options.defaultRequired
-    ? z.strictObject({
-        type: z.literal('option'),
-        options: uniqueStringArray.optional(),
-        default: z.string().min(1),
-      })
-    : z.strictObject({
-        type: z.literal('option'),
-        options: uniqueStringArray.optional(),
-        default: z.string().min(1).optional(),
-      })) as z.ZodType<CogsValueTypeOptionWithDefault>;
-
-const pluginCogsValueTypeWithDefaultJsonSchema = (options: { defaultRequired: boolean }): z.ZodType<CogsValueTypeWithDefault> =>
-  z.union([
-    cogsValueTypeStringWithDefaultSchema(options),
-    cogsValueTypeNumberWithDefaultSchema(options),
-    cogsValueTypeBooleanWithDefaultSchema(options),
-    cogsValueTypeOptionWithDefaultSchema(options),
+  const pluginCogsValueTypeJsonSchema: z.ZodType<CogsValueType> = z.union([
+    cogsValueTypeStringSchema,
+    cogsValueTypeNumberSchema,
+    cogsValueTypeBooleanSchema,
+    cogsValueTypeOptionSchema,
   ]);
 
-const pluginManifestConfigJsonSchema: z.ZodType<PluginManifestConfigJson> = z.strictObject({
-  name: z.string().min(1),
-  value: pluginCogsValueTypeWithDefaultJsonSchema({ defaultRequired: false }),
-});
+  const cogsValueTypeStringWithDefaultSchema = (options: { defaultRequired: boolean }): z.ZodType<CogsValueTypeStringWithDefault> =>
+    (options.defaultRequired
+      ? objectSchemaFactory({ type: z.literal('string'), default: z.string() })
+      : objectSchemaFactory({ type: z.literal('string'), default: z.string().optional() })) as z.ZodType<CogsValueTypeStringWithDefault>;
 
-const pluginManifestEventJsonSchema: z.ZodType<PluginManifestEventJson> = z.strictObject({
-  name: z.string().min(1),
-  value: pluginCogsValueTypeJsonSchema.optional(),
-});
+  const cogsValueTypeNumberWithDefaultSchema = (options: { defaultRequired: boolean }): z.ZodType<CogsValueTypeNumberWithDefault> =>
+    (options.defaultRequired
+      ? objectSchemaFactory({
+          type: z.literal('number'),
+          integer: z.boolean().optional(),
+          min: z.number().optional(),
+          max: z.number().optional(),
+          default: z.number(),
+        })
+      : objectSchemaFactory({
+          type: z.literal('number'),
+          integer: z.boolean().optional(),
+          min: z.number().optional(),
+          max: z.number().optional(),
+          default: z.number().optional(),
+        })) as z.ZodType<CogsValueTypeNumberWithDefault>;
 
-const pluginManifestStateJsonSchema: z.ZodType<PluginManifestStateJson> = z.strictObject({
-  name: z.string().min(1),
-  value: pluginCogsValueTypeWithDefaultJsonSchema({ defaultRequired: true }),
-  writableFromCogs: z.literal(true).optional(),
-  writableFromClient: z.literal(true).optional(),
-});
+  const cogsValueTypeBooleanWithDefaultSchema = (options: { defaultRequired: boolean }): z.ZodType<CogsValueTypeBooleanWithDefault> =>
+    (options.defaultRequired
+      ? objectSchemaFactory({ type: z.literal('boolean'), default: z.boolean() })
+      : objectSchemaFactory({ type: z.literal('boolean'), default: z.boolean().optional() })) as z.ZodType<CogsValueTypeBooleanWithDefault>;
 
-const validateNetworkHostPattern = (pattern: string): boolean => {
-  try {
-    new NetworkHostPattern(pattern);
-    return true;
-  } catch {
-    return false;
-  }
-};
+  const cogsValueTypeOptionWithDefaultSchema = (options: { defaultRequired: boolean }): z.ZodType<CogsValueTypeOptionWithDefault> =>
+    (options.defaultRequired
+      ? objectSchemaFactory({
+          type: z.literal('option'),
+          options: uniqueStringArraySchema.optional(),
+          default: z.string().min(1),
+        })
+      : objectSchemaFactory({
+          type: z.literal('option'),
+          options: uniqueStringArraySchema.optional(),
+          default: z.string().min(1).optional(),
+        })) as z.ZodType<CogsValueTypeOptionWithDefault>;
 
-const cogsPluginManifestJsonSchema: z.ZodType<CogsPluginManifestJson> = z
-  .strictObject({
+  const pluginCogsValueTypeWithDefaultJsonSchema = (options: { defaultRequired: boolean }): z.ZodType<CogsValueTypeWithDefault> =>
+    z.union([
+      cogsValueTypeStringWithDefaultSchema(options),
+      cogsValueTypeNumberWithDefaultSchema(options),
+      cogsValueTypeBooleanWithDefaultSchema(options),
+      cogsValueTypeOptionWithDefaultSchema(options),
+    ]);
+
+  const pluginManifestConfigJsonSchema: z.ZodType<PluginManifestConfigJson> = objectSchemaFactory({
+    name: z.string().min(1),
+    value: pluginCogsValueTypeWithDefaultJsonSchema({ defaultRequired: false }),
+  });
+
+  const pluginManifestEventJsonSchema: z.ZodType<PluginManifestEventJson> = objectSchemaFactory({
+    name: z.string().min(1),
+    value: pluginCogsValueTypeJsonSchema.optional(),
+  });
+
+  const pluginManifestStateJsonSchema: z.ZodType<PluginManifestStateJson> = objectSchemaFactory({
+    name: z.string().min(1),
+    value: pluginCogsValueTypeWithDefaultJsonSchema({ defaultRequired: true }),
+    writableFromCogs: z.literal(true).optional(),
+    writableFromClient: z.literal(true).optional(),
+  });
+
+  const validateNetworkHostPattern = (pattern: string): boolean => {
+    try {
+      new NetworkHostPattern(pattern);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const manifestSchema: z.ZodType<CogsPluginManifestJson> = objectSchemaFactory({
     version: z.union([
       z.templateLiteral([z.uint32()]),
       z.templateLiteral([z.uint32(), z.literal('.'), z.uint32()]),
@@ -162,7 +165,7 @@ const cogsPluginManifestJsonSchema: z.ZodType<CogsPluginManifestJson> = z
         items: z
           .record(
             z.string(),
-            z.strictObject({
+            objectSchemaFactory({
               persistValue: z.boolean().optional(),
             }),
           )
@@ -175,7 +178,7 @@ const cogsPluginManifestJsonSchema: z.ZodType<CogsPluginManifestJson> = z
           .strictObject({
             access: z
               .array(
-                z.strictObject({
+                objectSchemaFactory({
                   hosts: z.array(z.string().refine(validateNetworkHostPattern, { error: 'Invalid network host pattern' })).min(1),
                   caCertificate: z.string().optional(),
                 }),
@@ -186,26 +189,43 @@ const cogsPluginManifestJsonSchema: z.ZodType<CogsPluginManifestJson> = z
       })
       .optional(),
   })
-  // Check that network access rules are only present if minCogsVersion is at least 5.11.0
-  .refine(
-    (manifest) => {
-      if (!manifest.permissions?.network?.access) {
-        return true;
-      }
-      if (manifest.minCogsVersion && semver.gte(manifest.minCogsVersion, '5.11.0')) {
-        return true;
-      }
-      return false;
-    },
-    {
-      path: ['permissions', 'network', 'access'],
-      message: 'minCogsVersion must be at least 5.11.0',
-    },
-  );
+    // Check that network access rules are only present if minCogsVersion is at least 5.11.0
+    .refine(
+      (manifest) => {
+        if (!manifest.permissions?.network?.access) {
+          return true;
+        }
+        if (manifest.minCogsVersion && semver.gte(manifest.minCogsVersion, '5.11.0')) {
+          return true;
+        }
+        return false;
+      },
+      {
+        path: ['permissions', 'network', 'access'],
+        message: 'minCogsVersion must be at least 5.11.0',
+      },
+    );
 
-const validate = cogsPluginManifestJsonSchema;
+  return manifestSchema;
+}
+
+const cogsPluginManifestJsonSchema = createManifestSchema(z.object);
+const cogsPluginManifestJsonStrictSchema = createManifestSchema(z.strictObject);
 
 export function getPluginManifestErrors(manifest: CogsPluginManifestJson): string[] | null {
+  let validate: z.ZodType<CogsPluginManifestJson> = cogsPluginManifestJsonSchema;
+
+  // minCogsVersion 5.11.0 requires strict schema
+  // i.e. no unexpected keys
+  if (
+    typeof manifest === 'object' &&
+    manifest.minCogsVersion &&
+    semver.valid(manifest.minCogsVersion) &&
+    semver.gte(manifest.minCogsVersion, '5.11.0')
+  ) {
+    validate = cogsPluginManifestJsonStrictSchema;
+  }
+
   const result = validate.safeParse(manifest);
   if (result.success) return null;
 
