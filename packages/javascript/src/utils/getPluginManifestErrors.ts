@@ -53,47 +53,41 @@ function createManifestSchema(objectSchemaFactory: typeof z.strictObject | typeo
     cogsValueTypeOptionSchema,
   ]);
 
-  const cogsValueTypeStringWithDefaultSchema = (options: { defaultRequired: boolean }): z.ZodType<CogsValueTypeStringWithDefault> =>
-    (options.defaultRequired
-      ? objectSchemaFactory({ type: z.literal('string'), default: z.string() })
-      : objectSchemaFactory({ type: z.literal('string'), default: z.string().optional() })) as z.ZodType<CogsValueTypeStringWithDefault>;
+  const makeOptionalWhen = <T extends z.ZodTypeAny>(schema: T, condition: boolean): z.ZodType<T['_output'] | undefined> => {
+    return condition ? schema.optional() : schema;
+  };
 
-  const cogsValueTypeNumberWithDefaultSchema = (options: { defaultRequired: boolean }): z.ZodType<CogsValueTypeNumberWithDefault> =>
-    (options.defaultRequired
-      ? objectSchemaFactory({
-          type: z.literal('number'),
-          integer: z.boolean().optional(),
-          min: z.number().optional(),
-          max: z.number().optional(),
-          default: z.number(),
-        })
-      : objectSchemaFactory({
-          type: z.literal('number'),
-          integer: z.boolean().optional(),
-          min: z.number().optional(),
-          max: z.number().optional(),
-          default: z.number().optional(),
-        })) as z.ZodType<CogsValueTypeNumberWithDefault>;
+  const cogsValueTypeStringWithDefaultSchema = <DefaultRequired extends boolean>(options: { defaultRequired: DefaultRequired }) =>
+    objectSchemaFactory({
+      type: z.literal('string'),
+      default: makeOptionalWhen(z.string(), options.defaultRequired),
+    }) as z.ZodType<DefaultRequired extends true ? CogsValueTypeStringWithDefault : CogsValueTypeString>;
 
-  const cogsValueTypeBooleanWithDefaultSchema = (options: { defaultRequired: boolean }): z.ZodType<CogsValueTypeBooleanWithDefault> =>
-    (options.defaultRequired
-      ? objectSchemaFactory({ type: z.literal('boolean'), default: z.boolean() })
-      : objectSchemaFactory({ type: z.literal('boolean'), default: z.boolean().optional() })) as z.ZodType<CogsValueTypeBooleanWithDefault>;
+  const cogsValueTypeNumberWithDefaultSchema = <DefaultRequired extends boolean>(options: { defaultRequired: DefaultRequired }) =>
+    objectSchemaFactory({
+      type: z.literal('number'),
+      integer: z.boolean().optional(),
+      min: z.number().optional(),
+      max: z.number().optional(),
+      default: makeOptionalWhen(z.number(), options.defaultRequired),
+    }) as z.ZodType<DefaultRequired extends true ? CogsValueTypeNumberWithDefault : CogsValueTypeNumber>;
 
-  const cogsValueTypeOptionWithDefaultSchema = (options: { defaultRequired: boolean }): z.ZodType<CogsValueTypeOptionWithDefault> =>
-    (options.defaultRequired
-      ? objectSchemaFactory({
-          type: z.literal('option'),
-          options: uniqueStringArraySchema.optional(),
-          default: z.string().min(1),
-        })
-      : objectSchemaFactory({
-          type: z.literal('option'),
-          options: uniqueStringArraySchema.optional(),
-          default: z.string().min(1).optional(),
-        })) as z.ZodType<CogsValueTypeOptionWithDefault>;
+  const cogsValueTypeBooleanWithDefaultSchema = <DefaultRequired extends boolean>(options: { defaultRequired: DefaultRequired }) =>
+    objectSchemaFactory({
+      type: z.literal('boolean'),
+      default: makeOptionalWhen(z.boolean(), options.defaultRequired),
+    }) as z.ZodType<DefaultRequired extends true ? CogsValueTypeBooleanWithDefault : CogsValueTypeBoolean>;
 
-  const pluginCogsValueTypeWithDefaultJsonSchema = (options: { defaultRequired: boolean }): z.ZodType<CogsValueTypeWithDefault> =>
+  const cogsValueTypeOptionWithDefaultSchema = <DefaultRequired extends boolean>(options: { defaultRequired: DefaultRequired }) =>
+    objectSchemaFactory({
+      type: z.literal('option'),
+      options: uniqueStringArraySchema.optional(),
+      default: makeOptionalWhen(z.string(), options.defaultRequired),
+    }) as z.ZodType<DefaultRequired extends true ? CogsValueTypeOptionWithDefault : CogsValueTypeOption<string[]>>;
+
+  const pluginCogsValueTypeWithDefaultJsonSchema = <DefaultRequired extends boolean>(options: {
+    defaultRequired: DefaultRequired;
+  }): z.ZodType<DefaultRequired extends true ? CogsValueTypeWithDefault : CogsValueType> =>
     z.union([
       cogsValueTypeStringWithDefaultSchema(options),
       cogsValueTypeNumberWithDefaultSchema(options),
