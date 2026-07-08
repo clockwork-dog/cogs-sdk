@@ -46,7 +46,7 @@ describe('validate plugin manifest', () => {
           invalid: 'this is incorrect',
           'very bad': 666,
         } as never),
-      ).toHaveLength(3); // version missing, name missing, unrecognized keys
+      ).toHaveLength(2); // version missing, name missing
     });
 
     test('invalid version', () => {
@@ -55,6 +55,28 @@ describe('validate plugin manifest', () => {
           name: 'test plugin',
           version: 'invalid' as never,
         }),
+      ).toHaveLength(1);
+    });
+
+    test.each(['5.9.0', '5.10.0', undefined] as const)('extra keys are allowed with minCogsVersion %s', (minCogsVersion) => {
+      expect(
+        getPluginManifestErrors({
+          name: 'test plugin',
+          version: '0.0.1',
+          minCogsVersion,
+          junk: 'junk',
+        } as never),
+      ).toBeNull();
+    });
+
+    test.each(['5.11.0', '5.12.2'] as const)('extra keys not allowed with minCogsVersion %s', (minCogsVersion) => {
+      expect(
+        getPluginManifestErrors({
+          name: 'test plugin',
+          version: '0.0.1',
+          minCogsVersion,
+          junk: 'junk',
+        } as never),
       ).toHaveLength(1);
     });
 
@@ -71,7 +93,7 @@ describe('validate plugin manifest', () => {
         ).toHaveLength(1);
       });
 
-      test.each(['5.11.0', '5.12.2'] as const)('valid network access rule (%s)', (minCogsVersion) => {
+      test.each(['5.11.0', '5.12.2'] as const)('valid network access rule with minCogsVersion %s', (minCogsVersion) => {
         expect(
           getPluginManifestErrors({
             name: 'test plugin',
@@ -86,7 +108,7 @@ describe('validate plugin manifest', () => {
         ).toBeNull();
       });
 
-      test.each(['5.9.0', '5.10.0', undefined] as const)('network access rule requires COGS 5.11 (%s)', (minCogsVersion) => {
+      test.each(['5.9.0', '5.10.0', undefined] as const)('network access rule requires COGS 5.11 with minCogsVersion %s', (minCogsVersion) => {
         expect(
           getPluginManifestErrors({
             name: 'test plugin',
