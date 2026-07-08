@@ -60,7 +60,7 @@ function createManifestSchema(objectSchemaFactory: typeof z.strictObject | typeo
   const cogsValueTypeStringWithDefaultSchema = <DefaultRequired extends boolean>(options: { defaultRequired: DefaultRequired }) =>
     objectSchemaFactory({
       type: z.literal('string'),
-      default: makeOptionalWhen(z.string(), options.defaultRequired),
+      default: makeOptionalWhen(z.string(), !options.defaultRequired),
     }) as z.ZodType<DefaultRequired extends true ? CogsValueTypeStringWithDefault : CogsValueTypeString>;
 
   const cogsValueTypeNumberWithDefaultSchema = <DefaultRequired extends boolean>(options: { defaultRequired: DefaultRequired }) =>
@@ -69,20 +69,20 @@ function createManifestSchema(objectSchemaFactory: typeof z.strictObject | typeo
       integer: z.boolean().optional(),
       min: z.number().optional(),
       max: z.number().optional(),
-      default: makeOptionalWhen(z.number(), options.defaultRequired),
+      default: makeOptionalWhen(z.number(), !options.defaultRequired),
     }) as z.ZodType<DefaultRequired extends true ? CogsValueTypeNumberWithDefault : CogsValueTypeNumber>;
 
   const cogsValueTypeBooleanWithDefaultSchema = <DefaultRequired extends boolean>(options: { defaultRequired: DefaultRequired }) =>
     objectSchemaFactory({
       type: z.literal('boolean'),
-      default: makeOptionalWhen(z.boolean(), options.defaultRequired),
+      default: makeOptionalWhen(z.boolean(), !options.defaultRequired),
     }) as z.ZodType<DefaultRequired extends true ? CogsValueTypeBooleanWithDefault : CogsValueTypeBoolean>;
 
   const cogsValueTypeOptionWithDefaultSchema = <DefaultRequired extends boolean>(options: { defaultRequired: DefaultRequired }) =>
     objectSchemaFactory({
       type: z.literal('option'),
       options: uniqueStringArraySchema.optional(),
-      default: makeOptionalWhen(z.string(), options.defaultRequired),
+      default: makeOptionalWhen(z.string(), !options.defaultRequired),
     }) as z.ZodType<DefaultRequired extends true ? CogsValueTypeOptionWithDefault : CogsValueTypeOption<string[]>>;
 
   const pluginCogsValueTypeWithDefaultJsonSchema = <DefaultRequired extends boolean>(options: {

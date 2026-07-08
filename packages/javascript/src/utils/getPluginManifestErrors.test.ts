@@ -80,6 +80,18 @@ describe('validate plugin manifest', () => {
       ).toHaveLength(1);
     });
 
+    describe('config', () => {
+      test.each(['default label', undefined] as const)('default value %s', (defaultValue) => {
+        expect(
+          getPluginManifestErrors({
+            name: 'test plugin',
+            version: '0.0.1',
+            config: [{ name: 'Label', value: { type: 'string', default: defaultValue } }],
+          }),
+        ).toBeNull();
+      });
+    });
+
     describe('permissions', () => {
       test('invalid permissions', () => {
         expect(
