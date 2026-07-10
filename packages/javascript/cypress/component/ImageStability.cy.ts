@@ -1,11 +1,10 @@
 import { SurfaceManager } from '../../src/state-based/SurfaceManager';
 
 const constructAssetURL = (file: string) => `http://localhost:5173/__cypress/iframes/cypress/fixtures/${file}`;
-const getAudioOutput = () => '';
 describe('Image stability tests', () => {
   it('can show an image', () => {
     const now = Date.now();
-    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
+    const manager = new SurfaceManager(constructAssetURL, {
       'clip-id': {
         file: 'indianred@2560x1440.png',
         type: 'image',
@@ -19,7 +18,7 @@ describe('Image stability tests', () => {
 
   it("doesn't show a queued image", () => {
     const now = Date.now();
-    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
+    const manager = new SurfaceManager(constructAssetURL, {
       'clip-id': {
         file: 'indianred@2560x1440.png',
         type: 'image',
@@ -37,7 +36,7 @@ describe('Image stability tests', () => {
     const ORIGINAL_SRC = 'indianred@2560x1440.png';
     const CHANGED_SRC = '404.png';
     const now = Date.now();
-    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
+    const manager = new SurfaceManager(constructAssetURL, {
       'clip-id': {
         file: ORIGINAL_SRC,
         type: 'image',
@@ -59,7 +58,7 @@ describe('Image stability tests', () => {
 
   it('recovers from img element deletion', () => {
     const now = Date.now();
-    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
+    const manager = new SurfaceManager(constructAssetURL, {
       'clip-id': {
         file: 'indianred@2560x1440.png',
         type: 'image',

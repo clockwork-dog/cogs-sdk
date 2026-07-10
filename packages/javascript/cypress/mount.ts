@@ -12,7 +12,7 @@ export function mount(surfaceManager: SurfaceManager): Cypress.Chainable {
   // clean up each time we mount a new component
   container.innerHTML = '';
   const prevManager = (window as any).surfaceManager as SurfaceManager;
-  prevManager?.setState({});
+  prevManager?.destroy();
 
   // mount component
   (window as any).surfaceManager = surfaceManager;

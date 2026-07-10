@@ -34,7 +34,6 @@ export abstract class MediaClipManager<T extends MediaClipState> {
     protected clipElement: HTMLElement,
     state: T,
     protected constructAssetURL: (file: string) => string,
-    protected getAudioOutput: (outputLabel: string) => string,
     protected mediaPreloader: MediaPreloader,
   ) {
     this._state = state;
@@ -115,7 +114,7 @@ export function assertElement(
       }
 
       if (!element) {
-        element = preloader.getElement(clip.file, clip.type);
+        element = preloader.getElement(clip.file, clip.type, clip.audioOutput);
       }
 
       // Required for iOS
@@ -162,7 +161,7 @@ export function assertVisualProperties(
  * Makes sure that the element sounds correct.
  * - It should have the right volume, and play out the correct speaker.
  */
-export function assertAudialProperties(mediaElement: HTMLMediaElement, properties: AudialProperties, sinkId: string, surfaceVolume: number) {
+export function assertAudialProperties(mediaElement: HTMLMediaElement, gainNode: GainNode, properties: AudialProperties, surfaceVolume: number) {
   const clipVolume = properties.volume * surfaceVolume;
   if (IS_IOS) {
     // For iOS devices HTMLMediaElement.volume is readonly
@@ -176,19 +175,10 @@ export function assertAudialProperties(mediaElement: HTMLMediaElement, propertie
     if (mediaElement.muted) {
       mediaElement.muted = false;
     }
-    if (mediaElement.volume !== clipVolume) {
-      mediaElement.volume = clipVolume;
+    if (mediaElement.volume !== 1) {
+      mediaElement.volume = 1;
     }
-    if (mediaElement.sinkId !== sinkId) {
-      try {
-        mediaElement.setSinkId(sinkId).catch(() => {
-          /* Do nothing, will be tried in next loop */
-        });
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (_) {
-        /* Do nothing, will be tried in next loop */
-      }
-    }
+    gainNode.gain.value = properties.volume * surfaceVolume;
   }
 }
 
@@ -448,8 +438,10 @@ export class AudioManager extends MediaClipManager<AudioState> {
 
     if (!currentState || !this.audioElement) return;
 
-    const sinkId = this.getAudioOutput(this._state.audioOutput);
-    assertAudialProperties(this.audioElement, currentState as AudialProperties, sinkId, this.volume);
+    const gainNode = this.mediaPreloader.getGainNode(this.audioElement);
+    if (gainNode) {
+      assertAudialProperties(this.audioElement, gainNode, currentState as AudialProperties, this.volume);
+    }
     const nextSyncState = assertTemporalProperties(
       this.audioElement,
       currentState as TemporalProperties,
@@ -463,9 +455,12 @@ export class AudioManager extends MediaClipManager<AudioState> {
 
   public destroy(): void {
     if (this.audioElement) {
+      const gainNode = this.mediaPreloader.getGainNode(this.audioElement);
+      if (gainNode) {
+        gainNode.gain.value = 0;
+      }
       this.audioElement.pause();
       this.audioElement.remove();
-      this.audioElement.volume = 0;
       this.audioElement.currentTime = 0;
       this.mediaPreloader.releaseElement(this.audioElement);
     }
@@ -495,9 +490,11 @@ export class VideoManager extends MediaClipManager<VideoState> {
 
     if (!currentState || !this.videoElement) return;
 
-    const sinkId = this.getAudioOutput(this._state.audioOutput);
     assertVisualProperties(this.videoElement, currentState as VisualProperties, this._state.fit);
-    assertAudialProperties(this.videoElement, currentState as AudialProperties, sinkId, this.volume);
+    const gainNode = this.mediaPreloader.getGainNode(this.videoElement);
+    if (gainNode) {
+      assertAudialProperties(this.videoElement, gainNode, currentState as AudialProperties, this.volume);
+    }
     const nextSyncState = assertTemporalProperties(
       this.videoElement,
       currentState as TemporalProperties,
@@ -511,9 +508,12 @@ export class VideoManager extends MediaClipManager<VideoState> {
 
   public destroy(): void {
     if (this.videoElement) {
+      const gainNode = this.mediaPreloader.getGainNode(this.videoElement);
+      if (gainNode) {
+        gainNode.gain.value = 0;
+      }
       this.videoElement.pause();
       this.videoElement.remove();
-      this.videoElement.volume = 0;
       this.videoElement.currentTime = 0;
       this.mediaPreloader.releaseElement(this.videoElement);
     }
