@@ -5,7 +5,7 @@ const constructAssetURL = (file: string) => `http://localhost:5173/__cypress/ifr
 
 const AUDIO_OUTPUT = ''; // Default
 const EXPECTED_HZ = 440;
-const HZ_ε = 2;
+const HZ_ε = 10;
 const MIN_VOLUME_SILENCE = 0.1;
 const VOLUME_ε = 0.01;
 

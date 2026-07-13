@@ -178,7 +178,7 @@ export function assertAudialProperties(mediaElement: HTMLMediaElement, gainNode:
     if (mediaElement.volume !== 1) {
       mediaElement.volume = 1;
     }
-    gainNode.gain.value = properties.volume * surfaceVolume;
+    gainNode.gain.value = clipVolume;
   }
 }
 
@@ -214,9 +214,18 @@ function playbackSmoothing(deltaTime: number) {
   return Math.sign(deltaTime) * Math.pow(Math.abs(deltaTime) / SYNC_MAX_THRESHOLD_MS, PLAYBACK_ADJUSTMENT_SMOOTHING) * MAX_PLAYBACK_RATE_ADJUSTMENT;
 }
 
-function assertPlaybackRate(mediaElement: HTMLMediaElement, playbackRate: number) {
+function assertPlaybackRate(mediaElement: HTMLMediaElement, playbackRate: number, pitchNode: AudioWorkletNode | undefined) {
   if (mediaElement.playbackRate !== playbackRate) {
     mediaElement.playbackRate = playbackRate;
+  }
+  // Cancel out the pitch shift playbackRate would otherwise cause, now that native preservesPitch is disabled.
+  // Checked independently of the playbackRate guard above, since the pitch node may attach after playbackRate was last changed.
+  if (pitchNode && playbackRate !== 0) {
+    const pitchFactor = pitchNode.parameters.get('pitchFactor')!;
+    const targetPitchFactor = 1 / playbackRate;
+    if (pitchFactor.value !== targetPitchFactor) {
+      pitchFactor.value = targetPitchFactor;
+    }
   }
   // It's more responsive on chromium to set playbackRate to 0 instead of pausing.
   // It also makes it more responsive to start again.
@@ -242,6 +251,7 @@ export function assertTemporalProperties(
   currentTime: number,
   syncState: TemporalSyncState,
   enablePlaybackRateAdjustment: boolean,
+  pitchNode: AudioWorkletNode | undefined,
 ): TemporalSyncState {
   // On Webkit (using the simulator on safari and COGS mobile app on iOS) changes to currentTime and playbackRate are much less responsive.
   // We make sure we only do lower frequency updates, and don't change playbackRate.
@@ -286,7 +296,7 @@ export function assertTemporalProperties(
         // We're not looping, and this is past the end of the video
         return { state: 'idle' };
       }
-      assertPlaybackRate(mediaElement, 0);
+      assertPlaybackRate(mediaElement, 0, pitchNode);
       mediaElement.currentTime = isLooping ? modulo(target, mediaElement.duration * 1000) : target;
       return { state: 'seeking-ahead' };
     }
@@ -294,16 +304,16 @@ export function assertTemporalProperties(
       return { state: 'seeking-ahead' };
 
     case syncState.state === 'seeking-ahead' && mediaElement.seeking === false: {
-      assertPlaybackRate(mediaElement, 0);
+      assertPlaybackRate(mediaElement, 0, pitchNode);
       return { state: 'seeked-ahead' };
     }
     case syncState.state === 'seeked-ahead' && deltaTime < -NO_SYNC_SEEK_AHEAD_INNER_THRESHOLD_MS: {
-      assertPlaybackRate(mediaElement, properties.rate);
+      assertPlaybackRate(mediaElement, properties.rate, pitchNode);
       console.warn('Failed to seek ahead in time');
       return { state: 'idle' };
     }
     case syncState.state === 'seeked-ahead' && deltaTimeAbs <= NO_SYNC_SEEK_AHEAD_INNER_THRESHOLD_MS: {
-      assertPlaybackRate(mediaElement, properties.rate);
+      assertPlaybackRate(mediaElement, properties.rate, pitchNode);
       return { state: 'idle' };
     }
     case syncState.state === 'seeked-ahead' && deltaTimeAbs > NO_SYNC_SEEK_AHEAD_OUTER_THRESHOLD_MS * 1.5: {
@@ -327,25 +337,27 @@ export function assertTemporalProperties(
       deltaTimeAbs <= SYNC_MAX_THRESHOLD_MS: {
       const playbackRateAdjustment = playbackSmoothing(deltaTime);
       const adjustedPlaybackRate = Math.max(0, properties.rate - playbackRateAdjustment);
-      assertPlaybackRate(mediaElement, adjustedPlaybackRate);
+      assertPlaybackRate(mediaElement, adjustedPlaybackRate, pitchNode);
       return { state: 'intercepting' };
     }
     // Perfectly intercepted
     case syncState.state === 'intercepting' && deltaTimeAbs <= SYNC_INNER_TARGET_THRESHOLD_MS: {
-      assertPlaybackRate(mediaElement, properties.rate);
+      assertPlaybackRate(mediaElement, properties.rate, pitchNode);
       return { state: 'idle' };
     }
     // Intercept went too far
     case syncState.state === 'intercepting' && Math.sign(deltaTime) === Math.sign(mediaElement.playbackRate - properties.rate): {
-      assertPlaybackRate(mediaElement, properties.rate);
+      assertPlaybackRate(mediaElement, properties.rate, pitchNode);
       return { state: 'idle' };
     }
     // We're still on course
     case syncState.state === 'intercepting' && deltaTimeAbs < SYNC_MAX_THRESHOLD_MS * 2:
+      // Rate itself isn't changing here, but re-assert so a pitch node that attached mid-intercept still gets synced.
+      assertPlaybackRate(mediaElement, mediaElement.playbackRate, pitchNode);
       return { state: 'intercepting' };
     // We're way off track
     case syncState.state === 'intercepting':
-      assertPlaybackRate(mediaElement, properties.rate);
+      assertPlaybackRate(mediaElement, properties.rate, pitchNode);
       return { state: 'idle' };
 
     /**
@@ -356,7 +368,7 @@ export function assertTemporalProperties(
     case playbackRateSync && syncState.state === 'idle' && deltaTimeAbs > SYNC_MAX_THRESHOLD_MS: {
       const seekTarget = (properties.t + properties.rate * SYNC_SEEK_LOOKAHEAD_MS) / 1000;
       mediaElement.currentTime = isLooping ? modulo(seekTarget, mediaElement.duration * 1000) : seekTarget;
-      assertPlaybackRate(mediaElement, properties.rate);
+      assertPlaybackRate(mediaElement, properties.rate, pitchNode);
       return { state: 'seeking' };
     }
     case syncState.state === 'seeking' && mediaElement.seeking: {
@@ -370,7 +382,7 @@ export function assertTemporalProperties(
      * Idle behavior
      */
     case syncState.state === 'idle':
-      assertPlaybackRate(mediaElement, properties.rate);
+      assertPlaybackRate(mediaElement, properties.rate, pitchNode);
       if (properties.rate === 0 && deltaTimeAbs > SYNC_OUTER_TARGET_THRESHOLD_MS) {
         mediaElement.currentTime = properties.t / 1000;
       }
@@ -449,6 +461,7 @@ export class AudioManager extends MediaClipManager<AudioState> {
       now,
       this.syncState,
       this._state.enablePlaybackRateAdjustment,
+      this.mediaPreloader.getPitchNode(this.audioElement),
     );
     this.syncState = nextSyncState;
   }
@@ -502,6 +515,7 @@ export class VideoManager extends MediaClipManager<VideoState> {
       now,
       this.syncState,
       this._state.enablePlaybackRateAdjustment,
+      this.mediaPreloader.getPitchNode(this.videoElement),
     );
     this.syncState = nextSyncState;
   }

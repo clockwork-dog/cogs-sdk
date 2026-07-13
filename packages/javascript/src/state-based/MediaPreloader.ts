@@ -1,10 +1,13 @@
 import { MediaClientConfig } from '../types/CogsClientMessage';
+import { PHASE_VOCODER_PROCESSOR_NAME } from '../worklet/processorName';
+import { PHASE_VOCODER_WORKLET_SOURCE } from '../worklet/generated/workletSource';
 
 interface Media {
   element: HTMLMediaElement;
   type: 'audio' | 'video';
   inUse: boolean;
   gainNode: GainNode | undefined;
+  pitchNode: AudioWorkletNode | undefined;
 }
 
 interface MediaPool {
@@ -23,6 +26,7 @@ export class MediaPreloader {
   private _mediaPool: MediaPool = {};
   private _constructAssetURL: (file: string) => string;
   public audioContexts: Record<string, AudioContext> = {};
+  private _workletRegistrations: Record<string, Promise<void>> = {};
   constructor(constructAssetURL: (file: string) => string, testState: MediaClientConfig['files'] = {}) {
     this._constructAssetURL = constructAssetURL;
     this._state = testState;
@@ -39,13 +43,30 @@ export class MediaPreloader {
   getAudioContext(audioOutput: string): AudioContext {
     const ctx = this.audioContexts[audioOutput] ?? (this.audioContexts[audioOutput] = new AudioContext());
     ctx.resume();
+    this._workletRegistrations[audioOutput] ??= this.registerPhaseVocoderWorklet(ctx);
     return ctx;
+  }
+
+  private registerPhaseVocoderWorklet(ctx: AudioContext): Promise<void> {
+    const blobUrl = URL.createObjectURL(new Blob([PHASE_VOCODER_WORKLET_SOURCE], { type: 'application/javascript' }));
+    return ctx.audioWorklet
+      .addModule(blobUrl)
+      .catch((error) => console.error('Failed to register phase-vocoder worklet', error))
+      .finally(() => URL.revokeObjectURL(blobUrl));
   }
 
   getGainNode(element: HTMLMediaElement): GainNode | undefined {
     for (const cache of Object.values(this._mediaPool)) {
       for (const media of Object.values(cache.connected)) {
         if (media.element === element) return media.gainNode;
+      }
+    }
+  }
+
+  getPitchNode(element: HTMLMediaElement): AudioWorkletNode | undefined {
+    for (const cache of Object.values(this._mediaPool)) {
+      for (const media of Object.values(cache.connected)) {
+        if (media.element === element) return media.pitchNode;
       }
     }
   }
@@ -75,6 +96,7 @@ export class MediaPreloader {
             media.element.src = '';
             media.element.load();
             media.gainNode?.disconnect();
+            media.pitchNode?.disconnect();
           }
         }
         delete this._mediaPool[filename];
@@ -94,7 +116,8 @@ export class MediaPreloader {
     const element = document.createElement(type);
     element.src = this._constructAssetURL(file);
     element.preload = this.getPreloadAttr(file);
-    return { element, type, inUse: false, gainNode: undefined };
+    element.preservesPitch = false;
+    return { element, type, inUse: false, gainNode: undefined, pitchNode: undefined };
   }
 
   // Connects an element into the Web Audio graph. Must only be called once per element.
@@ -105,6 +128,16 @@ export class MediaPreloader {
     source.connect(gainNode);
     gainNode.connect(ctx.destination);
     media.gainNode = gainNode;
+
+    // Patch the pitch-correction worklet into the chain once this output's one-time
+    // registration resolves; the first clip on a fresh output may briefly play uncorrected.
+    this._workletRegistrations[audioOutput]?.then(() => {
+      const pitchNode = new AudioWorkletNode(ctx, PHASE_VOCODER_PROCESSOR_NAME);
+      source.disconnect(gainNode);
+      source.connect(pitchNode);
+      pitchNode.connect(gainNode);
+      media.pitchNode = pitchNode;
+    });
   }
 
   getElement(file: string, type: 'audio' | 'video', audioOutput: string) {
@@ -137,6 +170,7 @@ export class MediaPreloader {
   destroy() {
     Object.values(this.audioContexts).forEach((ctx) => ctx.close());
     this.audioContexts = {};
+    this._workletRegistrations = {};
     this._mediaPool = {};
   }
 }
