@@ -1,1 +1,1 @@
-export { checkPluginSignature, addSignatureToPlugin, VerificationResult } from './verification.js';
+export { verifyPluginSignature, addSignatureToPlugin, VerificationResult } from './verification.js';
