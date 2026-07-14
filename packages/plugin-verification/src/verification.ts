@@ -17,7 +17,7 @@ export interface VerificationResult {
  *
  * The public key is loaded from the COGS_PUBLIC_KEY environment variable.
  */
-export async function checkPluginSignature(cogsPluginPath: string): Promise<VerificationResult> {
+export async function verifyPluginSignature(cogsPluginPath: string): Promise<VerificationResult> {
   try {
     const buffer = await readCogsPluginBuffer(cogsPluginPath);
     const signature = extractSignatureFromCogsPlugin(buffer);

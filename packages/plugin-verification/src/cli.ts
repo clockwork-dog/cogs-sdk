@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { addSignatureToPlugin, checkPluginSignature } from './verification.js';
+import { addSignatureToPlugin, verifyPluginSignature } from './verification.js';
 
 function printUsageAndExit(): never {
   console.error('Usage: plugin-verification <sign|verify> <path-to-cogsplugin>');
@@ -20,7 +20,7 @@ async function main(): Promise<void> {
       break;
 
     case 'verify': {
-      const result = await checkPluginSignature(pluginPath);
+      const result = await verifyPluginSignature(pluginPath);
       if (!result.verified) {
         console.error(`Verification failed: ${result.error}`);
         process.exit(1);

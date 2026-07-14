@@ -6,7 +6,7 @@ import { Readable } from 'stream';
 import { v4 as uuidV4 } from 'uuid';
 import { beforeAll, expect, test } from 'vitest';
 import { CogsPluginManifest } from '../../javascript/src';
-import { addSignatureToPlugin, checkPluginSignature } from './verification';
+import { addSignatureToPlugin, verifyPluginSignature } from './verification';
 
 // Test key pair for signing/verifying .cogsplugin files
 beforeAll(() => {
@@ -18,7 +18,7 @@ beforeAll(() => {
 test('unsigned plugin', async () => {
   const pluginPath = await makePluginAsar('unsigned-plugin');
 
-  expect(await checkPluginSignature(pluginPath)).toEqual({
+  expect(await verifyPluginSignature(pluginPath)).toEqual({
     verified: false,
     error: 'No verification signature found',
   });
@@ -27,7 +27,7 @@ test('unsigned plugin', async () => {
 test('signed plugin', async () => {
   const pluginPath = await addSignatureToPlugin(await makePluginAsar('signed-plugin'));
 
-  expect(await checkPluginSignature(pluginPath)).toEqual({
+  expect(await verifyPluginSignature(pluginPath)).toEqual({
     verified: true,
   });
 });
