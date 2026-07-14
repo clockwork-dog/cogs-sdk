@@ -10,7 +10,9 @@
     "source.fixAll.eslint": "explicit"
   },
   "cSpell.words": [
+    "Asar",
     "clockworkdog",
+    "cogsplugin",
     "fullscreen",
     "typedoc"
   ],
