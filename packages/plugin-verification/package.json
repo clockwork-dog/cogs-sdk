@@ -16,7 +16,9 @@
   "files": [
     "dist/**/*"
   ],
+  "type": "module",
   "main": "dist/index.js",
+  "bin": "dist/cli.js",
   "scripts": {
     "test": "yarn lint && vitest",
     "lint": "eslint .",
