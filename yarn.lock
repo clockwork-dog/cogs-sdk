@@ -101,9 +101,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@clockworkdog/plugin-verification@workspace:packages/plugin-verification":
+"@clockworkdog/cogs-plugin-verification@workspace:packages/plugin-verification":
   version: 0.0.0-use.local
-  resolution: "@clockworkdog/plugin-verification@workspace:packages/plugin-verification"
+  resolution: "@clockworkdog/cogs-plugin-verification@workspace:packages/plugin-verification"
   dependencies:
     "@electron/asar": "npm:^4.2.0"
     "@eslint/js": "npm:^9.17.0"
@@ -116,6 +116,8 @@ __metadata:
     typescript-eslint: "npm:^8.18.1"
     uuid: "npm:^14.0.1"
     vitest: "npm:^4.0.6"
+  bin:
+    cogs-plugin-verification: dist/cli.js
   languageName: unknown
   linkType: soft
 

@@ -1,5 +1,5 @@
 {
-  "name": "@clockworkdog/plugin-verification",
+  "name": "@clockworkdog/cogs-plugin-verification",
   "description": "Utilities for signing and verifying the signature of a .cogsplugin file.",
   "author": "Clockwork Dog <info@clockwork.dog>",
   "homepage": "https://github.com/clockwork-dog/cogs-sdk/tree/main/packages/plugin-verification",
