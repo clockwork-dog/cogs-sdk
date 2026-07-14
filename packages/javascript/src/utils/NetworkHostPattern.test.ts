@@ -111,6 +111,20 @@ describe('NetworkHostPattern', () => {
     });
   });
 
+  describe('validateHostname', () => {
+    it('matches a host regardless of port', () => {
+      const pattern = new NetworkHostPattern('*.vendor.com:443');
+
+      expect(pattern.validateHostname('api.vendor.com')).toBe(true);
+    });
+
+    it('does not match an unrelated host', () => {
+      const pattern = new NetworkHostPattern('*.vendor.com:443');
+
+      expect(pattern.validateHostname('vendor.com')).toBe(false);
+    });
+  });
+
   describe('IPv6 patterns', () => {
     const exactIpv6Pattern = new NetworkHostPattern('[fd00::1]:443');
 

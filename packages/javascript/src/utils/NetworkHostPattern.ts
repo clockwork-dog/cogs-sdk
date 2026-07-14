@@ -28,10 +28,11 @@ export class NetworkHostPattern {
 
   /** Checks whether `host` and `port` are matched by this pattern. */
   validate(host: string, port: number): boolean {
-    return this.matchesHost(host) && (this.port === '*' || Number(this.port) === port);
+    return this.validateHostname(host) && (this.port === '*' || Number(this.port) === port);
   }
 
-  private matchesHost(host: string): boolean {
+  /** Checks whether `host` is matched by the hostname part of this pattern, ignoring the port. */
+  validateHostname(host: string): boolean {
     // Hostnames are case-insensitive; IP literals are unaffected by lowercasing.
     const patternHost = this.host.toLowerCase();
     host = host.toLowerCase();
