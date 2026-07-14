@@ -3,8 +3,10 @@
   "compilerOptions": {
     "types": ["node"],
     "noUncheckedIndexedAccess": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "rootDir": "src",
     "outDir": "dist"
   },
-  "files": ["src/index.ts"]
+  "files": ["src/index.ts", "src/cli.ts"]
 }
