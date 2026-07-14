@@ -174,7 +174,7 @@ function createManifestSchema(objectSchemaFactory: typeof z.strictObject | typeo
               .array(
                 objectSchemaFactory({
                   hosts: z.array(z.string().refine(validateNetworkHostPattern, { error: 'Invalid network host pattern' })).min(1),
-                  caCertificate: z.string().optional(),
+                  caCertificates: z.array(z.string().min(1)).optional(),
                 }),
               )
               .optional(),

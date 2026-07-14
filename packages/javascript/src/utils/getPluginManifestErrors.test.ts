@@ -151,6 +151,26 @@ describe('validate plugin manifest', () => {
           }),
         ).toHaveLength(1);
       });
+
+      test('network access rule with reference to a caCertificates file', () => {
+        expect(
+          getPluginManifestErrors({
+            name: 'test plugin',
+            version: '0.0.1',
+            minCogsVersion: '5.11.0',
+            permissions: {
+              network: {
+                access: [
+                  {
+                    hosts: ['private:443'],
+                    caCertificates: ['certs/https_self_signed_cert.pem'],
+                  },
+                ],
+              },
+            },
+          }),
+        ).toBeNull();
+      });
     });
   });
 });
