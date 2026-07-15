@@ -15,9 +15,12 @@ export interface VerificationResult {
 /**
  * Check the signature of a verified .cogsplugin file.
  *
- * The public key is loaded from the COGS_PUBLIC_KEY environment variable.
+ * The public key is loaded from the COGS_PUBLIC_KEY environment variable if `publicKey` is not set.
  */
-export async function verifyPluginSignature(cogsPluginPath: string): Promise<VerificationResult> {
+export async function verifyPluginSignature(
+  cogsPluginPath: string,
+  { publicKey = process.env.COGS_PUBLIC_KEY }: { publicKey?: string } = {},
+): Promise<VerificationResult> {
   try {
     const buffer = await readCogsPluginBuffer(cogsPluginPath);
     const signature = extractSignatureFromCogsPlugin(buffer);
@@ -35,7 +38,6 @@ export async function verifyPluginSignature(cogsPluginPath: string): Promise<Ver
     verifier.update(asarBytes);
     verifier.end();
 
-    const publicKey = process.env.COGS_PUBLIC_KEY;
     if (!publicKey) {
       throw new Error('COGS_PUBLIC_KEY environment variable is not set');
     }
@@ -56,11 +58,13 @@ export async function verifyPluginSignature(cogsPluginPath: string): Promise<Ver
  *
  * Overwrites the plugin file with the signed version.
  *
- * The private key is loaded from the COGS_PRIVATE_KEY environment variable.
+ * The private key is loaded from the COGS_PRIVATE_KEY environment variable if `privateKey` is not set.
  * Never commit the private key to the repository.
  */
-export async function addSignatureToPlugin(cogsPluginPath: string): Promise<string> {
-  const privateKey = process.env.COGS_PRIVATE_KEY;
+export async function addSignatureToPlugin(
+  cogsPluginPath: string,
+  { privateKey = process.env.COGS_PRIVATE_KEY }: { privateKey?: string } = {},
+): Promise<string> {
   if (!privateKey) {
     throw new Error('COGS_PRIVATE_KEY environment variable is not set');
   }
