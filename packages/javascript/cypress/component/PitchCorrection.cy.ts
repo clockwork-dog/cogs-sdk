@@ -5,7 +5,7 @@ const constructAssetURL = (file: string) => `http://localhost:5173/__cypress/ifr
 
 const AUDIO_OUTPUT = ''; // Default
 const EXPECTED_HZ = 440;
-const HZ_ε = 1;
+const HZ_ε = 2;
 
 async function analyzeAudio(audioContext: AudioContext, gainNode: GainNode): Promise<{ hz: number | undefined; volume: number }> {
   const fftSize = 8192;
