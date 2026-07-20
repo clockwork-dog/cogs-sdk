@@ -208,10 +208,10 @@ const SYNC_SEEK_LOOKAHEAD_MS = 10;
 // This value allows disagreement between HTMLVideoElement.duration and the length of the different audio streams we have in COGS.
 const LOOPING_EPSILON_MS = 100;
 
-const PLAYBACK_ADJUSTMENT_SMOOTHING = 0.3;
-const MAX_PLAYBACK_RATE_ADJUSTMENT = 0.1;
+const PITCH_CORRECTION_1_BIN_UP = 1.026;
+const PITCH_CORRECTION_1_BIN_DOWN = 0.976;
 function playbackSmoothing(deltaTime: number) {
-  return Math.sign(deltaTime) * Math.pow(Math.abs(deltaTime) / SYNC_MAX_THRESHOLD_MS, PLAYBACK_ADJUSTMENT_SMOOTHING) * MAX_PLAYBACK_RATE_ADJUSTMENT;
+  return Math.sign(deltaTime) > 1 ? PITCH_CORRECTION_1_BIN_DOWN : PITCH_CORRECTION_1_BIN_UP;
 }
 
 function assertPlaybackRate(mediaElement: HTMLMediaElement, playbackRate: number, pitchNode: AudioWorkletNode | undefined) {
@@ -335,8 +335,7 @@ export function assertTemporalProperties(
       properties.rate > 0 &&
       deltaTimeAbs > SYNC_OUTER_TARGET_THRESHOLD_MS &&
       deltaTimeAbs <= SYNC_MAX_THRESHOLD_MS: {
-      const playbackRateAdjustment = playbackSmoothing(deltaTime);
-      const adjustedPlaybackRate = Math.max(0, properties.rate - playbackRateAdjustment);
+      const adjustedPlaybackRate = playbackSmoothing(deltaTime);
       assertPlaybackRate(mediaElement, adjustedPlaybackRate, pitchNode);
       return { state: 'intercepting' };
     }
@@ -352,7 +351,7 @@ export function assertTemporalProperties(
     }
     // We're still on course
     case syncState.state === 'intercepting' && deltaTimeAbs < SYNC_MAX_THRESHOLD_MS * 2:
-      // Rate itself isn't changing here, but re-assert so a pitch node that attached mid-intercept still gets synced.
+      // Pitch node may be attached asynchronously
       assertPlaybackRate(mediaElement, mediaElement.playbackRate, pitchNode);
       return { state: 'intercepting' };
     // We're way off track

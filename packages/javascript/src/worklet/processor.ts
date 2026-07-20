@@ -212,7 +212,7 @@ class OLAProcessor extends AudioWorkletProcessor {
   }
 }
 
-const BUFFERED_BLOCK_SIZE = 2048;
+const BUFFERED_BLOCK_SIZE = 4096;
 
 function genHannWindow(length: number) {
   const win = new Float32Array(length);

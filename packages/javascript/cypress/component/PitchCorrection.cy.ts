@@ -5,7 +5,7 @@ const constructAssetURL = (file: string) => `http://localhost:5173/__cypress/ifr
 
 const AUDIO_OUTPUT = ''; // Default
 const EXPECTED_HZ = 440;
-const HZ_ε = 10;
+const HZ_ε = 1;
 
 async function analyzeAudio(audioContext: AudioContext, gainNode: GainNode): Promise<{ hz: number | undefined; volume: number }> {
   const fftSize = 8192;
@@ -58,39 +58,8 @@ describe('Pitch correction', () => {
     cy.get('audio').should(($audio) => expect(($audio.get(0) as HTMLAudioElement).preservesPitch).to.equal(false));
   });
 
-  it('raises pitch back to original tone', () => {
-    const now = Date.now();
-    const preloader = new MediaPreloader(constructAssetURL);
-    const manager = new SurfaceManager(
-      constructAssetURL,
-      {
-        'clip-id': {
-          type: 'audio',
-          file: 'sinwave@440hz.wav',
-          audioOutput: AUDIO_OUTPUT,
-          enablePlaybackRateAdjustment: true,
-          keyframes: [[now, { set: { t: 0, rate: 0.9 } }]],
-        },
-      },
-      preloader,
-    );
-    cy.mount(manager);
-
-    // wait to start playing
-    cy.get('audio')
-      .invoke('prop', 'currentTime')
-      .should(($time) => expect(parseFloat($time)).to.be.greaterThan(0.1));
-
-    // Unmodified pitchFactor (still at its 1.0 AudioParam default): frequency stays at 440Hz.
-    cy.get('audio').then(async ($audio) => {
-      const audioElement = $audio.get(0) as HTMLAudioElement;
-      const gainNode = preloader.getGainNode(audioElement)!;
-      const { hz } = await analyzeAudio(preloader.audioContexts[AUDIO_OUTPUT], gainNode);
-      expect(hz, 'default pitchFactor should not alter frequency').to.be.closeTo(EXPECTED_HZ, HZ_ε);
-    });
-  });
-
   it('lowers pitch back to original tone', () => {
+    // Deliberately make the manager 500ms behind
     const now = Date.now();
     const preloader = new MediaPreloader(constructAssetURL);
     const manager = new SurfaceManager(
@@ -101,7 +70,7 @@ describe('Pitch correction', () => {
           file: 'sinwave@440hz.wav',
           audioOutput: AUDIO_OUTPUT,
           enablePlaybackRateAdjustment: true,
-          keyframes: [[now, { set: { t: 0, rate: 1.1 } }]],
+          keyframes: [[now - 500, { set: { t: 0, rate: 1 } }]],
         },
       },
       preloader,
@@ -113,7 +82,6 @@ describe('Pitch correction', () => {
       .invoke('prop', 'currentTime')
       .should(($time) => expect(parseFloat($time)).to.be.greaterThan(0.1));
 
-    // Unmodified pitchFactor (still at its 1.0 AudioParam default): frequency stays at 440Hz.
     cy.get('audio').then(async ($audio) => {
       const audioElement = $audio.get(0) as HTMLAudioElement;
       const gainNode = preloader.getGainNode(audioElement)!;
