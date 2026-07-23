@@ -85,7 +85,7 @@ describe('Pitch correction', () => {
     cy.get('audio').then(async ($audio) => {
       const audioElement = $audio.get(0) as HTMLAudioElement;
       const gainNode = preloader.getGainNode(audioElement)!;
-      const { hz } = await analyzeAudio(preloader.audioContexts[AUDIO_OUTPUT], gainNode);
+      const { hz } = await analyzeAudio(preloader.getAudioContext(AUDIO_OUTPUT), gainNode);
       expect(hz, 'default pitchFactor should not alter frequency').to.be.closeTo(EXPECTED_HZ, HZ_ε);
     });
   });

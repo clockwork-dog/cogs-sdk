@@ -4,6 +4,7 @@ import { PHASE_VOCODER_PROCESSOR_NAME } from './processorName';
 // Based on implementation by https://github.com/olvb/phaze
 
 const WEBAUDIO_BLOCK_SIZE = 128;
+const BUFFERED_BLOCK_SIZE = 4096;
 
 // Fix incorrect typing
 // https://developer.mozilla.org/en-US/docs/Web/API/AudioWorkletProcessor/AudioWorkletProcessor
@@ -211,8 +212,6 @@ class OLAProcessor extends AudioWorkletProcessor {
     console.assert(false, 'Not overriden');
   }
 }
-
-const BUFFERED_BLOCK_SIZE = 4096;
 
 function genHannWindow(length: number) {
   const win = new Float32Array(length);

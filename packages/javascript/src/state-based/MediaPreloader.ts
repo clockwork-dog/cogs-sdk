@@ -1,3 +1,5 @@
+import '../types/AudioSinkTypes';
+
 import { MediaClientConfig } from '../types/CogsClientMessage';
 import { PHASE_VOCODER_PROCESSOR_NAME } from '../worklet/processorName';
 import { PHASE_VOCODER_WORKLET_SOURCE } from '../worklet/generated/workletSource';
@@ -25,11 +27,19 @@ export class MediaPreloader {
   private _state: MediaClientConfig['files'];
   private _mediaPool: MediaPool = {};
   private _constructAssetURL: (file: string) => string;
-  public audioContexts: Record<string, AudioContext> = {};
-  private _workletRegistrations: Record<string, Promise<void>> = {};
+
+  // The API allows multiple simultaneous audioOutputs.
+  // However we're only keeping a single AudioContext open at a time to improve performance
+  private _audioOutput: string | undefined = undefined;
+  private _audioContext: AudioContext = new AudioContext();
+  private _workletRegistration: Promise<void> | undefined;
+
+  private _audioOutputs: Record<string, string> = {};
+
   constructor(constructAssetURL: (file: string) => string, testState: MediaClientConfig['files'] = {}) {
     this._constructAssetURL = constructAssetURL;
     this._state = testState;
+    navigator?.mediaDevices?.addEventListener('devicechange', this._updateAudioOutputs);
   }
 
   get state() {
@@ -41,10 +51,18 @@ export class MediaPreloader {
   }
 
   getAudioContext(audioOutput: string): AudioContext {
-    const ctx = this.audioContexts[audioOutput] ?? (this.audioContexts[audioOutput] = new AudioContext());
-    ctx.resume();
-    this._workletRegistrations[audioOutput] ??= this.registerPhaseVocoderWorklet(ctx);
-    return ctx;
+    if (audioOutput === this._audioOutput) {
+      return this._audioContext;
+    } else {
+      this._audioContext.close();
+      const ctx = new AudioContext();
+      this._audioOutput = audioOutput;
+      this._audioContext = ctx;
+      this._workletRegistration = this.registerPhaseVocoderWorklet(ctx);
+      const sinkId = this._audioOutputs[audioOutput] ?? '';
+      ctx.setSinkId?.(sinkId);
+      return ctx;
+    }
   }
 
   private registerPhaseVocoderWorklet(ctx: AudioContext): Promise<void> {
@@ -105,10 +123,7 @@ export class MediaPreloader {
 
     // Create cache for new clips
     for (const [filename, fileConfig] of Object.entries(this._state)) {
-      const cache = this._mediaPool[filename];
-      if (!cache || !cache.spare) {
-        cache.spare = this.createMedia(filename, fileConfig.type);
-      }
+      this._mediaPool[filename] ??= { spare: this.createMedia(filename, fileConfig.type), connected: {} };
     }
   }
 
@@ -131,7 +146,7 @@ export class MediaPreloader {
 
     // Patch the pitch-correction worklet into the chain once this output's one-time
     // registration resolves; the first clip on a fresh output may briefly play uncorrected.
-    this._workletRegistrations[audioOutput]?.then(() => {
+    this._workletRegistration?.then(() => {
       const pitchNode = new AudioWorkletNode(ctx, PHASE_VOCODER_PROCESSOR_NAME);
       source.disconnect(gainNode);
       source.connect(pitchNode);
@@ -147,6 +162,7 @@ export class MediaPreloader {
     const connectedMedia = cache.connected[audioOutput];
     if (connectedMedia && !connectedMedia.inUse) {
       connectedMedia.inUse = true;
+      connectedMedia.gainNode?.connect(this._audioContext.destination);
       return connectedMedia.element;
     }
 
@@ -162,15 +178,34 @@ export class MediaPreloader {
   releaseElement(element: HTMLMediaElement) {
     for (const cache of Object.values(this._mediaPool)) {
       for (const media of Object.values(cache.connected)) {
-        if (media.element === element) media.inUse = false;
+        if (media.element === element) {
+          media.inUse = false;
+          media.gainNode?.disconnect();
+        }
       }
     }
   }
 
+  private _updateAudioOutputs = async () => {
+    const audioOutputs: Record<string, string> = {};
+
+    if (!navigator?.mediaDevices) {
+      // `navigator.mediaDevices` is undefined on COGS AV <= 4.5 because of secure origin permissions
+      return;
+    }
+
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const outputs = devices.filter((device) => device.kind === 'audiooutput');
+    outputs.forEach((output) => {
+      audioOutputs[output.label] = output.deviceId;
+    });
+
+    this._audioOutputs = audioOutputs;
+  };
+
   destroy() {
-    Object.values(this.audioContexts).forEach((ctx) => ctx.close());
-    this.audioContexts = {};
-    this._workletRegistrations = {};
+    this._audioContext.close();
     this._mediaPool = {};
+    navigator?.mediaDevices?.removeEventListener('devicechange', this._updateAudioOutputs);
   }
 }

@@ -19,7 +19,7 @@ const outFile = path.join(outDir, 'workletSource.ts');
     logLevel: 'warn',
     build: {
       write: false,
-      minify: false,
+      minify: true,
       target: 'esnext',
       lib: {
         entry,

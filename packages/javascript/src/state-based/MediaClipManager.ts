@@ -161,7 +161,13 @@ export function assertVisualProperties(
  * Makes sure that the element sounds correct.
  * - It should have the right volume, and play out the correct speaker.
  */
-export function assertAudialProperties(mediaElement: HTMLMediaElement, gainNode: GainNode, properties: AudialProperties, surfaceVolume: number) {
+export function assertAudialProperties(
+  audioContext: AudioContext | undefined,
+  mediaElement: HTMLMediaElement,
+  gainNode: GainNode,
+  properties: AudialProperties,
+  surfaceVolume: number,
+) {
   const clipVolume = properties.volume * surfaceVolume;
   if (IS_IOS) {
     // For iOS devices HTMLMediaElement.volume is readonly
@@ -172,6 +178,9 @@ export function assertAudialProperties(mediaElement: HTMLMediaElement, gainNode:
       mediaElement.muted = false;
     }
   } else {
+    if (audioContext && audioContext.state !== 'running') {
+      audioContext.resume();
+    }
     if (mediaElement.muted) {
       mediaElement.muted = false;
     }
@@ -208,6 +217,9 @@ const SYNC_SEEK_LOOKAHEAD_MS = 10;
 // This value allows disagreement between HTMLVideoElement.duration and the length of the different audio streams we have in COGS.
 const LOOPING_EPSILON_MS = 100;
 
+// We found that when shifting pitch, the best quality was achieved when shifting frequency data by exactly 1 bin.
+// Those pitch corrections correspond to these playbackRate adjustments.
+// See worklet/processor.ts -> BUFFERED_BLOCK_SIZE
 const PITCH_CORRECTION_1_BIN_UP = 1.026;
 const PITCH_CORRECTION_1_BIN_DOWN = 0.976;
 function playbackSmoothing(deltaTime: number) {
@@ -450,8 +462,9 @@ export class AudioManager extends MediaClipManager<AudioState> {
     if (!currentState || !this.audioElement) return;
 
     const gainNode = this.mediaPreloader.getGainNode(this.audioElement);
+    const ctx = this.mediaPreloader.getAudioContext(this._state.audioOutput);
     if (gainNode) {
-      assertAudialProperties(this.audioElement, gainNode, currentState as AudialProperties, this.volume);
+      assertAudialProperties(ctx, this.audioElement, gainNode, currentState as AudialProperties, this.volume);
     }
     const nextSyncState = assertTemporalProperties(
       this.audioElement,
@@ -504,8 +517,9 @@ export class VideoManager extends MediaClipManager<VideoState> {
 
     assertVisualProperties(this.videoElement, currentState as VisualProperties, this._state.fit);
     const gainNode = this.mediaPreloader.getGainNode(this.videoElement);
+    const ctx = this.mediaPreloader.getAudioContext(this._state.audioOutput);
     if (gainNode) {
-      assertAudialProperties(this.videoElement, gainNode, currentState as AudialProperties, this.volume);
+      assertAudialProperties(ctx, this.videoElement, gainNode, currentState as AudialProperties, this.volume);
     }
     const nextSyncState = assertTemporalProperties(
       this.videoElement,
