@@ -11,28 +11,6 @@ export function MediaSurface({ cogsConnection }: MediaSurfaceProps) {
   const mediaPreloaderRef = useRef<MediaPreloader | null>(null);
   const [surfaceElem, setSurfaceElem] = useState<HTMLDivElement | null>(null);
 
-  // Keep updated list of audio outputs
-  const audioOutputs = useRef<Record<string, string>>({});
-  useEffect(() => {
-    async function updateAudioOutputs() {
-      audioOutputs.current = {};
-      if (!navigator?.mediaDevices) {
-        // `navigator.mediaDevices` is undefined on COGS AV <= 4.5 because of secure origin permissions
-        return;
-      }
-
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const outputs = devices.filter((device) => device.kind === 'audiooutput');
-      outputs.forEach((output) => {
-        audioOutputs.current[output.label] = output.deviceId;
-      });
-    }
-
-    updateAudioOutputs();
-    navigator?.mediaDevices?.addEventListener('devicechange', updateAudioOutputs);
-    return () => navigator?.mediaDevices?.removeEventListener('devicechange', updateAudioOutputs);
-  }, []);
-
   // Create and attach new surface manager
   useEffect(() => {
     const constructURL = (url: string) => cogsConnection.getAssetUrl(url);
@@ -44,7 +22,7 @@ export function MediaSurface({ cogsConnection }: MediaSurfaceProps) {
       preloader.setState(files);
     }
 
-    const sm = new SurfaceManager(constructURL, (outputLabel: string) => audioOutputs.current[outputLabel] ?? '', {}, preloader);
+    const sm = new SurfaceManager(constructURL, {}, preloader);
     if (volumeRef.current !== undefined) {
       sm.volume = volumeRef.current;
     }
@@ -52,7 +30,7 @@ export function MediaSurface({ cogsConnection }: MediaSurfaceProps) {
 
     surfaceElem?.replaceChildren(sm.element);
     return () => {
-      surfaceManagerRef.current?.setState({});
+      surfaceManagerRef.current?.destroy();
       surfaceManagerRef.current = undefined;
       surfaceElem?.replaceChildren(/* empty */);
     };

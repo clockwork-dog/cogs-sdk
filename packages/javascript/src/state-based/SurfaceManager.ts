@@ -39,9 +39,8 @@ export class SurfaceManager {
 
   constructor(
     private constructAssetUrl: (file: string) => string,
-    private getAudioOutput: (outputLabel: string) => string,
     testState?: MediaSurfaceState,
-    private mediaPreloader: MediaPreloader = new MediaPreloader(constructAssetUrl),
+    private _mediaPreloader: MediaPreloader = new MediaPreloader(constructAssetUrl),
   ) {
     this._element = document.createElement('div');
     this._element.className = 'surface-manager';
@@ -91,39 +90,18 @@ export class SurfaceManager {
         if (!resource.manager) {
           switch (clip.type) {
             case 'image':
-              resource.manager = new ImageManager(
-                this._element,
-                resource.element,
-                clip,
-                this.constructAssetUrl,
-                this.getAudioOutput,
-                this.mediaPreloader,
-              );
+              resource.manager = new ImageManager(this._element, resource.element, clip, this.constructAssetUrl, this._mediaPreloader);
               resource.manager.loop();
               break;
             case 'audio': {
-              const audioManager = new AudioManager(
-                this._element,
-                resource.element,
-                clip,
-                this.constructAssetUrl,
-                this.getAudioOutput,
-                this.mediaPreloader,
-              );
+              const audioManager = new AudioManager(this._element, resource.element, clip, this.constructAssetUrl, this._mediaPreloader);
               resource.manager = audioManager;
               audioManager.volume = this._volume;
               audioManager.loop();
               break;
             }
             case 'video': {
-              const videoManager = new VideoManager(
-                this._element,
-                resource.element,
-                clip,
-                this.constructAssetUrl,
-                this.getAudioOutput,
-                this.mediaPreloader,
-              );
+              const videoManager = new VideoManager(this._element, resource.element, clip, this.constructAssetUrl, this._mediaPreloader);
               resource.manager = videoManager;
               videoManager.volume = this._volume;
               videoManager.loop();
@@ -134,5 +112,10 @@ export class SurfaceManager {
           resource.manager.setState(clip);
         }
       });
+  }
+
+  public destroy() {
+    this.setState({});
+    this._mediaPreloader.destroy();
   }
 }
