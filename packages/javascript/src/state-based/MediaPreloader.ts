@@ -1,3 +1,4 @@
+import '../types/AudioContext';
 import { MediaClientConfig } from '../types/CogsClientMessage';
 
 interface Media {
@@ -14,6 +15,8 @@ interface MediaPool {
   };
 }
 
+const DEFAULT_AUDIO_OUTPUT = '';
+
 /**
  * Preloads audio and video to optimize time to playback.
  * Lazily connects media elements to the required AudioContext, and keeps a spare one unconnected.
@@ -22,10 +25,13 @@ export class MediaPreloader {
   private _state: MediaClientConfig['files'];
   private _mediaPool: MediaPool = {};
   private _constructAssetURL: (file: string) => string;
-  public audioContexts: Record<string, AudioContext> = {};
+  private _audioOutputIds: Record<string, string> = {};
+  private _audioContext: AudioContext = new AudioContext();
+  private _audioOutput: string = DEFAULT_AUDIO_OUTPUT;
   constructor(constructAssetURL: (file: string) => string, testState: MediaClientConfig['files'] = {}) {
     this._constructAssetURL = constructAssetURL;
     this._state = testState;
+    navigator?.mediaDevices?.addEventListener('devicechange', this._updateAudioOutputs);
   }
 
   get state() {
@@ -37,9 +43,19 @@ export class MediaPreloader {
   }
 
   getAudioContext(audioOutput: string): AudioContext {
-    const ctx = this.audioContexts[audioOutput] ?? (this.audioContexts[audioOutput] = new AudioContext());
-    ctx.resume();
-    return ctx;
+    if (audioOutput === this._audioOutput) {
+      this._audioContext.resume();
+      return this._audioContext;
+    } else {
+      this._audioContext.close();
+      const ctx = new AudioContext();
+      this._audioOutput = audioOutput;
+      this._audioContext = ctx;
+      this._audioContext.resume();
+      const sinkId = this._audioOutputIds[audioOutput] ?? '';
+      ctx.setSinkId?.(sinkId);
+      return ctx;
+    }
   }
 
   getGainNode(element: HTMLMediaElement): GainNode | undefined {
@@ -134,9 +150,26 @@ export class MediaPreloader {
     }
   }
 
+  private _updateAudioOutputs = async () => {
+    const audioOutputIds: Record<string, string> = {};
+
+    if (!navigator?.mediaDevices) {
+      // `navigator.mediaDevices` is undefined on COGS AV <= 4.5 because of secure origin permissions
+      return;
+    }
+
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const outputs = devices.filter((device) => device.kind === 'audiooutput');
+    outputs.forEach((output) => {
+      audioOutputIds[output.label] = output.deviceId;
+    });
+
+    this._audioOutputIds = audioOutputIds;
+  };
+
   destroy() {
-    Object.values(this.audioContexts).forEach((ctx) => ctx.close());
-    this.audioContexts = {};
+    this._audioContext.close();
     this._mediaPool = {};
+    navigator?.mediaDevices?.removeEventListener('devicechange', this._updateAudioOutputs);
   }
 }

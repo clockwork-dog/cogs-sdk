@@ -65,7 +65,7 @@ describe('Audio frequency verification tests', () => {
 
     cy.get('audio').then(async ($audio) => {
       const gainNode = preloader.getGainNode($audio.get(0) as HTMLAudioElement)!;
-      const { hz } = await analyzeAudio(preloader.audioContexts[AUDIO_OUTPUT], gainNode);
+      const { hz } = await analyzeAudio(preloader.getAudioContext(AUDIO_OUTPUT), gainNode);
       expect(hz).to.be.closeTo(EXPECTED_HZ, HZ_ε);
     });
   });
@@ -95,7 +95,7 @@ describe('Audio frequency verification tests', () => {
       .then(async () => {
         const audioElement = manager.element.querySelector('audio')!;
         const gainNode = preloader.getGainNode(audioElement)!;
-        const { volume } = await analyzeAudio(preloader.audioContexts[AUDIO_OUTPUT], gainNode);
+        const { volume } = await analyzeAudio(preloader.getAudioContext(AUDIO_OUTPUT), gainNode);
         expect(volume, 'full clip volume should be clearly audible').to.be.greaterThan(MIN_VOLUME_SILENCE);
         fullVolumePeak = volume;
       })
@@ -114,7 +114,7 @@ describe('Audio frequency verification tests', () => {
       .then(async () => {
         const audioElement = manager.element.querySelector('audio')!;
         const gainNode = preloader.getGainNode(audioElement)!;
-        const { volume } = await analyzeAudio(preloader.audioContexts[AUDIO_OUTPUT], gainNode);
+        const { volume } = await analyzeAudio(preloader.getAudioContext(AUDIO_OUTPUT), gainNode);
         expect(volume, 'volume at 0.2 should be at least 50% quieter').to.be.lessThan(fullVolumePeak);
       });
   });
@@ -143,7 +143,7 @@ describe('Audio frequency verification tests', () => {
 
     cy.get('audio').then(async ($audio) => {
       const gainNode = preloader.getGainNode($audio.get(0) as HTMLAudioElement)!;
-      const { volume } = await analyzeAudio(preloader.audioContexts[AUDIO_OUTPUT], gainNode);
+      const { volume } = await analyzeAudio(preloader.getAudioContext(AUDIO_OUTPUT), gainNode);
       expect(volume).to.be.closeTo(0, VOLUME_ε);
     });
   });
