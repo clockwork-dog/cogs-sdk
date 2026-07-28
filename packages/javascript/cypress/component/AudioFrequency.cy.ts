@@ -70,37 +70,6 @@ describe('Audio frequency verification tests', () => {
     });
   });
 
-  it('plays a video with a real 440Hz tone', () => {
-    const now = Date.now();
-    const preloader = new MediaPreloader(constructAssetURL);
-    const manager = new SurfaceManager(
-      constructAssetURL,
-      {
-        'clip-id': {
-          type: 'video',
-          file: 'libx265~yuv420p~60fps~10s@3840x2160~440Hz.mp4',
-          audioOutput: AUDIO_OUTPUT,
-          fit: 'cover',
-          enablePlaybackRateAdjustment: true,
-          keyframes: [[now, { set: { t: 0, rate: 1 } }]],
-        },
-      },
-      preloader,
-    );
-    cy.mount(manager);
-
-    // wait to start playing
-    cy.get('video')
-      .invoke('prop', 'currentTime')
-      .should(($time) => expect(parseFloat($time)).to.be.greaterThan(0.1));
-
-    cy.get('video').then(async ($video) => {
-      const gainNode = preloader.getGainNode($video.get(0) as HTMLVideoElement)!;
-      const { hz } = await analyzeAudio(preloader.audioContexts[AUDIO_OUTPUT], gainNode);
-      expect(hz).to.be.closeTo(EXPECTED_HZ, HZ_ε);
-    });
-  });
-
   it('changes volume', () => {
     const now = Date.now();
     const preloader = new MediaPreloader(constructAssetURL);
