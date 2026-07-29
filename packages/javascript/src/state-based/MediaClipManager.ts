@@ -223,7 +223,7 @@ function assertPlaybackRate(mediaElement: HTMLMediaElement, playbackRate: number
   // On iOS it doesn't make a difference, so we may as well.
   if (mediaElement.paused) {
     mediaElement.play().catch(() => {
-      /* do nothing*/
+      /* do nothing */
     });
   }
 }

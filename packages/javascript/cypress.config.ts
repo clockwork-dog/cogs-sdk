@@ -5,14 +5,19 @@ const sharp = require('sharp');
 
 import { rename } from 'node:fs/promises';
 
+import { startTestFileServer } from './cypress/support/testFileServer';
+
 export default defineConfig({
   defaultBrowser: 'electron',
   component: {
-    setupNodeEvents(on) {
+    async setupNodeEvents(on) {
       on('after:screenshot', flattenScreenshots);
       on('task', {
         'get-pixel-value': getPixelValue,
       });
+
+      const testFileServer = await startTestFileServer();
+      on('after:run', () => testFileServer.close());
     },
     devServer: {
       framework: 'react',
