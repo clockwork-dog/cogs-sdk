@@ -1,11 +1,10 @@
 import { SurfaceManager } from '../../src/state-based/SurfaceManager';
 
 const constructAssetURL = (file: string) => `http://localhost:5173/__cypress/iframes/cypress/fixtures/${file}`;
-const getAudioOutput = () => '';
 describe('Audio stability tests', () => {
   it('can wait without playing', () => {
     const now = Date.now();
-    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
+    const manager = new SurfaceManager(constructAssetURL, {
       'clip-id': {
         file: 'sinwave@440hz.wav',
         type: 'audio',
@@ -26,7 +25,7 @@ describe('Audio stability tests', () => {
 
   it('recovers from a pause', () => {
     const now = Date.now();
-    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
+    const manager = new SurfaceManager(constructAssetURL, {
       'clip-id': {
         file: 'metronome@120bpm.wav',
         type: 'audio',
@@ -51,7 +50,7 @@ describe('Audio stability tests', () => {
 
   it('recovers from a playbackRate change', () => {
     const now = Date.now();
-    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
+    const manager = new SurfaceManager(constructAssetURL, {
       'clip-id': {
         file: 'metronome@120bpm.wav',
         type: 'audio',
@@ -83,7 +82,7 @@ describe('Audio stability tests', () => {
 
   it('recovers from a seek', () => {
     const now = Date.now();
-    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
+    const manager = new SurfaceManager(constructAssetURL, {
       'clip-id': {
         file: 'metronome@120bpm.wav',
         type: 'audio',
@@ -104,31 +103,34 @@ describe('Audio stability tests', () => {
   });
 
   it('recovers from volume change', () => {
-    const INITIAL_VOLUME = 0;
-    const CHANGED_VOLUME = 1;
+    /**
+     * Note this test checks for recovery of the volume property on the audioElement.
+     * The volume should always be 1, and the gain node will control the volume from there.
+     */
     const now = Date.now();
-    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
+    const manager = new SurfaceManager(constructAssetURL, {
       'clip-id': {
         type: 'audio',
         file: 'sinwave@440hz.wav',
         audioOutput: '',
         enablePlaybackRateAdjustment: true,
-        keyframes: [[now, { set: { t: 0, rate: 1, volume: INITIAL_VOLUME } }]],
+        keyframes: [[now, { set: { t: 0, rate: 1, volume: 0.5 } }]],
       },
     });
     cy.mount(manager);
 
-    cy.get('audio').invoke('prop', 'volume', CHANGED_VOLUME);
-    cy.get('audio').should('have.prop', 'volume', CHANGED_VOLUME);
+    cy.get('audio').should('have.prop', 'volume', 1);
+    cy.get('audio').invoke('prop', 'volume', 0.2);
+    cy.get('audio').should('have.prop', 'volume', 0.2);
 
     cy.wait(1000);
 
-    cy.get('audio').should('have.prop', 'volume', INITIAL_VOLUME);
+    cy.get('audio').should('have.prop', 'volume', 1);
   });
 
   it('recovers from audio element deletion', () => {
     const now = Date.now();
-    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
+    const manager = new SurfaceManager(constructAssetURL, {
       'clip-id': {
         type: 'audio',
         file: 'sinwave@440hz.wav',
@@ -150,7 +152,7 @@ describe('Audio stability tests', () => {
 
   it('toggles looping', () => {
     const now = Date.now();
-    const manager = new SurfaceManager(constructAssetURL, getAudioOutput, {
+    const manager = new SurfaceManager(constructAssetURL, {
       'clip-id': {
         type: 'audio',
         file: 'sinwave@440hz.wav',
