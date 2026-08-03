@@ -5,7 +5,7 @@ const sharp = require('sharp');
 
 import { rename } from 'node:fs/promises';
 
-import { startTestFileServer } from './cypress/support/testFileServer';
+import { startDelayedFileServer } from './cypress/support/delayedFileServer';
 
 export default defineConfig({
   defaultBrowser: 'electron',
@@ -16,7 +16,7 @@ export default defineConfig({
         'get-pixel-value': getPixelValue,
       });
 
-      const testFileServer = await startTestFileServer();
+      const testFileServer = await startDelayedFileServer();
       on('after:run', () => testFileServer.close());
     },
     devServer: {

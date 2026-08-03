@@ -15,7 +15,7 @@ const MIME_TYPES: Record<string, string> = {
   '.png': 'image/png',
 };
 
-export function startTestFileServer(): Promise<{ close: () => Promise<void> }> {
+export function startDelayedFileServer(): Promise<{ close: () => Promise<void> }> {
   const server = http.createServer((req, res) => {
     const requestUrl = new URL(req.url ?? '/', `http://localhost:${PORT}`);
     const delayMs = Number(requestUrl.searchParams.get('delayMs') ?? '0');
