@@ -4,7 +4,7 @@ const CACHE_SIZE = 200 * 1024 * 1024;
  * Fetches files and holds them as `Blob`s so they can be served back out as object URLs with
  */
 export class BlobCache {
-  private _size = 0;
+  private _sizeBytes = 0;
   private _cache = new Map<string, Blob>();
   private _activeAbort: AbortController | null = null;
 
@@ -19,7 +19,7 @@ export class BlobCache {
       if (!newURLs.has(prevURL)) {
         const staleBlob = this._cache.get(prevURL);
         if (staleBlob) {
-          this._size -= staleBlob.size;
+          this._sizeBytes -= staleBlob.size;
           this._cache.delete(prevURL);
         }
       }
@@ -53,10 +53,10 @@ export class BlobCache {
       }
 
       if (signal.aborted) return;
-      if (this._size + blob.size > CACHE_SIZE) break;
+      if (this._sizeBytes + blob.size > CACHE_SIZE) break;
 
       this._cache.set(url, blob);
-      this._size += blob.size;
+      this._sizeBytes += blob.size;
     }
   }
 
