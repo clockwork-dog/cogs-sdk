@@ -1,6 +1,6 @@
 import { createTestURL } from '../support/delayedFileServerConfig';
 
-describe('Test delaye server', () => {
+describe('Test delayed server', () => {
   it('delays a response by the requested delayMs before the audio element can play', () => {
     const url = createTestURL('sinwave@440hz.wav', { delayMs: 200 });
 
