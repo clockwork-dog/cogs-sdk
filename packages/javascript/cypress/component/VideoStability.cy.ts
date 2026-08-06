@@ -72,7 +72,7 @@ describe('Video stability tests', () => {
     cy.log('Interfere with video element');
     cy.get('video').invoke('prop', 'playbackRate').should('equal', 0);
     cy.get('video').invoke('prop', 'playbackRate', 1);
-    cy.get('video').then(($video) => $video.get(0).play().catch(/* do nothing*/));
+    cy.get('video').then(($video) => $video.get(0).play().catch(/* do nothing */));
 
     cy.wait(1000);
 

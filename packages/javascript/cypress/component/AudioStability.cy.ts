@@ -69,7 +69,7 @@ describe('Audio stability tests', () => {
     cy.log('Interfere with audio element');
     cy.get('audio').invoke('prop', 'playbackRate').should('equal', 0);
     cy.get('audio').invoke('prop', 'playbackRate', 1);
-    cy.get('audio').then(($audio) => $audio.get(0).play().catch(/* do nothing*/));
+    cy.get('audio').then(($audio) => $audio.get(0).play().catch(/* do nothing */));
 
     cy.wait(1000);
 
