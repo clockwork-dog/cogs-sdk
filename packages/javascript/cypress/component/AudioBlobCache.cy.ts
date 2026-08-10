@@ -1,4 +1,5 @@
 import { AudioBlobCache } from '../../src/state-based/AudioBlobCache';
+import { BlobState, CacheUpdateHandler } from '../../src/state-based/BlobCache';
 import { createTestURL } from '../support/delayedFileServerConfig';
 
 function playAndMeasureTimeToPlaying(element: HTMLAudioElement): Promise<number> {
@@ -17,6 +18,10 @@ function playAndMeasureTimeToPlaying(element: HTMLAudioElement): Promise<number>
   });
 }
 
+const noopHandler = () => {
+  /* do nothing*/
+};
+
 let cleanup: () => void = () => {
   /* replace with cleanup */
 };
@@ -24,8 +29,8 @@ let cleanup: () => void = () => {
 describe('AudioBlobCache', () => {
   beforeEach(() => cleanup());
 
-  it(`doesn't speed up new fetching`, async () => {
-    const cache = new AudioBlobCache();
+  it('is slow without a warm cache', async () => {
+    const cache = new AudioBlobCache(noopHandler);
     const url = createTestURL('sinwave@440hz.wav', { delayMs: 200 });
 
     const { element, revoke } = cache.getElement(url);
@@ -36,10 +41,10 @@ describe('AudioBlobCache', () => {
   });
 
   it('speeds up cached playback', async () => {
-    const cache = new AudioBlobCache();
+    const cache = new AudioBlobCache(noopHandler);
     const url = createTestURL('sinwave@440hz.wav', { delayMs: 200 });
 
-    await cache.preFetch([url]);
+    await cache.preload([url]);
 
     const { element, revoke } = cache.getElement(url);
     cleanup = revoke;
@@ -49,10 +54,10 @@ describe('AudioBlobCache', () => {
   });
 
   it('gracefully handles failed fetches', async () => {
-    const cache = new AudioBlobCache();
+    const cache = new AudioBlobCache(noopHandler);
     const url = createTestURL('sinwave@440hz.wav', { fail: true });
 
-    await cache.preFetch([url]);
+    await cache.preload([url]);
 
     const { element, revoke } = cache.getElement(url);
     cleanup = revoke;
@@ -61,16 +66,32 @@ describe('AudioBlobCache', () => {
     expect(element.src).to.equal(url);
   });
 
-  it("revoke() doesn't break an element already playing from that URL", async () => {
-    const cache = new AudioBlobCache();
+  it("doesn't break an element already playing from that URL when revoked", async () => {
+    const cache = new AudioBlobCache(noopHandler);
     const url = createTestURL('sinwave@440hz.wav');
 
-    await cache.preFetch([url]);
+    await cache.preload([url]);
 
     const { element, revoke } = cache.getElement(url);
     cleanup = revoke;
     await playAndMeasureTimeToPlaying(element);
 
     expect(element.paused).to.equal(false);
+  });
+
+  it('updates cache progress', async () => {
+    const updates: { [url: string]: BlobState }[] = [];
+    const handler: CacheUpdateHandler = (cacheState) => {
+      updates.push(cacheState);
+    };
+
+    const cache = new AudioBlobCache(handler);
+    await cache.preload([createTestURL('sinwave@440Hz.wav')]);
+
+    expect(updates).to.have.length(2);
+    expect(updates[0]!).to.deep.equal({});
+    expect(updates[1]!).to.deep.equal({
+      'http://localhost:4567/sinwave@440Hz.wav': { totalBytes: 1764042, cachedBytes: 1764042 },
+    });
   });
 });

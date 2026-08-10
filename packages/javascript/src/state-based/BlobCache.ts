@@ -1,67 +1,88 @@
-const CACHE_SIZE = 200 * 1024 * 1024;
+export type BlobState = { totalBytes: number; cachedBytes: number };
+export type CacheUpdateHandler = (cacheState: { [url: string]: BlobState }) => void;
+
+export interface BlobCacheOptions {
+  maxSizeBytes: number;
+  onCacheUpdate: CacheUpdateHandler;
+}
 
 /**
  * Fetches files and holds them as `Blob`s so they can be served back out as object URLs with
  */
 export class BlobCache {
   private _sizeBytes = 0;
-  private _cache = new Map<string, Blob>();
-  private _activeAbort: AbortController | null = null;
+  private _maxSizeBytes: number;
+  private _cache: Record<string, Blob> = {};
+  private _abortController: AbortController | null = null;
+  private _onCacheUpdate: CacheUpdateHandler;
 
-  async preFetch(urls: string[]): Promise<void> {
-    this._activeAbort?.abort();
+  constructor({ maxSizeBytes, onCacheUpdate }: BlobCacheOptions) {
+    this._maxSizeBytes = maxSizeBytes;
+    this._onCacheUpdate = onCacheUpdate;
+  }
 
+  get cacheState(): { [url: string]: BlobState } {
+    return Object.fromEntries<BlobState>(
+      Object.entries(this._cache).map(([url, blob]): [string, BlobState] => [url, { totalBytes: blob.size, cachedBytes: blob.size }]),
+    );
+  }
+
+  async cache(urls: string[]): Promise<void> {
+    this._abortController?.abort();
     const controller = new AbortController();
-    this._activeAbort = controller;
+    this._abortController = controller;
 
     const newURLs = new Set(urls);
-    for (const prevURL of this._cache.keys()) {
+    for (const prevURL of Object.keys(this._cache)) {
       if (!newURLs.has(prevURL)) {
-        const staleBlob = this._cache.get(prevURL);
+        const staleBlob = this._cache[prevURL];
         if (staleBlob) {
           this._sizeBytes -= staleBlob.size;
-          this._cache.delete(prevURL);
+          delete this._cache[prevURL];
         }
       }
     }
 
-    const abortRejection = new Promise<never>((_resolve, reject) => {
-      controller.signal.addEventListener('abort', () => reject(new Error('preFetch superseded by a newer call')));
-    });
+    this._onCacheUpdate(this.cacheState);
 
-    try {
-      await Promise.race([this._runPreFetch(urls, controller.signal), abortRejection]);
-    } finally {
-      if (this._activeAbort === controller) {
-        this._activeAbort = null;
+    for (const url of urls) {
+      if (controller.signal.aborted) break;
+      let success = false;
+      try {
+        success = await this.cacheUrl(url, controller.signal);
+      } finally {
+        if (success) {
+          this._onCacheUpdate(this.cacheState);
+        } else {
+          console.warn(`Failed to cache ${url}`);
+        }
       }
     }
   }
 
-  private async _runPreFetch(urls: string[], signal: AbortSignal): Promise<void> {
-    for (const url of urls) {
-      if (signal.aborted) return;
-      if (this._cache.has(url)) continue;
+  private async cacheUrl(url: string, signal: AbortSignal): Promise<boolean> {
+    if (signal.aborted) return false;
+    if (url in this._cache) return true;
 
-      let blob: Blob;
-      try {
-        const response = await fetch(url, { signal });
-        if (!response.ok) continue;
-        blob = await response.blob();
-      } catch {
-        continue;
-      }
-
-      if (signal.aborted) return;
-      if (this._sizeBytes + blob.size > CACHE_SIZE) break;
-
-      this._cache.set(url, blob);
-      this._sizeBytes += blob.size;
+    let blob: Blob;
+    try {
+      const response = await fetch(url, { signal });
+      if (!response.ok) return false;
+      blob = await response.blob();
+    } catch {
+      return false;
     }
+
+    if (signal.aborted) return false;
+    if (this._sizeBytes + blob.size > this._maxSizeBytes) return false;
+
+    this._cache[url] = blob;
+    this._sizeBytes += blob.size;
+    return true;
   }
 
   getUrl(url: string): { url: string; revoke: () => void } | undefined {
-    const blob = this._cache.get(url);
+    const blob = this._cache[url];
     if (blob) {
       const objectUrl = URL.createObjectURL(blob);
       return { url: objectUrl, revoke: () => URL.revokeObjectURL(objectUrl) };
@@ -69,8 +90,8 @@ export class BlobCache {
   }
 
   destroy(): void {
-    this._activeAbort?.abort();
-    this._activeAbort = null;
-    this._cache.clear();
+    this._abortController?.abort();
+    this._abortController = null;
+    this._cache = {};
   }
 }
