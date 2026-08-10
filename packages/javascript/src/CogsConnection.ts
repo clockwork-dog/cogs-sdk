@@ -314,7 +314,7 @@ function websocketParametersFromUrl(url: string): {
   const localClientId = pathParams.get('local_id');
   const isSimulator = pathParams.get('simulator') === 'true';
   const display = pathParams.get('display') ?? '';
-  const pluginId = parsedUrl.pathname.startsWith('/plugin/') ? decodeURIComponent(parsedUrl.pathname.split('/')[2]) : undefined;
+  const pluginId = parsedUrl.pathname.startsWith('/plugin/') ? decodeURIComponent(parsedUrl.pathname.split('/')[2]!) : undefined;
 
   if (localClientId) {
     const type = pathParams.get('t') ?? '';

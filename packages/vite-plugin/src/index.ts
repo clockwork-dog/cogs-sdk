@@ -121,9 +121,9 @@ export const cogsSdkPlugin = (options: CogsPluginOptions = {}): Plugin => {
         // We need to wait for the other listeners to finish before we can access the resolved URLs from Vite
         setImmediate(() => {
           if (server.resolvedUrls?.network && server.resolvedUrls.network.length > 0) {
-            serverUrl = server.resolvedUrls.network[0];
+            serverUrl = server.resolvedUrls.network[0]!;
           } else if (server.resolvedUrls?.local && server.resolvedUrls.local.length > 0) {
-            serverUrl = server.resolvedUrls.local[0];
+            serverUrl = server.resolvedUrls.local[0]!;
           } else {
             const address = server.httpServer?.address();
             if (address && typeof address === 'object') {
