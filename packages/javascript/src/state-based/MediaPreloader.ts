@@ -99,9 +99,8 @@ export class MediaPreloader {
 
     // Create cache for new clips
     for (const [filename, fileConfig] of Object.entries(this._state)) {
-      const cache = this._mediaPool[filename];
-      if (!cache || !cache.spare) {
-        cache.spare = this.createMedia(filename, fileConfig.type);
+      if (!(filename in this._mediaPool)) {
+        this._mediaPool[filename] = { spare: this.createMedia(filename, fileConfig.type), connected: {} };
       }
     }
   }
