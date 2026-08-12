@@ -27,23 +27,23 @@ let cleanup: () => void = () => {
   /* replace with cleanup */
 };
 
-describe('AudioBlobCache', () => {
+describe('AudioElementCache', () => {
   beforeEach(() => cleanup());
 
   it('is slow without a warm cache', async () => {
     const cache = new AudioElementCache(noopHandler);
-    const url = createTestURL('sinwave@440hz.wav', { delayMs: 200 });
+    const url = createTestURL('sinwave@440hz.wav', { delayMs: 500 });
 
     const { element, revoke } = cache.getElement(url);
     cleanup = revoke;
 
     const timeToPlaying = await playAndMeasureTimeToPlaying(element);
-    expect(timeToPlaying).to.be.at.least(200);
+    expect(timeToPlaying).to.be.at.least(500);
   });
 
   it('speeds up cached playback', async () => {
     const cache = new AudioElementCache(noopHandler);
-    const url = createTestURL('sinwave@440hz.wav', { delayMs: 200 });
+    const url = createTestURL('sinwave@440hz.wav', { delayMs: 500 });
 
     await cache.preload([url]);
 
@@ -51,7 +51,7 @@ describe('AudioBlobCache', () => {
     cleanup = revoke;
 
     const timeToPlaying = await playAndMeasureTimeToPlaying(element);
-    expect(timeToPlaying).to.be.lessThan(100);
+    expect(timeToPlaying).to.be.lessThan(200);
   });
 
   it('gracefully handles failed fetches', async () => {
@@ -87,12 +87,16 @@ describe('AudioBlobCache', () => {
     };
 
     const cache = new AudioElementCache(handler);
-    await cache.preload([createTestURL('sinwave@440Hz.wav')]);
+    const url = createTestURL('sinwave@440hz.wav');
+    await cache.preload([url]);
+
+    const audioElement = cache.getElement(url);
+    expect(audioElement.element.src).not.to.equal(url, 'Cache was not used and element does not have a blob src');
 
     expect(updates).to.have.length(2);
     expect(updates[0]!).to.deep.equal({});
     expect(updates[1]!).to.deep.equal({
-      'http://localhost:4567/sinwave@440Hz.wav': { readyState: HTMLMediaElement.HAVE_ENOUGH_DATA, cachedBytes: 1764042 },
+      'http://localhost:4567/sinwave@440hz.wav': { readyState: HTMLMediaElement.HAVE_ENOUGH_DATA, cachedBytes: 1764042 },
     });
   });
 });
