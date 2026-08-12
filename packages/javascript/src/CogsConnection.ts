@@ -274,9 +274,9 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
     }
   }
 
-  sendPreloadState(state: { [file: string]: CacheState }) {
+  sendReadyState(state: { [file: string]: CacheState }) {
     if (this.isConnected) {
-      this.websocket.send(JSON.stringify(state));
+      this.websocket.send(JSON.stringify({ readyState: state }));
     }
   }
 
