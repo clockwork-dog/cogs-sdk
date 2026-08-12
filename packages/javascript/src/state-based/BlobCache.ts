@@ -1,5 +1,6 @@
-export type BlobState = { totalBytes: number; cachedBytes: number };
-export type CacheUpdateHandler = (cacheState: { [url: string]: BlobState }) => void;
+import { CacheState } from '../types/cache';
+
+export type CacheUpdateHandler = (cacheState: { [url: string]: CacheState }) => void;
 
 export interface BlobCacheOptions {
   maxSizeBytes: number;
@@ -15,15 +16,19 @@ export class BlobCache {
   private _cache: Record<string, Blob> = {};
   private _abortController: AbortController | null = null;
   private _onCacheUpdate: CacheUpdateHandler;
+  private _revokes: Set<() => void> = new Set();
 
   constructor({ maxSizeBytes, onCacheUpdate }: BlobCacheOptions) {
     this._maxSizeBytes = maxSizeBytes;
     this._onCacheUpdate = onCacheUpdate;
   }
 
-  get cacheState(): { [url: string]: BlobState } {
-    return Object.fromEntries<BlobState>(
-      Object.entries(this._cache).map(([url, blob]): [string, BlobState] => [url, { totalBytes: blob.size, cachedBytes: blob.size }]),
+  get cacheState(): { [url: string]: CacheState } {
+    return Object.fromEntries<CacheState>(
+      Object.entries(this._cache).map(([url, blob]): [string, CacheState] => [
+        url,
+        { readyState: HTMLMediaElement.HAVE_ENOUGH_DATA, cachedBytes: blob.size },
+      ]),
     );
   }
 
@@ -85,11 +90,17 @@ export class BlobCache {
     const blob = this._cache[url];
     if (blob) {
       const objectUrl = URL.createObjectURL(blob);
-      return { url: objectUrl, revoke: () => URL.revokeObjectURL(objectUrl) };
+      const revoke = () => URL.revokeObjectURL(objectUrl);
+      this._revokes.add(revoke);
+      return { url: objectUrl, revoke };
     }
   }
 
   destroy(): void {
+    for (const revoke of this._revokes.values()) {
+      revoke();
+    }
+    this._revokes.clear();
     this._abortController?.abort();
     this._abortController = null;
     this._cache = {};

@@ -15,7 +15,9 @@ export function MediaSurface({ cogsConnection }: MediaSurfaceProps) {
   useEffect(() => {
     const constructURL = (url: string) => cogsConnection.getAssetUrl(url);
 
-    const preloader = new MediaPreloader(constructURL);
+    const preloader = new MediaPreloader(constructURL, (state) => {
+      cogsConnection.sendPreloadState(state);
+    });
     mediaPreloaderRef.current = preloader;
     const files = cogsConnection.mediaConfig?.files;
     if (files) {

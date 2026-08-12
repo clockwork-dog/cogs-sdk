@@ -2,7 +2,7 @@ import { BlobCache, CacheUpdateHandler } from './BlobCache';
 
 const CACHE_SIZE = 200 * 1024 * 1024;
 
-export class AudioBlobCache {
+export class AudioElementCache {
   private _blobCache: BlobCache;
   constructor(cacheUpdateHandler: CacheUpdateHandler) {
     this._blobCache = new BlobCache({
