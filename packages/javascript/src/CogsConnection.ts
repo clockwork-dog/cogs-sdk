@@ -9,6 +9,12 @@ import DataStore from './DataStore';
 import { createTimeSyncClient, TimeSyncClient, TimeSyncResponseData } from '@clockworkdog/timesync';
 import { CacheState } from './types/cache';
 
+type ReadyState = {
+  image: { [file: string]: CacheState };
+  audio: { [file: string]: CacheState };
+  video: { [file: string]: CacheState };
+};
+
 export default class CogsConnection<Manifest extends CogsPluginManifest, DataT extends { [key: string]: unknown } = Record<never, never>> {
   private websocket: WebSocket | ReconnectingWebSocket;
   private eventTarget = new EventTarget();
@@ -274,9 +280,9 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
     }
   }
 
-  sendReadyState(state: { [file: string]: CacheState }) {
+  sendReadyState(readyState: ReadyState) {
     if (this.isConnected) {
-      this.websocket.send(JSON.stringify({ readyState: state }));
+      this.websocket.send(JSON.stringify({ readyState }));
     }
   }
 
