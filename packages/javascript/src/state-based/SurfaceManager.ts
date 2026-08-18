@@ -1,3 +1,4 @@
+import CogsConnection, { CogsMessageEvent } from '../CogsConnection';
 import { MediaClipState, MediaSurfaceState } from '../types/MediaSchema';
 import { AudioManager, ImageManager, MediaClipManager, VideoManager } from './MediaClipManager';
 import { MediaPreloader } from './MediaPreloader';
@@ -118,4 +119,40 @@ export class SurfaceManager {
     this.setState({});
     this._mediaPreloader.destroy();
   }
+}
+
+export function createSurfaceManager(cogsConnection: CogsConnection<any, any>) {
+  const constructURL = (url: string) => cogsConnection.getAssetUrl(url);
+  const mediaPreloader = new MediaPreloader(constructURL, (state) => {
+    cogsConnection.sendReadyState({
+      images: {},
+      audio: state,
+      video: {},
+    });
+  });
+  const files = cogsConnection.mediaConfig?.files;
+  if (files) {
+    mediaPreloader.setState(files);
+  }
+  const surfaceManager = new SurfaceManager(constructURL, {}, mediaPreloader);
+
+  function handleMessages({ message }: CogsMessageEvent) {
+    if (message.type === 'media_state' && message.media_strategy === 'state') {
+      surfaceManager.setState(message.state);
+    }
+    if (message.type === 'media_config_update') {
+      mediaPreloader.setState(message.files);
+      surfaceManager.volume = message.globalVolume;
+    }
+  }
+
+  cogsConnection.addEventListener('message', handleMessages);
+
+  const destroy = () => {
+    surfaceManager.destroy();
+    mediaPreloader.destroy();
+    cogsConnection.removeEventListener('message', handleMessages);
+  };
+
+  return { surfaceManager, mediaPreloader, destroy };
 }

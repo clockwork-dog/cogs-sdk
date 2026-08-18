@@ -7,6 +7,13 @@ import * as ManifestTypes from './types/ManifestTypes';
 import { DeepReadonly } from './types/utils';
 import DataStore from './DataStore';
 import { createTimeSyncClient, TimeSyncClient, TimeSyncResponseData } from '@clockworkdog/timesync';
+import { CacheState } from './types/cache';
+
+type ReadyState = {
+  images: { [file: string]: CacheState };
+  audio: { [file: string]: CacheState };
+  video: { [file: string]: CacheState };
+};
 
 export default class CogsConnection<Manifest extends CogsPluginManifest, DataT extends { [key: string]: unknown } = Record<never, never>> {
   private websocket: WebSocket | ReconnectingWebSocket;
@@ -270,6 +277,12 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
   private sendDataStoreItems(partialItems: { [key: string]: unknown }): void {
     if (this.isConnected) {
       this.websocket.send(JSON.stringify({ dataStoreItems: partialItems }));
+    }
+  }
+
+  sendReadyState(readyState: ReadyState) {
+    if (this.isConnected) {
+      this.websocket.send(JSON.stringify({ readyState }));
     }
   }
 

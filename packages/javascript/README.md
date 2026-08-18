@@ -228,14 +228,16 @@ cogsConnection.store.addEventListener('items', ({ items }) => {
 });
 ```
 
-### Support audio actions
+### Support media actions
 
-Add `audio` to `cogs-plugin-manifest.js`:
+Add `audio`, `video` and/or `images` to `cogs-plugin-manifest.js`:
 
 ```js
 {
     media: {
         audio: true;
+        video: true;
+        images: true;
     }
 }
 ```
@@ -243,24 +245,14 @@ Add `audio` to `cogs-plugin-manifest.js`:
 Add a [SurfaceManager](https://clockwork-dog.github.io/cogs-sdk/javascript/classes/SurfaceManager.html) to your page:
 
 ```ts
-import { CogsConnection, SurfaceManager } from '@clockworkdog/cogs-client'
+import { CogsConnection, createSurfaceManager } from '@clockworkdog/cogs-client'
 import * as manifest from './cogs-plugin-manifest.js'; // Requires `"allowJs": true` in `tsconfig.json`
 
 const cogsConnection = new CogsConnection(manifest);
-const constructURL = (url: string) => cogsConnection.getAssetUrl(url);
-const surfaceManager = new SurfaceManager(constructURL);
+const { surfaceManager } = createSurfaceManager(cogsConnection);
 
-// Optional
-cogsConnection.addEventListener('message', (message) => {
-    if (message.type === 'media_state') {
-        // (preferred) Listen to media states
-    }
-
-    if ('media_strategy' in message && message.media_strategy === 'events') {
-        // Listen to media events
-    }
-});
-```
+const root = document.getElementById('root');
+root.replaceChildren(surfaceManager.element);
 
 ### Local development
 

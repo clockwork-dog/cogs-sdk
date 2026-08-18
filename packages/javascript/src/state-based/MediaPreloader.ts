@@ -1,11 +1,15 @@
 import '../types/AudioContext';
+import { CacheState } from '../types/cache';
 import { MediaClientConfig } from '../types/CogsClientMessage';
+import { AudioElementCache } from './AudioElementCache';
+import { CacheUpdateHandler } from './BlobCache';
 
 interface Media {
-  element: HTMLMediaElement;
   type: 'audio' | 'video';
+  element: HTMLMediaElement;
   inUse: boolean;
   gainNode: GainNode | undefined;
+  revoke?: () => void;
 }
 
 interface MediaPool {
@@ -28,16 +32,43 @@ export class MediaPreloader {
   private _audioOutputIds: Record<string, string> = {};
   private _audioContext: AudioContext = new AudioContext();
   private _audioOutput: string = DEFAULT_AUDIO_OUTPUT;
-  constructor(constructAssetURL: (file: string) => string, testState: MediaClientConfig['files'] = {}) {
+  private _audioElementCache: AudioElementCache;
+  private _assetFileLookup: Record<string, string> = {};
+
+  constructor(
+    constructAssetURL: (file: string) => string,
+    onCacheUpdate: CacheUpdateHandler = () => {
+      /* do nothing */
+    },
+    testState: MediaClientConfig['files'] = {},
+  ) {
     this._constructAssetURL = constructAssetURL;
     this._state = testState;
     navigator?.mediaDevices?.addEventListener('devicechange', this._updateAudioOutputs);
+
+    // Translate the URL cache state back to filenames as keys
+    this._audioElementCache = new AudioElementCache((urlCacheState) => {
+      const fileCacheState: Record<string, CacheState> = {};
+      Object.entries(urlCacheState).forEach(([url, cacheState]) => {
+        const filename = this._assetFileLookup[url];
+        if (filename) {
+          fileCacheState[filename] = cacheState;
+        }
+      });
+      onCacheUpdate(fileCacheState);
+    });
   }
 
   get state() {
     return { ...this._state };
   }
   setState(newState: MediaClientConfig['files']) {
+    // Keep a lookup so later we can attribute a file for a given url
+    this._assetFileLookup = {};
+    Object.keys(newState).forEach((filename) => {
+      const url = this._constructAssetURL(filename);
+      this._assetFileLookup[url] = filename;
+    });
     this._state = newState;
     this.update();
   }
@@ -84,6 +115,7 @@ export class MediaPreloader {
       if (!(filename in this._state)) {
         cache.spare.element.src = '';
         cache.spare.element.load();
+        cache.spare.revoke?.();
         for (const media of Object.values(cache.connected)) {
           if (media.inUse) {
             console.error(`Failed to clean up ${filename}`);
@@ -91,6 +123,7 @@ export class MediaPreloader {
             media.element.src = '';
             media.element.load();
             media.gainNode?.disconnect();
+            media.revoke?.();
           }
         }
         delete this._mediaPool[filename];
@@ -103,9 +136,21 @@ export class MediaPreloader {
         this._mediaPool[filename] = { spare: this.createMedia(filename, fileConfig.type), connected: {} };
       }
     }
+
+    // Warm the blob cache for audio files that should be preloaded
+    const audioUrlsToPreload = Object.entries(this._state)
+      .filter(([filename, fileConfig]) => fileConfig.type === 'audio' && this.getPreloadAttr(filename) !== 'none')
+      .map(([filename]) => this._constructAssetURL(filename));
+    void this._audioElementCache.preload(audioUrlsToPreload);
   }
 
   private createMedia(file: string, type: 'audio' | 'video'): Media {
+    if (type === 'audio') {
+      const { element, revoke } = this._audioElementCache.getElement(this._constructAssetURL(file));
+      element.preload = this.getPreloadAttr(file);
+      return { element, type, inUse: false, gainNode: undefined, revoke };
+    }
+
     const element = document.createElement(type);
     element.src = this._constructAssetURL(file);
     element.preload = this.getPreloadAttr(file);
@@ -168,7 +213,14 @@ export class MediaPreloader {
 
   destroy() {
     this._audioContext.close();
+    for (const cache of Object.values(this._mediaPool)) {
+      cache.spare.revoke?.();
+      for (const media of Object.values(cache.connected)) {
+        media.revoke?.();
+      }
+    }
     this._mediaPool = {};
+    this._audioElementCache.destroy();
     navigator?.mediaDevices?.removeEventListener('devicechange', this._updateAudioOutputs);
   }
 }
