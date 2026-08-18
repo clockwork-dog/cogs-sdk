@@ -62,7 +62,7 @@ COGS Media Masters can display a browser window with custom HTML, Javascript and
 
 Some other features you can add to your custom content include:
 
-- Play audio from your COGS project
+- Play audio, video or show images from your COGS project
 - Display or react to COGS text hints
 - Show the COGS show timer
 - Connect to MIDI or WebSerial devices

@@ -3,7 +3,7 @@ export * from './CogsConnection';
 export type { default as CogsClientMessage, MediaClientConfig } from './types/CogsClientMessage';
 export type { default as ShowPhase } from './types/ShowPhase';
 export * as MediaSchema from './types/MediaSchema';
-export { SurfaceManager } from './state-based/SurfaceManager';
+export { SurfaceManager, createSurfaceManager } from './state-based/SurfaceManager';
 export { MediaPreloader } from './state-based/MediaPreloader';
 export { assetUrl, preloadUrl } from './utils/urls';
 export { getStateAtTime } from './utils/getStateAtTime';
