@@ -10,7 +10,7 @@ import { createTimeSyncClient, TimeSyncClient, TimeSyncResponseData } from '@clo
 import { CacheState } from './types/cache';
 
 type ReadyState = {
-  image: { [file: string]: CacheState };
+  images: { [file: string]: CacheState };
   audio: { [file: string]: CacheState };
   video: { [file: string]: CacheState };
 };

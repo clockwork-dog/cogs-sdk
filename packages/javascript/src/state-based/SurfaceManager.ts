@@ -125,7 +125,7 @@ export function createSurfaceManager(cogsConnection: CogsConnection<any, any>) {
   const constructURL = (url: string) => cogsConnection.getAssetUrl(url);
   const mediaPreloader = new MediaPreloader(constructURL, (state) => {
     cogsConnection.sendReadyState({
-      image: {},
+      images: {},
       audio: state,
       video: {},
     });
