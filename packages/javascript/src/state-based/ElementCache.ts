@@ -1,13 +1,17 @@
 import { BlobCache, CacheUpdateHandler } from './BlobCache';
 
-const CACHE_SIZE = 200 * 1024 * 1024;
+export interface ElementCacheOpts {
+  elementType: 'image' | 'audio';
+  cacheUpdateHandler: CacheUpdateHandler;
+  size: number;
+}
 
-export class AudioElementCache {
+export class ElementCache {
   private _blobCache: BlobCache;
-  constructor(cacheUpdateHandler: CacheUpdateHandler) {
+  constructor(opts: ElementCacheOpts) {
     this._blobCache = new BlobCache({
-      maxSizeBytes: CACHE_SIZE,
-      onCacheUpdate: cacheUpdateHandler,
+      maxSizeBytes: opts.size,
+      onCacheUpdate: opts.cacheUpdateHandler,
     });
   }
 

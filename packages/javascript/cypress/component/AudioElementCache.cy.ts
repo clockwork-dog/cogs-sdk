@@ -1,4 +1,4 @@
-import { AudioElementCache } from '../../src/state-based/AudioElementCache';
+import { ElementCache } from '../../src/state-based/ElementCache';
 import { CacheUpdateHandler } from '../../src/state-based/BlobCache';
 import { CacheState } from '../../src/types/cache';
 import { createTestURL } from '../support/delayedFileServerConfig';
@@ -31,7 +31,7 @@ describe('AudioElementCache', () => {
   beforeEach(() => cleanup());
 
   it('is slow without a warm cache', async () => {
-    const cache = new AudioElementCache(noopHandler);
+    const cache = new ElementCache({ elementType: 'audio', size: 2_000_000, cacheUpdateHandler: noopHandler });
     const url = createTestURL('sinwave@440hz.wav', { delayMs: 500 });
 
     const { element, revoke } = cache.getElement(url);
@@ -42,7 +42,7 @@ describe('AudioElementCache', () => {
   });
 
   it('speeds up cached playback', async () => {
-    const cache = new AudioElementCache(noopHandler);
+    const cache = new ElementCache({ elementType: 'audio', size: 2_000_000, cacheUpdateHandler: noopHandler });
     const url = createTestURL('sinwave@440hz.wav', { delayMs: 500 });
 
     await cache.preload([url]);
@@ -55,7 +55,7 @@ describe('AudioElementCache', () => {
   });
 
   it('gracefully handles failed fetches', async () => {
-    const cache = new AudioElementCache(noopHandler);
+    const cache = new ElementCache({ elementType: 'audio', size: 2_000_000, cacheUpdateHandler: noopHandler });
     const url = createTestURL('sinwave@440hz.wav', { fail: true });
 
     await cache.preload([url]);
@@ -68,7 +68,7 @@ describe('AudioElementCache', () => {
   });
 
   it("doesn't break an element already playing from that URL when revoked", async () => {
-    const cache = new AudioElementCache(noopHandler);
+    const cache = new ElementCache({ elementType: 'audio', size: 2_000_000, cacheUpdateHandler: noopHandler });
     const url = createTestURL('sinwave@440hz.wav');
 
     await cache.preload([url]);
@@ -86,7 +86,7 @@ describe('AudioElementCache', () => {
       updates.push(cacheState);
     };
 
-    const cache = new AudioElementCache(handler);
+    const cache = new ElementCache({ elementType: 'audio', size: 2_000_000, cacheUpdateHandler: handler });
     const url = createTestURL('sinwave@440hz.wav');
     await cache.preload([url]);
 

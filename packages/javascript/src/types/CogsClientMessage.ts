@@ -30,15 +30,21 @@ export interface DataStoreItemsClientMessage {
 }
 
 // Media
-
+export type SyncStrategy = 'none' | 'native';
 export type Media =
+  | {
+      type: 'image';
+      preload: boolean;
+    }
   | {
       type: 'audio';
       preload: boolean;
+      syncStrategy: SyncStrategy;
     }
   | {
       type: 'video';
       preload: boolean | 'auto' | 'metadata' | 'none';
+      syncStrategy: SyncStrategy;
     };
 
 export interface MediaClientConfigMessage extends MediaClientConfig {
