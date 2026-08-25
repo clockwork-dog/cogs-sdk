@@ -78,7 +78,9 @@ export class MediaPreloader {
       this._audioContext.resume();
       return this._audioContext;
     } else {
-      this._audioContext.close();
+      if (this._audioContext.state !== 'closed') {
+        this._audioContext.close();
+      }
       const ctx = new AudioContext();
       this._audioOutput = audioOutput;
       this._audioContext = ctx;
@@ -212,7 +214,9 @@ export class MediaPreloader {
   };
 
   destroy() {
-    this._audioContext.close();
+    if (this._audioContext.state !== 'closed') {
+      this._audioContext.close();
+    }
     for (const cache of Object.values(this._mediaPool)) {
       cache.spare.revoke?.();
       for (const media of Object.values(cache.connected)) {
