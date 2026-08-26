@@ -123,13 +123,7 @@ export class SurfaceManager {
 
 export function createSurfaceManager(cogsConnection: CogsConnection<any, any>) {
   const constructURL = (url: string) => cogsConnection.getAssetUrl(url);
-  const mediaPreloader = new MediaPreloader(constructURL, (state) => {
-    cogsConnection.sendReadyState({
-      images: {},
-      audio: state,
-      video: {},
-    });
-  });
+  const mediaPreloader = new MediaPreloader(constructURL, (state) => cogsConnection.sendReadyState(state));
   const files = cogsConnection.mediaConfig?.files;
   if (files) {
     mediaPreloader.setState(files);

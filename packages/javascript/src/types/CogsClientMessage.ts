@@ -30,8 +30,11 @@ export interface DataStoreItemsClientMessage {
 }
 
 // Media
-
 export type Media =
+  | {
+      type: 'image';
+      preload: boolean;
+    }
   | {
       type: 'audio';
       preload: boolean;

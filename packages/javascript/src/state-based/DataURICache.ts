@@ -2,32 +2,44 @@ import { CacheState } from '../types/cache';
 
 export type CacheUpdateHandler = (cacheState: { [url: string]: CacheState }) => void;
 
-export interface BlobCacheOptions {
+export interface DataURICacheOptions {
   maxSizeBytes: number;
   onCacheUpdate: CacheUpdateHandler;
 }
 
+function createDataURI(blob: Blob): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
 /**
- * Fetches files and holds them as `Blob`s so they can be served back out as object URLs with
+ * Fetches files and holds them as `dataURI`s
+ *
+ * We've found that dataURIs take around 30% more space than a Blob,
+ * but achieve a much quicker time to play.
+ * @see {@link https://issues.chromium.org/issues/41324363}
  */
-export class BlobCache {
+export class DataURICache {
   private _sizeBytes = 0;
   private _maxSizeBytes: number;
-  private _cache: Record<string, Blob> = {};
+  private _cache: Record<string, string> = {};
   private _abortController: AbortController | null = null;
   private _onCacheUpdate: CacheUpdateHandler;
-  private _revokes: Set<() => void> = new Set();
 
-  constructor({ maxSizeBytes, onCacheUpdate }: BlobCacheOptions) {
+  constructor({ maxSizeBytes, onCacheUpdate }: DataURICacheOptions) {
     this._maxSizeBytes = maxSizeBytes;
     this._onCacheUpdate = onCacheUpdate;
   }
 
   get cacheState(): { [url: string]: CacheState } {
     return Object.fromEntries<CacheState>(
-      Object.entries(this._cache).map(([url, blob]): [string, CacheState] => [
+      Object.entries(this._cache).map(([url, uri]): [string, CacheState] => [
         url,
-        { readyState: HTMLMediaElement.HAVE_ENOUGH_DATA, cachedBytes: blob.size },
+        { readyState: HTMLMediaElement.HAVE_ENOUGH_DATA, cachedBytes: uri.length },
       ]),
     );
   }
@@ -40,9 +52,9 @@ export class BlobCache {
     const newURLs = new Set(urls);
     for (const prevURL of Object.keys(this._cache)) {
       if (!newURLs.has(prevURL)) {
-        const staleBlob = this._cache[prevURL];
-        if (staleBlob) {
-          this._sizeBytes -= staleBlob.size;
+        const staleURI = this._cache[prevURL];
+        if (staleURI) {
+          this._sizeBytes -= staleURI.length;
           delete this._cache[prevURL];
         }
       }
@@ -69,38 +81,29 @@ export class BlobCache {
     if (signal.aborted) return false;
     if (url in this._cache) return true;
 
-    let blob: Blob;
+    let uri: string;
     try {
       const response = await fetch(url, { signal });
       if (!response.ok) return false;
-      blob = await response.blob();
+      const blob = await response.blob();
+      uri = await createDataURI(blob);
     } catch {
       return false;
     }
 
     if (signal.aborted) return false;
-    if (this._sizeBytes + blob.size > this._maxSizeBytes) return false;
+    if (this._sizeBytes + uri.length > this._maxSizeBytes) return false;
 
-    this._cache[url] = blob;
-    this._sizeBytes += blob.size;
+    this._cache[url] = uri;
+    this._sizeBytes += uri.length;
     return true;
   }
 
-  getUrl(url: string): { url: string; revoke: () => void } | undefined {
-    const blob = this._cache[url];
-    if (blob) {
-      const objectUrl = URL.createObjectURL(blob);
-      const revoke = () => URL.revokeObjectURL(objectUrl);
-      this._revokes.add(revoke);
-      return { url: objectUrl, revoke };
-    }
+  getURI(url: string): string | undefined {
+    return this._cache[url];
   }
 
   destroy(): void {
-    for (const revoke of this._revokes.values()) {
-      revoke();
-    }
-    this._revokes.clear();
     this._abortController?.abort();
     this._abortController = null;
     this._cache = {};
