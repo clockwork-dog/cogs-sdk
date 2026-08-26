@@ -183,11 +183,11 @@ export class MediaPreloader {
   private createMedia(file: string, type: 'image' | 'audio' | 'video'): Media {
     switch (type) {
       case 'image': {
-        const element = this._imageElementCache.getElement(this._constructAssetURL(file)) as HTMLImageElement;
+        const element = this._imageElementCache.getElement(this._constructAssetURL(file));
         return { element, type, inUse: false, gainNode: undefined };
       }
       case 'audio': {
-        const element = this._audioElementCache.getElement(this._constructAssetURL(file)) as HTMLAudioElement;
+        const element = this._audioElementCache.getElement(this._constructAssetURL(file));
         element.preload = this.getPreloadAttr(file);
         return { element, type, inUse: false, gainNode: undefined };
       }
