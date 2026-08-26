@@ -1,4 +1,4 @@
-import { BlobCache, CacheUpdateHandler } from './BlobCache';
+import { DataURICache, CacheUpdateHandler } from './DataURICache';
 
 export interface ElementCacheOpts {
   elementType: 'image' | 'audio';
@@ -7,33 +7,35 @@ export interface ElementCacheOpts {
 }
 
 export class ElementCache {
-  private _blobCache: BlobCache;
+  private _dataURICache: DataURICache;
+  private _type: 'audio' | 'img';
   constructor(opts: ElementCacheOpts) {
-    this._blobCache = new BlobCache({
+    switch (opts.elementType) {
+      case 'image':
+        this._type = 'img';
+        break;
+      default:
+        this._type = opts.elementType;
+    }
+    this._dataURICache = new DataURICache({
       maxSizeBytes: opts.size,
       onCacheUpdate: opts.cacheUpdateHandler,
     });
   }
 
   preload(urls: string[]): Promise<void> {
-    return this._blobCache.cache(urls);
+    return this._dataURICache.cache(urls);
   }
 
-  getElement(url: string): { element: HTMLAudioElement; revoke: () => void } {
-    const cacheHit = this._blobCache.getUrl(url);
-
-    const { url: src, revoke } = cacheHit ?? {
-      url,
-      revoke: () => {
-        /* do nothing */
-      },
-    };
-    const element = document.createElement('audio');
+  getElement(url: string): HTMLElement {
+    const cacheHit = this._dataURICache.getURI(url);
+    const src = cacheHit ?? url;
+    const element = document.createElement(this._type);
     element.src = src;
-    return { element, revoke };
+    return element;
   }
 
   destroy(): void {
-    this._blobCache.destroy();
+    this._dataURICache.destroy();
   }
 }

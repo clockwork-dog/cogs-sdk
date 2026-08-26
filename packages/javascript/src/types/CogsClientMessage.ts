@@ -30,7 +30,6 @@ export interface DataStoreItemsClientMessage {
 }
 
 // Media
-export type SyncStrategy = 'none' | 'native';
 export type Media =
   | {
       type: 'image';
@@ -39,12 +38,10 @@ export type Media =
   | {
       type: 'audio';
       preload: boolean;
-      syncStrategy: SyncStrategy;
     }
   | {
       type: 'video';
       preload: boolean | 'auto' | 'metadata' | 'none';
-      syncStrategy: SyncStrategy;
     };
 
 export interface MediaClientConfigMessage extends MediaClientConfig {

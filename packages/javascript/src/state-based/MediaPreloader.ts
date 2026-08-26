@@ -12,10 +12,9 @@ export type MediaCacheUpdateHandler = (state: MediaCacheState) => void;
 
 interface Media {
   type: 'image' | 'audio' | 'video';
-  element: HTMLMediaElement;
+  element: HTMLMediaElement | HTMLImageElement;
   inUse: boolean;
   gainNode: GainNode | undefined;
-  revoke?: () => void;
 }
 
 interface MediaPool {
@@ -147,46 +146,50 @@ export class MediaPreloader {
     for (const [filename, cache] of Object.entries(this._mediaPool)) {
       if (!(filename in this._state)) {
         cache.spare.element.src = '';
-        cache.spare.element.load();
-        cache.spare.revoke?.();
+        if ('load' in cache.spare.element) {
+          cache.spare.element.load();
+        }
         for (const media of Object.values(cache.connected)) {
           if (media.inUse) {
             console.error(`Failed to clean up ${filename}`);
           } else {
             media.element.src = '';
-            media.element.load();
+            if ('load' in cache.spare.element) {
+              cache.spare.element.load();
+            }
             media.gainNode?.disconnect();
-            media.revoke?.();
           }
         }
         delete this._mediaPool[filename];
       }
     }
 
-    // Create cache for new clips
-    for (const [filename, fileConfig] of Object.entries(this._state)) {
-      if (!(filename in this._mediaPool)) {
-        this._mediaPool[filename] = { spare: this.createMedia(filename, fileConfig.type), connected: {} };
-      }
-    }
-
-    // Warm the blob cache for audio files that should be preloaded
+    // Warm the caches for files that should be preloaded
     const audioUrlsToPreload = Object.entries(this._state)
       .filter(([filename, fileConfig]) => fileConfig.type === 'audio' && this.getPreloadAttr(filename) !== 'none')
       .map(([filename]) => this._constructAssetURL(filename));
-    void this._audioElementCache.preload(audioUrlsToPreload);
+    const imageUrlsToPreload = Object.entries(this._state)
+      .filter(([filename, fileConfig]) => fileConfig.type === 'image' && this.getPreloadAttr(filename) !== 'none')
+      .map(([filename]) => this._constructAssetURL(filename));
+    Promise.all([this._audioElementCache.preload(audioUrlsToPreload), this._imageElementCache.preload(imageUrlsToPreload)]).then(() => {
+      for (const [filename, fileConfig] of Object.entries(this._state)) {
+        if (!(filename in this._mediaPool)) {
+          this._mediaPool[filename] = { spare: this.createMedia(filename, fileConfig.type), connected: {} };
+        }
+      }
+    });
   }
 
   private createMedia(file: string, type: 'image' | 'audio' | 'video'): Media {
     switch (type) {
       case 'image': {
-        const { element, revoke } = this._imageElementCache.getElement(this._constructAssetURL(file));
-        return { element, type, inUse: false, gainNode: undefined, revoke };
+        const element = this._imageElementCache.getElement(this._constructAssetURL(file)) as HTMLImageElement;
+        return { element, type, inUse: false, gainNode: undefined };
       }
       case 'audio': {
-        const { element, revoke } = this._audioElementCache.getElement(this._constructAssetURL(file));
+        const element = this._audioElementCache.getElement(this._constructAssetURL(file)) as HTMLAudioElement;
         element.preload = this.getPreloadAttr(file);
-        return { element, type, inUse: false, gainNode: undefined, revoke };
+        return { element, type, inUse: false, gainNode: undefined };
       }
       case 'video': {
         const element = document.createElement(type);
@@ -199,6 +202,7 @@ export class MediaPreloader {
 
   // Connects an element into the Web Audio graph. Must only be called once per element.
   private connectElement(media: Media, audioOutput: string) {
+    if (!(media.element instanceof HTMLMediaElement)) return;
     const ctx = this.getAudioContext(audioOutput);
     const source = ctx.createMediaElementSource(media.element);
     const gainNode = ctx.createGain();
@@ -254,12 +258,6 @@ export class MediaPreloader {
   destroy() {
     if (this._audioContext.state !== 'closed') {
       this._audioContext.close();
-    }
-    for (const cache of Object.values(this._mediaPool)) {
-      cache.spare.revoke?.();
-      for (const media of Object.values(cache.connected)) {
-        media.revoke?.();
-      }
     }
     this._mediaPool = {};
     this._audioElementCache.destroy();
