@@ -40,8 +40,8 @@ export class MediaPreloader {
   private _audioContext: AudioContext = new AudioContext();
   private _audioOutput: string = DEFAULT_AUDIO_OUTPUT;
 
-  private _audioElementCache: ElementCache;
-  private _imageElementCache: ElementCache;
+  private _audioElementCache: ElementCache<'audio'>;
+  private _imageElementCache: ElementCache<'img'>;
   private _fileCacheState: MediaCacheState = { images: {}, audio: {}, video: {} };
   private _assetFileLookup: Record<string, string> = {};
 
@@ -57,7 +57,7 @@ export class MediaPreloader {
     navigator?.mediaDevices?.addEventListener('devicechange', this._updateAudioOutputs);
 
     this._imageElementCache = new ElementCache({
-      elementType: 'image',
+      elementType: 'img',
       size: IMAGE_CACHE_SIZE,
       cacheUpdateHandler: (state) => {
         const imageFileCacheState: Record<string, CacheState> = {};
