@@ -208,6 +208,10 @@ const SYNC_SEEK_LOOKAHEAD_MS = 10;
 // This value allows disagreement between HTMLVideoElement.duration and the length of the different audio streams we have in COGS.
 const LOOPING_EPSILON_MS = 100;
 
+// If we reach the end of playback and haven't yet received a stop, we can check how much longer we were meant to play for.
+// If it's less than this, we'll leave the clip in a finished state.
+const END_OF_PLAYBACK_EPSILON_MS = 100;
+
 const PLAYBACK_ADJUSTMENT_SMOOTHING = 0.3;
 const MAX_PLAYBACK_RATE_ADJUSTMENT = 0.1;
 function playbackSmoothing(deltaTime: number) {
@@ -229,7 +233,7 @@ function assertPlaybackRate(mediaElement: HTMLMediaElement, playbackRate: number
 }
 
 interface TemporalSyncState {
-  state: 'idle' | 'seeking' | 'intercepting' | 'seeking-ahead' | 'seeked-ahead';
+  state: 'idle' | 'seeking' | 'intercepting' | 'seeking-ahead' | 'seeked-ahead' | 'finishing';
 }
 /**
  * Makes sure the media is at the correct time and speed.
@@ -273,7 +277,23 @@ export function assertTemporalProperties(
       : currentMediaTime - properties.t;
   const deltaTimeAbs = Math.abs(deltaTime);
 
+  // Are we really close to the end?
+  // Let the clip finish naturally
+  let isFinishing = false;
+  if (!isLooping && mediaElement.duration !== undefined && properties.rate !== 0) {
+    const remainingDuration = (mediaElement.duration * 1000 - properties.t) / properties.rate;
+    if (remainingDuration < END_OF_PLAYBACK_EPSILON_MS) {
+      isFinishing = true;
+    }
+  }
+
   switch (true) {
+    /**
+     * Make sure that a clip that has finished ends in a stable state
+     */
+    case isFinishing || syncState.state === 'finishing':
+      return { state: 'finishing' };
+
     /**
      * Seek ahead behavior
      * When playbackRate adjustment is not enabled we will seek ahead and try to prepare to play.
