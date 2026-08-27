@@ -98,6 +98,7 @@ export function assertElement(
     case 'image':
       {
         element = mediaElement instanceof HTMLImageElement ? mediaElement : document.createElement('img');
+        if (element.src.startsWith('data:')) break;
         const elementPath = getPath(element.src);
         if (elementPath !== assetPath) {
           element.src = assetURL;
@@ -106,9 +107,12 @@ export function assertElement(
       break;
     case 'audio':
     case 'video': {
-      if (mediaElement !== undefined) {
+      if (mediaElement instanceof HTMLMediaElement && mediaElement.tagName.toLowerCase() === clip.type) {
+        element = mediaElement;
+        if (element.src.startsWith('data:')) break;
+
         const path = getPath(mediaElement.src);
-        if (mediaElement.tagName.toLowerCase() === clip.type && path !== undefined && path === assetPath) {
+        if (path !== undefined && path === assetPath) {
           element = mediaElement;
         }
       }
