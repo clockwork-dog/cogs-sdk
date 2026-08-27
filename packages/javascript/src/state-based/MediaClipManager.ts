@@ -13,17 +13,6 @@ import { IS_IOS, IS_WEBKIT } from '../utils/device';
 import { modulo, moduloDiff } from '../utils/modulo';
 import { MediaPreloader } from './MediaPreloader';
 
-const getPath = (url: string): string | undefined => {
-  try {
-    const { pathname } = new URL(url, window.location.href);
-    return pathname;
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (_) {
-    return undefined;
-  }
-};
-
 /**
  * Each instance of a MediaClipManager is responsible for displaying
  * an image/audio/video clip in the correct state.
@@ -33,7 +22,6 @@ export abstract class MediaClipManager<T extends MediaClipState> {
     private surfaceElement: HTMLElement,
     protected clipElement: HTMLElement,
     state: T,
-    protected constructAssetURL: (file: string) => string,
     protected mediaPreloader: MediaPreloader,
   ) {
     this._state = state;
@@ -87,47 +75,19 @@ export function assertElement(
   mediaElement: HTMLMediaElement | HTMLImageElement | undefined,
   parentElement: HTMLElement,
   clip: MediaClipState,
-  constructAssetURL: (file: string) => string,
   preloader: MediaPreloader,
 ): HTMLElement {
   let element: HTMLMediaElement | HTMLImageElement | undefined = undefined;
-  const assetURL = constructAssetURL(clip.file);
-  const assetPath = getPath(assetURL);
+  const audioOutput = 'audioOutput' in clip ? clip.audioOutput : '';
+  if (mediaElement === undefined) {
+    element = preloader.getElement(clip.file, clip.type, audioOutput);
+  } else {
+    element = mediaElement;
+  }
 
-  switch (clip.type) {
-    case 'image':
-      {
-        element = mediaElement instanceof HTMLImageElement ? mediaElement : document.createElement('img');
-        if (element.src.startsWith('data:')) break;
-        const elementPath = getPath(element.src);
-        if (elementPath !== assetPath) {
-          element.src = assetURL;
-        }
-      }
-      break;
-    case 'audio':
-    case 'video': {
-      if (mediaElement instanceof HTMLMediaElement && mediaElement.tagName.toLowerCase() === clip.type) {
-        element = mediaElement;
-        if (element.src.startsWith('data:')) break;
-
-        const path = getPath(mediaElement.src);
-        if (path !== undefined && path === assetPath) {
-          element = mediaElement;
-        }
-      }
-
-      if (!element) {
-        element = preloader.getElement(clip.file, clip.type, clip.audioOutput);
-      }
-
-      // Required for iOS
-      if (element instanceof HTMLVideoElement && !element.playsInline) {
-        element.playsInline = true;
-      }
-
-      break;
-    }
+  // Required for iOS
+  if (element instanceof HTMLVideoElement && !element.playsInline) {
+    element.playsInline = true;
   }
 
   if (parentElement.children.length !== 1 || parentElement.childNodes[0] !== element) {
@@ -416,13 +376,7 @@ export class ImageManager extends MediaClipManager<ImageState> {
     const currentState = getStateAtTime(this._state, Date.now());
 
     if (currentState) {
-      this.imageElement = assertElement(
-        this.imageElement,
-        this.clipElement,
-        this._state,
-        this.constructAssetURL,
-        this.mediaPreloader,
-      ) as HTMLImageElement;
+      this.imageElement = assertElement(this.imageElement, this.clipElement, this._state, this.mediaPreloader) as HTMLImageElement;
     } else if (this.imageElement) {
       this.destroy();
     }
@@ -449,13 +403,7 @@ export class AudioManager extends MediaClipManager<AudioState> {
     const now = Date.now();
     const currentState = getStateAtTime(this._state, now);
     if (currentState) {
-      this.audioElement = assertElement(
-        this.audioElement,
-        this.clipElement,
-        this._state,
-        this.constructAssetURL,
-        this.mediaPreloader,
-      ) as HTMLAudioElement;
+      this.audioElement = assertElement(this.audioElement, this.clipElement, this._state, this.mediaPreloader) as HTMLAudioElement;
     } else {
       this.destroy();
     }
@@ -501,13 +449,7 @@ export class VideoManager extends MediaClipManager<VideoState> {
     const now = Date.now();
     const currentState = getStateAtTime(this._state, now);
     if (currentState) {
-      this.videoElement = assertElement(
-        this.videoElement,
-        this.clipElement,
-        this._state,
-        this.constructAssetURL,
-        this.mediaPreloader,
-      ) as HTMLVideoElement;
+      this.videoElement = assertElement(this.videoElement, this.clipElement, this._state, this.mediaPreloader) as HTMLVideoElement;
     } else {
       this.destroy();
     }

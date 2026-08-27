@@ -32,30 +32,6 @@ describe('Image stability tests', () => {
     cy.get('img').should('not.exist');
   });
 
-  it('recovers from img element src change', () => {
-    const ORIGINAL_SRC = 'indianred@2560x1440.png';
-    const CHANGED_SRC = '404.png';
-    const now = Date.now();
-    const manager = new SurfaceManager(constructAssetURL, {
-      'clip-id': {
-        file: ORIGINAL_SRC,
-        type: 'image',
-        fit: 'cover',
-        keyframes: [[now, { set: { opacity: 1 } }]],
-      },
-    });
-    cy.mount(manager);
-
-    cy.get('img').should('exist');
-    cy.get('img').invoke('prop', 'src', CHANGED_SRC);
-
-    cy.wait(1_000);
-
-    cy.get('img')
-      .invoke('prop', 'src')
-      .should(($src) => expect($src).to.contain(ORIGINAL_SRC));
-  });
-
   it('recovers from img element deletion', () => {
     const now = Date.now();
     const manager = new SurfaceManager(constructAssetURL, {

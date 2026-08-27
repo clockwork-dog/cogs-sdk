@@ -91,18 +91,18 @@ export class SurfaceManager {
         if (!resource.manager) {
           switch (clip.type) {
             case 'image':
-              resource.manager = new ImageManager(this._element, resource.element, clip, this.constructAssetUrl, this._mediaPreloader);
+              resource.manager = new ImageManager(this._element, resource.element, clip, this._mediaPreloader);
               resource.manager.loop();
               break;
             case 'audio': {
-              const audioManager = new AudioManager(this._element, resource.element, clip, this.constructAssetUrl, this._mediaPreloader);
+              const audioManager = new AudioManager(this._element, resource.element, clip, this._mediaPreloader);
               resource.manager = audioManager;
               audioManager.volume = this._volume;
               audioManager.loop();
               break;
             }
             case 'video': {
-              const videoManager = new VideoManager(this._element, resource.element, clip, this.constructAssetUrl, this._mediaPreloader);
+              const videoManager = new VideoManager(this._element, resource.element, clip, this._mediaPreloader);
               resource.manager = videoManager;
               videoManager.volume = this._volume;
               videoManager.loop();

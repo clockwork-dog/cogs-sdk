@@ -180,7 +180,7 @@ export class MediaPreloader {
     });
   }
 
-  private createMedia(file: string, type: 'image' | 'audio' | 'video'): Media {
+  private createMedia(file: string, type: Media['type']): Media {
     switch (type) {
       case 'image': {
         const element = this._imageElementCache.getElement(this._constructAssetURL(file));
@@ -211,7 +211,7 @@ export class MediaPreloader {
     media.gainNode = gainNode;
   }
 
-  getElement(file: string, type: 'audio' | 'video', audioOutput: string) {
+  getElement(file: string, type: Media['type'], audioOutput: string) {
     const cache = this._mediaPool[file] ?? (this._mediaPool[file] = { connected: {}, spare: this.createMedia(file, type) });
 
     // Reuse element if already connected to audio graph
