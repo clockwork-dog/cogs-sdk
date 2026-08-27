@@ -233,7 +233,7 @@ function assertPlaybackRate(mediaElement: HTMLMediaElement, playbackRate: number
 }
 
 interface TemporalSyncState {
-  state: 'idle' | 'seeking' | 'intercepting' | 'seeking-ahead' | 'seeked-ahead' | 'finished';
+  state: 'idle' | 'seeking' | 'intercepting' | 'seeking-ahead' | 'seeked-ahead' | 'finishing';
 }
 /**
  * Makes sure the media is at the correct time and speed.
@@ -277,13 +277,13 @@ export function assertTemporalProperties(
       : currentMediaTime - properties.t;
   const deltaTimeAbs = Math.abs(deltaTime);
 
-  // Have we jumped to the start when we're meant to finish?
-  // Sounds like it's ended
-  let hasFinished = false;
+  // Are we really close to the end?
+  // Let the clip finish naturally
+  let isFinishing = false;
   if (!isLooping && mediaElement.duration !== undefined && properties.rate !== 0) {
     const remainingDuration = (mediaElement.duration * 1000 - properties.t) / properties.rate;
     if (remainingDuration < END_OF_PLAYBACK_EPSILON_MS) {
-      hasFinished = true;
+      isFinishing = true;
     }
   }
 
@@ -291,9 +291,8 @@ export function assertTemporalProperties(
     /**
      * Make sure that a clip that has finished ends in a stable state
      */
-    case hasFinished || syncState.state === 'finished':
-      assertPlaybackRate(mediaElement, 0);
-      return { state: 'finished' };
+    case isFinishing || syncState.state === 'finishing':
+      return { state: 'finishing' };
 
     /**
      * Seek ahead behavior
