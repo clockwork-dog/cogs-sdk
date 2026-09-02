@@ -10,7 +10,7 @@ describe('Video stability tests', () => {
         type: 'video',
         audioOutput: '',
         fit: 'cover',
-        enablePlaybackRateAdjustment: true,
+        syncStrategy: 'native',
         keyframes: [
           [now, { set: { t: 0, rate: 0 } }], // paused at start
           [now + 60_000, { set: { rate: 1 } }], // play in 1 minute
@@ -32,7 +32,7 @@ describe('Video stability tests', () => {
         type: 'video',
         audioOutput: '',
         fit: 'cover',
-        enablePlaybackRateAdjustment: true,
+        syncStrategy: 'native',
         keyframes: [[now, { set: { t: 0, rate: 1 } }]],
       },
     });
@@ -58,7 +58,7 @@ describe('Video stability tests', () => {
         type: 'video',
         audioOutput: '',
         fit: 'cover',
-        enablePlaybackRateAdjustment: true,
+        syncStrategy: 'native',
         keyframes: [[now, { set: { t: 1_500, rate: 0 } }]],
       },
     });
@@ -91,7 +91,7 @@ describe('Video stability tests', () => {
         type: 'video',
         audioOutput: '',
         fit: 'cover',
-        enablePlaybackRateAdjustment: true,
+        syncStrategy: 'native',
         keyframes: [[now, { set: { t: 0, rate: 1 } }]],
       },
     });
@@ -118,7 +118,7 @@ describe('Video stability tests', () => {
         file: 'libx264~yuv420p~60fps~10s@1280x720.mp4',
         audioOutput: '',
         fit: 'cover',
-        enablePlaybackRateAdjustment: true,
+        syncStrategy: 'native',
         keyframes: [[now, { set: { t: 0, rate: 1, volume: 0.5 } }]],
       },
     });
@@ -141,7 +141,7 @@ describe('Video stability tests', () => {
         file: 'libx264~yuv420p~60fps~10s@1280x720.mp4',
         audioOutput: '',
         fit: 'cover',
-        enablePlaybackRateAdjustment: true,
+        syncStrategy: 'native',
         keyframes: [[now, { set: { t: 0, rate: 1 } }]],
       },
     });
@@ -164,7 +164,7 @@ describe('Video stability tests', () => {
         file: 'libx264~yuv420p~60fps~10s@1280x720.mp4',
         audioOutput: '',
         fit: 'cover',
-        enablePlaybackRateAdjustment: true,
+        syncStrategy: 'native',
         keyframes: [[now, { set: { t: 0, rate: 1 } }]],
       },
     });
@@ -177,7 +177,7 @@ describe('Video stability tests', () => {
         file: 'libx264~yuv420p~60fps~10s@1280x720.mp4',
         audioOutput: '',
         fit: 'cover',
-        enablePlaybackRateAdjustment: true,
+        syncStrategy: 'native',
         keyframes: [
           [now, { set: { t: 0, rate: 1 } }],
           [now + 10_000, { set: { t: 0 } }],

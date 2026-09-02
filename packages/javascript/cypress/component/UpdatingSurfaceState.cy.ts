@@ -16,7 +16,7 @@ describe('Updating surface state', () => {
             type: 'video',
             audioOutput: '',
             fit: 'cover',
-            enablePlaybackRateAdjustment: true,
+            syncStrategy: 'native',
             keyframes: [
               [now + 1_000, { set: { t: 0, rate: 1 } }], // play in 1s
             ],
@@ -52,7 +52,7 @@ describe('Updating surface state', () => {
         type: 'video',
         fit: 'contain',
         audioOutput: '',
-        enablePlaybackRateAdjustment: true,
+        syncStrategy: 'native',
         file: 'libx264~yuv420p~60fps~10s@1280x720.mp4',
         keyframes: [[now, {}]],
       },

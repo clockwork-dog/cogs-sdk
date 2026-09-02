@@ -4,6 +4,7 @@ import {
   ImageMetadata,
   ImageState,
   MediaClipState,
+  SyncStrategy,
   TemporalProperties,
   VideoState,
   VisualProperties,
@@ -167,6 +168,7 @@ const SYNC_OUTER_TARGET_THRESHOLD_MS = 50;
 const SYNC_INNER_TARGET_THRESHOLD_MS = 5;
 const SYNC_MAX_THRESHOLD_MS = 1_000;
 const SYNC_SEEK_LOOKAHEAD_MS = 10;
+const SYNC_NATURAL_PLAYBACK_AVOIDANCE = 0.01;
 
 // If the media is scheduled to go back to the start close in time to the end of the video, we'll use the loop attribute.
 // This value allows disagreement between HTMLVideoElement.duration and the length of the different audio streams we have in COGS.
@@ -197,7 +199,19 @@ function assertPlaybackRate(mediaElement: HTMLMediaElement, playbackRate: number
 }
 
 interface TemporalSyncState {
-  state: 'idle' | 'seeking' | 'intercepting' | 'seeking-ahead' | 'seeked-ahead' | 'finishing';
+  state:
+    | 'idle'
+    // Seek ahead and wait when no sync is requested
+    | 'none-seeking-ahead'
+    | 'none-seeked-ahead'
+    // single playback rate adjustment to intercept desired time
+    | 'native-intercepting'
+    // incremental playback rate adjustment whilst avoiding 1.00x speed
+    | 'native-avoiding-natural'
+    // Seeking close enough for another synchronization strategy to take over
+    | 'seeking'
+    // Hands-off approach at the end of playback
+    | 'finishing';
 }
 /**
  * Makes sure the media is at the correct time and speed.
@@ -209,11 +223,11 @@ export function assertTemporalProperties(
   keyframes: VideoState['keyframes'],
   currentTime: number,
   syncState: TemporalSyncState,
-  enablePlaybackRateAdjustment: boolean,
+  syncStrategy: SyncStrategy,
 ): TemporalSyncState {
   // On Webkit (using the simulator on safari and COGS mobile app on iOS) changes to currentTime and playbackRate are much less responsive.
   // We make sure we only do lower frequency updates, and don't change playbackRate.
-  const playbackRateSync = enablePlaybackRateAdjustment && !IS_WEBKIT;
+  if (IS_WEBKIT) syncStrategy = 'none';
 
   // At the end of the media, is it set back to the start?
   // Sounds like looping to me!
@@ -264,7 +278,7 @@ export function assertTemporalProperties(
      * We'll make sure everything is buffered and ready, then wait until we're on time.
      * We'll try to press play once and leave it to continue.
      */
-    case !playbackRateSync && syncState.state === 'idle' && properties.rate > 0 && deltaTimeAbs > NO_SYNC_SEEK_AHEAD_OUTER_THRESHOLD_MS: {
+    case syncStrategy === 'none' && syncState.state === 'idle' && properties.rate > 0 && deltaTimeAbs > NO_SYNC_SEEK_AHEAD_OUTER_THRESHOLD_MS: {
       const target = (properties.t + properties.rate * NO_SYNC_SEEK_LOOKAHEAD_MS) / 1000;
       if (mediaElement.duration !== undefined && target > mediaElement.duration && !isLooping) {
         // We're not looping, and this is past the end of the video
@@ -272,39 +286,39 @@ export function assertTemporalProperties(
       }
       assertPlaybackRate(mediaElement, 0);
       mediaElement.currentTime = isLooping ? modulo(target, mediaElement.duration * 1000) : target;
-      return { state: 'seeking-ahead' };
+      return { state: 'none-seeking-ahead' };
     }
-    case syncState.state === 'seeking-ahead' && mediaElement.seeking === true:
-      return { state: 'seeking-ahead' };
+    case syncState.state === 'none-seeking-ahead' && mediaElement.seeking === true:
+      return { state: 'none-seeking-ahead' };
 
-    case syncState.state === 'seeking-ahead' && mediaElement.seeking === false: {
+    case syncState.state === 'none-seeking-ahead' && mediaElement.seeking === false: {
       assertPlaybackRate(mediaElement, 0);
-      return { state: 'seeked-ahead' };
+      return { state: 'none-seeked-ahead' };
     }
-    case syncState.state === 'seeked-ahead' && deltaTime < -NO_SYNC_SEEK_AHEAD_INNER_THRESHOLD_MS: {
+    case syncState.state === 'none-seeked-ahead' && deltaTime < -NO_SYNC_SEEK_AHEAD_INNER_THRESHOLD_MS: {
       assertPlaybackRate(mediaElement, properties.rate);
       console.warn('Failed to seek ahead in time');
       return { state: 'idle' };
     }
-    case syncState.state === 'seeked-ahead' && deltaTimeAbs <= NO_SYNC_SEEK_AHEAD_INNER_THRESHOLD_MS: {
+    case syncState.state === 'none-seeked-ahead' && deltaTimeAbs <= NO_SYNC_SEEK_AHEAD_INNER_THRESHOLD_MS: {
       assertPlaybackRate(mediaElement, properties.rate);
       return { state: 'idle' };
     }
-    case syncState.state === 'seeked-ahead' && deltaTimeAbs > NO_SYNC_SEEK_AHEAD_OUTER_THRESHOLD_MS * 1.5: {
+    case syncState.state === 'none-seeked-ahead' && deltaTimeAbs > NO_SYNC_SEEK_AHEAD_OUTER_THRESHOLD_MS * 1.5: {
       // This is an escape mechanism for this behavior.  This may happen if the state changes after we've seeked ahead.
       console.warn('Failed to seek ahead');
       return { state: 'idle' };
     }
-    case syncState.state === 'seeked-ahead':
-      return { state: 'seeked-ahead' };
+    case syncState.state === 'none-seeked-ahead':
+      return { state: 'none-seeked-ahead' };
 
     /**
-     * Time synchronization behavior
+     * Native time synchronization behavior
      * When playbackRate adjustment is enabled we will address small deviations in time by ramping speed up and down.
      * We address larger deviations with a seek, hoping to land close enough so we can finely adjust with playbackRate.
      */
     // Start intercept
-    case playbackRateSync &&
+    case syncStrategy === 'native' &&
       syncState.state === 'idle' &&
       properties.rate > 0 &&
       deltaTimeAbs > SYNC_OUTER_TARGET_THRESHOLD_MS &&
@@ -312,32 +326,62 @@ export function assertTemporalProperties(
       const playbackRateAdjustment = playbackSmoothing(deltaTime);
       const adjustedPlaybackRate = Math.max(0, properties.rate - playbackRateAdjustment);
       assertPlaybackRate(mediaElement, adjustedPlaybackRate);
-      return { state: 'intercepting' };
+      return { state: 'native-intercepting' };
     }
     // Perfectly intercepted
-    case syncState.state === 'intercepting' && deltaTimeAbs <= SYNC_INNER_TARGET_THRESHOLD_MS: {
+    case syncState.state === 'native-intercepting' && deltaTimeAbs <= SYNC_INNER_TARGET_THRESHOLD_MS: {
       assertPlaybackRate(mediaElement, properties.rate);
       return { state: 'idle' };
     }
     // Intercept went too far
-    case syncState.state === 'intercepting' && Math.sign(deltaTime) === Math.sign(mediaElement.playbackRate - properties.rate): {
+    case syncState.state === 'native-intercepting' && Math.sign(deltaTime) === Math.sign(mediaElement.playbackRate - properties.rate): {
       assertPlaybackRate(mediaElement, properties.rate);
       return { state: 'idle' };
     }
     // We're still on course
-    case syncState.state === 'intercepting' && deltaTimeAbs < SYNC_MAX_THRESHOLD_MS * 2:
-      return { state: 'intercepting' };
+    case syncState.state === 'native-intercepting' && deltaTimeAbs < SYNC_MAX_THRESHOLD_MS * 2:
+      return { state: 'native-intercepting' };
     // We're way off track
-    case syncState.state === 'intercepting':
+    case syncState.state === 'native-intercepting':
       assertPlaybackRate(mediaElement, properties.rate);
       return { state: 'idle' };
 
     /**
-     * Time synchronization behavior
-     * When playbackRate adjustment is enabled we will address small deviations in time by ramping speed up and down.
+     * Native time synchronization behavior, with the caveat that we never playback at 'natural' 1x speed
+     * This mitigates popping from the audio track whenever the playbackRate switches to and from 1x.
+     * This means that we end up 'wiggling' around the desired time
+     */
+    // When we're really close, just make sure we're not playing back at 1.00x
+    case syncStrategy === 'native-avoid-natural' &&
+      (syncState.state === 'idle' || syncState.state === 'native-avoiding-natural') &&
+      deltaTimeAbs <= SYNC_INNER_TARGET_THRESHOLD_MS: {
+      const avoidance = Math.sign(deltaTime) * SYNC_NATURAL_PLAYBACK_AVOIDANCE;
+      let rate = properties.rate;
+      if (rate === 1) {
+        rate -= avoidance;
+      }
+      assertPlaybackRate(mediaElement, rate);
+      return { state: 'native-avoiding-natural' };
+    }
+    // When we're slightly further away sync and update intercept to ease back to correct time
+    case syncStrategy === 'native-avoid-natural' &&
+      (syncState.state === 'idle' || syncState.state === 'native-avoiding-natural') &&
+      deltaTimeAbs > SYNC_INNER_TARGET_THRESHOLD_MS &&
+      deltaTimeAbs <= SYNC_MAX_THRESHOLD_MS: {
+      let rate = Math.max(0, properties.rate - playbackSmoothing(deltaTime));
+      if (rate === 1) {
+        rate += SYNC_NATURAL_PLAYBACK_AVOIDANCE;
+      }
+      assertPlaybackRate(mediaElement, rate);
+      return { state: 'native-avoiding-natural' };
+    }
+
+    /**
+     * Seek close behavior
+     * When using any syncStrategy we will address small deviations in time by ramping speed up and down.
      * We address larger deviations with a seek, hoping to land close enough so we can finely adjust with playbackRate.
      */
-    case playbackRateSync && syncState.state === 'idle' && deltaTimeAbs > SYNC_MAX_THRESHOLD_MS: {
+    case syncStrategy !== 'none' && syncState.state === 'idle' && deltaTimeAbs > SYNC_MAX_THRESHOLD_MS: {
       const seekTarget = (properties.t + properties.rate * SYNC_SEEK_LOOKAHEAD_MS) / 1000;
       mediaElement.currentTime = isLooping ? modulo(seekTarget, mediaElement.duration * 1000) : seekTarget;
       assertPlaybackRate(mediaElement, properties.rate);
@@ -420,7 +464,7 @@ export class AudioManager extends MediaClipManager<AudioState> {
       this._state.keyframes,
       now,
       this.syncState,
-      this._state.enablePlaybackRateAdjustment,
+      this._state.syncStrategy,
     );
     this.syncState = nextSyncState;
   }
@@ -467,7 +511,7 @@ export class VideoManager extends MediaClipManager<VideoState> {
       this._state.keyframes,
       now,
       this.syncState,
-      this._state.enablePlaybackRateAdjustment,
+      this._state.syncStrategy,
     );
     this.syncState = nextSyncState;
   }
