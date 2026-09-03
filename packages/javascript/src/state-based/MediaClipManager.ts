@@ -293,28 +293,28 @@ export function assertTemporalProperties(
       return { strategy, state: 'seeking-ahead' };
     }
     case state === 'seeking-ahead' && mediaElement.seeking === true:
-      return { strategy: strategy as 'none', state: 'seeking-ahead' };
+      return { strategy: strategy, state: 'seeking-ahead' };
 
     case state === 'seeking-ahead' && mediaElement.seeking === false: {
       assertPlaybackRate(mediaElement, 0);
-      return { strategy: strategy as 'none', state: 'seeked-ahead' };
+      return { strategy: strategy, state: 'seeked-ahead' };
     }
     case state === 'seeked-ahead' && deltaTime < -NO_SYNC_SEEK_AHEAD_INNER_THRESHOLD_MS: {
       assertPlaybackRate(mediaElement, properties.rate);
       console.warn('Failed to seek ahead in time');
-      return { strategy: strategy as 'none', state: 'idle' };
+      return { strategy: strategy, state: 'idle' };
     }
     case state === 'seeked-ahead' && deltaTimeAbs <= NO_SYNC_SEEK_AHEAD_INNER_THRESHOLD_MS: {
       assertPlaybackRate(mediaElement, properties.rate);
-      return { strategy: strategy as 'none', state: 'idle' };
+      return { strategy: strategy, state: 'idle' };
     }
     case state === 'seeked-ahead' && deltaTimeAbs > NO_SYNC_SEEK_AHEAD_OUTER_THRESHOLD_MS * 1.5: {
       // This is an escape mechanism for this behavior.  This may happen if the state changes after we've seeked ahead.
       console.warn('Failed to seek ahead');
-      return { strategy: strategy as 'none', state: 'idle' };
+      return { strategy: strategy, state: 'idle' };
     }
     case state === 'seeked-ahead':
-      return { strategy: strategy as 'none', state: 'seeked-ahead' };
+      return { strategy: strategy, state: 'seeked-ahead' };
 
     /**
      * Native time synchronization behavior
@@ -387,10 +387,10 @@ export function assertTemporalProperties(
       const seekTarget = (properties.t + properties.rate * SYNC_SEEK_LOOKAHEAD_MS) / 1000;
       mediaElement.currentTime = isLooping ? modulo(seekTarget, mediaElement.duration * 1000) : seekTarget;
       assertPlaybackRate(mediaElement, properties.rate);
-      return { strategy: strategy as 'native' | 'native-avoid-1x', state: 'seeking' };
+      return { strategy: strategy, state: 'seeking' };
     }
     case state === 'seeking' && mediaElement.seeking: {
-      return { strategy: strategy as 'native' | 'native-avoid-1x', state: 'seeking' };
+      return { strategy: strategy, state: 'seeking' };
     }
     case state === 'seeking' && !mediaElement.seeking: {
       return { strategy, state: 'idle' };
