@@ -168,7 +168,10 @@ const SYNC_OUTER_TARGET_THRESHOLD_MS = 50;
 const SYNC_INNER_TARGET_THRESHOLD_MS = 5;
 const SYNC_MAX_THRESHOLD_MS = 1_000;
 const SYNC_SEEK_LOOKAHEAD_MS = 10;
-const SYNC_NATURAL_PLAYBACK_AVOIDANCE = 0.01;
+
+// When switching in and out of 1x playback rate the audio can pop.  We have found that if we never use 1x speed this doesn't happen.
+// Avoidance values smaller than 0.01 seem to pop (so are maybe rounded)
+const SYNC_NATURAL_PLAYBACK_AVOIDANCE_MS = 0.01;
 
 // If the media is scheduled to go back to the start close in time to the end of the video, we'll use the loop attribute.
 // This value allows disagreement between HTMLVideoElement.duration and the length of the different audio streams we have in COGS.
@@ -357,7 +360,7 @@ export function assertTemporalProperties(
      */
     // When we're really close, just make sure we're not playing back at 1.00x
     case strategy === 'native-avoid-1x' && (state === 'idle' || state === 'syncing') && deltaTimeAbs <= SYNC_INNER_TARGET_THRESHOLD_MS: {
-      const avoidance = Math.sign(deltaTime) * SYNC_NATURAL_PLAYBACK_AVOIDANCE;
+      const avoidance = Math.sign(deltaTime) * SYNC_NATURAL_PLAYBACK_AVOIDANCE_MS;
       let rate = properties.rate;
       if (rate === 1) {
         rate -= avoidance;
@@ -372,7 +375,7 @@ export function assertTemporalProperties(
       deltaTimeAbs <= SYNC_MAX_THRESHOLD_MS: {
       let rate = Math.max(0, properties.rate - playbackSmoothing(deltaTime));
       if (rate === 1) {
-        rate += SYNC_NATURAL_PLAYBACK_AVOIDANCE;
+        rate += SYNC_NATURAL_PLAYBACK_AVOIDANCE_MS;
       }
       assertPlaybackRate(mediaElement, rate);
       return { strategy, state: 'syncing' };
