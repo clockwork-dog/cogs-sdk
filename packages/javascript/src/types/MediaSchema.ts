@@ -15,7 +15,7 @@ const AudialProperties = z.object({
   volume: z.number().gte(0).lte(1),
 });
 
-const syncStrategy = z.literal(['native', 'none', 'native-avoid-natural']);
+const syncStrategy = z.literal(['native', 'none', 'native-avoid-1x']);
 export type SyncStrategy = z.infer<typeof syncStrategy>;
 
 export type ImageMetadata = z.infer<typeof ImageMetadata>;
@@ -197,7 +197,7 @@ export type AudioState = {
   type: 'audio';
   file: string;
   audioOutput: string;
-  syncStrategy: 'native' | 'none' | 'native-avoid-natural';
+  syncStrategy: 'native' | 'none' | 'native-avoid-1x';
   keyframes: [InitialAudioKeyframe, ...Array<AudioKeyframe | NullKeyframe>];
 };
 export type VideoState = {
@@ -205,7 +205,7 @@ export type VideoState = {
   file: string;
   fit: 'cover' | 'contain' | 'none';
   audioOutput: string;
-  syncStrategy: 'native' | 'none' | 'native-avoid-natural';
+  syncStrategy: 'native' | 'none' | 'native-avoid-1x';
   keyframes: [InitialVideoKeyframe, ...Array<VideoKeyframe | NullKeyframe>];
 };
 

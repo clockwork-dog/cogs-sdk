@@ -198,21 +198,24 @@ function assertPlaybackRate(mediaElement: HTMLMediaElement, playbackRate: number
   }
 }
 
-interface TemporalSyncState {
-  state:
-    | 'idle'
-    // Seek ahead and wait when no sync is requested
-    | 'none-seeking-ahead'
-    | 'none-seeked-ahead'
-    // single playback rate adjustment to intercept desired time
-    | 'native-intercepting'
-    // incremental playback rate adjustment whilst avoiding 1.00x speed
-    | 'native-avoiding-natural'
-    // Seeking close enough for another synchronization strategy to take over
-    | 'seeking'
-    // Hands-off approach at the end of playback
-    | 'finishing';
-}
+type TemporalSyncState =
+  | ({ strategy: SyncStrategy } & {
+      strategy: string;
+      state: 'idle' | 'finishing';
+    })
+  | {
+      strategy: 'none';
+      state: 'seeking-ahead' | 'seeked-ahead';
+    }
+  | {
+      strategy: 'native';
+      state: 'seeking' | 'syncing';
+    }
+  | {
+      strategy: 'native-avoid-1x';
+      state: 'seeking' | 'syncing';
+    };
+
 /**
  * Makes sure the media is at the correct time and speed.
  * - Algorithms and constants defined above
@@ -223,11 +226,10 @@ export function assertTemporalProperties(
   keyframes: VideoState['keyframes'],
   currentTime: number,
   syncState: TemporalSyncState,
-  syncStrategy: SyncStrategy,
 ): TemporalSyncState {
   // On Webkit (using the simulator on safari and COGS mobile app on iOS) changes to currentTime and playbackRate are much less responsive.
   // We make sure we only do lower frequency updates, and don't change playbackRate.
-  if (IS_WEBKIT) syncStrategy = 'none';
+  if (IS_WEBKIT) syncState.strategy = 'none';
 
   // At the end of the media, is it set back to the start?
   // Sounds like looping to me!
@@ -265,12 +267,14 @@ export function assertTemporalProperties(
     }
   }
 
+  const { strategy, state } = syncState;
+
   switch (true) {
     /**
      * Make sure that a clip that has finished ends in a stable state
      */
-    case isFinishing || syncState.state === 'finishing':
-      return { state: 'finishing' };
+    case isFinishing || state === 'finishing':
+      return { strategy, state: 'finishing' };
 
     /**
      * Seek ahead behavior
@@ -278,39 +282,39 @@ export function assertTemporalProperties(
      * We'll make sure everything is buffered and ready, then wait until we're on time.
      * We'll try to press play once and leave it to continue.
      */
-    case syncStrategy === 'none' && syncState.state === 'idle' && properties.rate > 0 && deltaTimeAbs > NO_SYNC_SEEK_AHEAD_OUTER_THRESHOLD_MS: {
+    case strategy === 'none' && state === 'idle' && properties.rate > 0 && deltaTimeAbs > NO_SYNC_SEEK_AHEAD_OUTER_THRESHOLD_MS: {
       const target = (properties.t + properties.rate * NO_SYNC_SEEK_LOOKAHEAD_MS) / 1000;
       if (mediaElement.duration !== undefined && target > mediaElement.duration && !isLooping) {
         // We're not looping, and this is past the end of the video
-        return { state: 'idle' };
+        return { strategy, state: 'idle' };
       }
       assertPlaybackRate(mediaElement, 0);
       mediaElement.currentTime = isLooping ? modulo(target, mediaElement.duration * 1000) : target;
-      return { state: 'none-seeking-ahead' };
+      return { strategy, state: 'seeking-ahead' };
     }
-    case syncState.state === 'none-seeking-ahead' && mediaElement.seeking === true:
-      return { state: 'none-seeking-ahead' };
+    case state === 'seeking-ahead' && mediaElement.seeking === true:
+      return { strategy: strategy as 'none', state: 'seeking-ahead' };
 
-    case syncState.state === 'none-seeking-ahead' && mediaElement.seeking === false: {
+    case state === 'seeking-ahead' && mediaElement.seeking === false: {
       assertPlaybackRate(mediaElement, 0);
-      return { state: 'none-seeked-ahead' };
+      return { strategy: strategy as 'none', state: 'seeked-ahead' };
     }
-    case syncState.state === 'none-seeked-ahead' && deltaTime < -NO_SYNC_SEEK_AHEAD_INNER_THRESHOLD_MS: {
+    case state === 'seeked-ahead' && deltaTime < -NO_SYNC_SEEK_AHEAD_INNER_THRESHOLD_MS: {
       assertPlaybackRate(mediaElement, properties.rate);
       console.warn('Failed to seek ahead in time');
-      return { state: 'idle' };
+      return { strategy: strategy as 'none', state: 'idle' };
     }
-    case syncState.state === 'none-seeked-ahead' && deltaTimeAbs <= NO_SYNC_SEEK_AHEAD_INNER_THRESHOLD_MS: {
+    case state === 'seeked-ahead' && deltaTimeAbs <= NO_SYNC_SEEK_AHEAD_INNER_THRESHOLD_MS: {
       assertPlaybackRate(mediaElement, properties.rate);
-      return { state: 'idle' };
+      return { strategy: strategy as 'none', state: 'idle' };
     }
-    case syncState.state === 'none-seeked-ahead' && deltaTimeAbs > NO_SYNC_SEEK_AHEAD_OUTER_THRESHOLD_MS * 1.5: {
+    case state === 'seeked-ahead' && deltaTimeAbs > NO_SYNC_SEEK_AHEAD_OUTER_THRESHOLD_MS * 1.5: {
       // This is an escape mechanism for this behavior.  This may happen if the state changes after we've seeked ahead.
       console.warn('Failed to seek ahead');
-      return { state: 'idle' };
+      return { strategy: strategy as 'none', state: 'idle' };
     }
-    case syncState.state === 'none-seeked-ahead':
-      return { state: 'none-seeked-ahead' };
+    case state === 'seeked-ahead':
+      return { strategy: strategy as 'none', state: 'seeked-ahead' };
 
     /**
      * Native time synchronization behavior
@@ -318,33 +322,33 @@ export function assertTemporalProperties(
      * We address larger deviations with a seek, hoping to land close enough so we can finely adjust with playbackRate.
      */
     // Start intercept
-    case syncStrategy === 'native' &&
-      syncState.state === 'idle' &&
+    case strategy === 'native' &&
+      state === 'idle' &&
       properties.rate > 0 &&
       deltaTimeAbs > SYNC_OUTER_TARGET_THRESHOLD_MS &&
       deltaTimeAbs <= SYNC_MAX_THRESHOLD_MS: {
       const playbackRateAdjustment = playbackSmoothing(deltaTime);
       const adjustedPlaybackRate = Math.max(0, properties.rate - playbackRateAdjustment);
       assertPlaybackRate(mediaElement, adjustedPlaybackRate);
-      return { state: 'native-intercepting' };
+      return { strategy, state: 'syncing' };
     }
     // Perfectly intercepted
-    case syncState.state === 'native-intercepting' && deltaTimeAbs <= SYNC_INNER_TARGET_THRESHOLD_MS: {
+    case state === 'syncing' && deltaTimeAbs <= SYNC_INNER_TARGET_THRESHOLD_MS: {
       assertPlaybackRate(mediaElement, properties.rate);
-      return { state: 'idle' };
+      return { strategy, state: 'idle' };
     }
     // Intercept went too far
-    case syncState.state === 'native-intercepting' && Math.sign(deltaTime) === Math.sign(mediaElement.playbackRate - properties.rate): {
+    case strategy === 'native' && state === 'syncing' && Math.sign(deltaTime) === Math.sign(mediaElement.playbackRate - properties.rate): {
       assertPlaybackRate(mediaElement, properties.rate);
-      return { state: 'idle' };
+      return { strategy, state: 'idle' };
     }
     // We're still on course
-    case syncState.state === 'native-intercepting' && deltaTimeAbs < SYNC_MAX_THRESHOLD_MS * 2:
-      return { state: 'native-intercepting' };
+    case strategy === 'native' && state === 'syncing' && deltaTimeAbs < SYNC_MAX_THRESHOLD_MS * 2:
+      return { strategy, state: 'syncing' };
     // We're way off track
-    case syncState.state === 'native-intercepting':
+    case strategy === 'native' && state === 'syncing':
       assertPlaybackRate(mediaElement, properties.rate);
-      return { state: 'idle' };
+      return { strategy, state: 'idle' };
 
     /**
      * Native time synchronization behavior, with the caveat that we never playback at 'natural' 1x speed
@@ -352,20 +356,18 @@ export function assertTemporalProperties(
      * This means that we end up 'wiggling' around the desired time
      */
     // When we're really close, just make sure we're not playing back at 1.00x
-    case syncStrategy === 'native-avoid-natural' &&
-      (syncState.state === 'idle' || syncState.state === 'native-avoiding-natural') &&
-      deltaTimeAbs <= SYNC_INNER_TARGET_THRESHOLD_MS: {
+    case strategy === 'native-avoid-1x' && (state === 'idle' || state === 'syncing') && deltaTimeAbs <= SYNC_INNER_TARGET_THRESHOLD_MS: {
       const avoidance = Math.sign(deltaTime) * SYNC_NATURAL_PLAYBACK_AVOIDANCE;
       let rate = properties.rate;
       if (rate === 1) {
         rate -= avoidance;
       }
       assertPlaybackRate(mediaElement, rate);
-      return { state: 'native-avoiding-natural' };
+      return { strategy, state: 'syncing' };
     }
     // When we're slightly further away sync and update intercept to ease back to correct time
-    case syncStrategy === 'native-avoid-natural' &&
-      (syncState.state === 'idle' || syncState.state === 'native-avoiding-natural') &&
+    case strategy === 'native-avoid-1x' &&
+      (state === 'idle' || state === 'syncing') &&
       deltaTimeAbs > SYNC_INNER_TARGET_THRESHOLD_MS &&
       deltaTimeAbs <= SYNC_MAX_THRESHOLD_MS: {
       let rate = Math.max(0, properties.rate - playbackSmoothing(deltaTime));
@@ -373,43 +375,43 @@ export function assertTemporalProperties(
         rate += SYNC_NATURAL_PLAYBACK_AVOIDANCE;
       }
       assertPlaybackRate(mediaElement, rate);
-      return { state: 'native-avoiding-natural' };
+      return { strategy, state: 'syncing' };
     }
 
     /**
      * Seek close behavior
-     * When using any syncStrategy we will address small deviations in time by ramping speed up and down.
+     * When using any syncStrategy other than 'none' we will address small deviations in time by ramping speed up and down.
      * We address larger deviations with a seek, hoping to land close enough so we can finely adjust with playbackRate.
      */
-    case syncStrategy !== 'none' && syncState.state === 'idle' && deltaTimeAbs > SYNC_MAX_THRESHOLD_MS: {
+    case strategy !== 'none' && state === 'idle' && deltaTimeAbs > SYNC_MAX_THRESHOLD_MS: {
       const seekTarget = (properties.t + properties.rate * SYNC_SEEK_LOOKAHEAD_MS) / 1000;
       mediaElement.currentTime = isLooping ? modulo(seekTarget, mediaElement.duration * 1000) : seekTarget;
       assertPlaybackRate(mediaElement, properties.rate);
-      return { state: 'seeking' };
+      return { strategy: strategy as 'native' | 'native-avoid-1x', state: 'seeking' };
     }
-    case syncState.state === 'seeking' && mediaElement.seeking: {
-      return { state: 'seeking' };
+    case state === 'seeking' && mediaElement.seeking: {
+      return { strategy: strategy as 'native' | 'native-avoid-1x', state: 'seeking' };
     }
-    case syncState.state === 'seeking' && !mediaElement.seeking: {
-      return { state: 'idle' };
+    case state === 'seeking' && !mediaElement.seeking: {
+      return { strategy, state: 'idle' };
     }
 
     /**
      * Idle behavior
      */
-    case syncState.state === 'idle':
+    case state === 'idle':
       assertPlaybackRate(mediaElement, properties.rate);
       if (properties.rate === 0 && deltaTimeAbs > SYNC_OUTER_TARGET_THRESHOLD_MS) {
         mediaElement.currentTime = properties.t / 1000;
       }
-      return { state: 'idle' };
+      return { strategy, state: 'idle' };
 
     /**
      * If none of the above conditions are met, we should exit the behavior.
      * For example: we are intercepting but the media has now been paused
      */
     default: {
-      return { state: 'idle' };
+      return { strategy, state: 'idle' };
     }
   }
 }
@@ -439,7 +441,7 @@ export class ImageManager extends MediaClipManager<ImageState> {
 }
 
 export class AudioManager extends MediaClipManager<AudioState> {
-  private syncState: TemporalSyncState = { state: 'idle' };
+  private syncState: TemporalSyncState = { strategy: this._state.syncStrategy, state: 'idle' };
   private audioElement: HTMLAudioElement | undefined;
   public volume = 1;
 
@@ -458,14 +460,7 @@ export class AudioManager extends MediaClipManager<AudioState> {
     if (gainNode) {
       assertAudialProperties(this.audioElement, gainNode, currentState as AudialProperties, this.volume);
     }
-    const nextSyncState = assertTemporalProperties(
-      this.audioElement,
-      currentState as TemporalProperties,
-      this._state.keyframes,
-      now,
-      this.syncState,
-      this._state.syncStrategy,
-    );
+    const nextSyncState = assertTemporalProperties(this.audioElement, currentState as TemporalProperties, this._state.keyframes, now, this.syncState);
     this.syncState = nextSyncState;
   }
 
@@ -485,7 +480,7 @@ export class AudioManager extends MediaClipManager<AudioState> {
 }
 
 export class VideoManager extends MediaClipManager<VideoState> {
-  private syncState: TemporalSyncState = { state: 'idle' };
+  private syncState: TemporalSyncState = { strategy: this._state.syncStrategy, state: 'idle' };
   private videoElement?: HTMLVideoElement;
   public volume = 1;
 
@@ -505,14 +500,7 @@ export class VideoManager extends MediaClipManager<VideoState> {
     if (gainNode) {
       assertAudialProperties(this.videoElement, gainNode, currentState as AudialProperties, this.volume);
     }
-    const nextSyncState = assertTemporalProperties(
-      this.videoElement,
-      currentState as TemporalProperties,
-      this._state.keyframes,
-      now,
-      this.syncState,
-      this._state.syncStrategy,
-    );
+    const nextSyncState = assertTemporalProperties(this.videoElement, currentState as TemporalProperties, this._state.keyframes, now, this.syncState);
     this.syncState = nextSyncState;
   }
 
