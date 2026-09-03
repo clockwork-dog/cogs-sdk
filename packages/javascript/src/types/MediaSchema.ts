@@ -15,26 +15,29 @@ const AudialProperties = z.object({
   volume: z.number().gte(0).lte(1),
 });
 
+const syncStrategy = z.literal(['native', 'none', 'native-avoid-1x']);
+export type SyncStrategy = z.infer<typeof syncStrategy>;
+
 export type ImageMetadata = z.infer<typeof ImageMetadata>;
 const ImageMetadata = z.object({
   type: z.literal('image'),
   file: z.string(),
-  fit: z.union([z.literal('contain'), z.literal('cover'), z.literal('none')]),
+  fit: z.literal(['contain', 'cover', 'none']),
 });
 export type AudioMetadata = z.infer<typeof AudioMetadata>;
 const AudioMetadata = z.object({
   type: z.literal('audio'),
   file: z.string(),
   audioOutput: z.string(),
-  enablePlaybackRateAdjustment: z.boolean(),
+  syncStrategy,
 });
 export type VideoMetadata = z.infer<typeof VideoMetadata>;
 const VideoMetadata = z.object({
   type: z.literal('video'),
   file: z.string(),
   audioOutput: z.string(),
-  enablePlaybackRateAdjustment: z.boolean(),
-  fit: z.union([z.literal('contain'), z.literal('cover'), z.literal('none')]),
+  syncStrategy,
+  fit: z.literal(['contain', 'cover', 'none']),
 });
 export type NullKeyframe = z.infer<typeof NullKeyframe>;
 const NullKeyframe = z.tuple([z.number(), z.null()]);
@@ -194,7 +197,7 @@ export type AudioState = {
   type: 'audio';
   file: string;
   audioOutput: string;
-  enablePlaybackRateAdjustment: boolean;
+  syncStrategy: 'native' | 'none' | 'native-avoid-1x';
   keyframes: [InitialAudioKeyframe, ...Array<AudioKeyframe | NullKeyframe>];
 };
 export type VideoState = {
@@ -202,7 +205,7 @@ export type VideoState = {
   file: string;
   fit: 'cover' | 'contain' | 'none';
   audioOutput: string;
-  enablePlaybackRateAdjustment: boolean;
+  syncStrategy: 'native' | 'none' | 'native-avoid-1x';
   keyframes: [InitialVideoKeyframe, ...Array<VideoKeyframe | NullKeyframe>];
 };
 
