@@ -44,6 +44,7 @@ export class MediaPreloader {
   private _imageElementCache: ElementCache<'img'>;
   private _fileCacheState: MediaCacheState = { images: {}, audio: {}, video: {} };
   private _assetFileLookup: Record<string, string> = {};
+  private _onCacheUpdate: MediaCacheUpdateHandler;
 
   constructor(
     constructAssetURL: (file: string) => string,
@@ -54,21 +55,20 @@ export class MediaPreloader {
   ) {
     this._constructAssetURL = constructAssetURL;
     this._state = testState;
+    this._onCacheUpdate = onCacheUpdate;
     navigator?.mediaDevices?.addEventListener('devicechange', this._updateAudioOutputs);
 
     this._imageElementCache = new ElementCache({
       elementType: 'img',
       size: IMAGE_CACHE_SIZE,
       cacheUpdateHandler: (state) => {
-        const imageFileCacheState: Record<string, CacheState> = {};
         Object.entries(state).forEach(([url, cacheState]) => {
           const filename = this._assetFileLookup[url];
           if (filename) {
-            imageFileCacheState[filename] = cacheState;
+            this.mergeCacheState('images', filename, cacheState);
           }
         });
-        this._fileCacheState.images = imageFileCacheState;
-        onCacheUpdate(this._fileCacheState);
+        this._onCacheUpdate(this._fileCacheState);
       },
     });
 
@@ -76,17 +76,22 @@ export class MediaPreloader {
       elementType: 'audio',
       size: AUDIO_CACHE_SIZE,
       cacheUpdateHandler: (state) => {
-        const audioFileCacheState: Record<string, CacheState> = {};
         Object.entries(state).forEach(([url, cacheState]) => {
           const filename = this._assetFileLookup[url];
           if (filename) {
-            audioFileCacheState[filename] = cacheState;
+            this.mergeCacheState('audio', filename, cacheState);
           }
         });
-        this._fileCacheState.audio = audioFileCacheState;
-        onCacheUpdate(this._fileCacheState);
+        this._onCacheUpdate(this._fileCacheState);
       },
     });
+  }
+
+  private mergeCacheState(mediaType: keyof MediaCacheState, filename: string, cacheState: CacheState) {
+    const current = this._fileCacheState[mediaType][filename];
+    const readyState = Math.max(current?.readyState ?? 0, cacheState.readyState) as CacheState['readyState'];
+    const cachedBytes = cacheState.cachedBytes ?? current?.cachedBytes;
+    this._fileCacheState[mediaType][filename] = { readyState, cachedBytes };
   }
 
   get state() {
@@ -129,10 +134,12 @@ export class MediaPreloader {
     }
   }
 
-  private getPreloadAttr(fileName: string): 'auto' | 'metadata' | 'none' {
+  private getPreloadStrategy(fileName: string): 'all' | 'auto' | 'metadata' | 'none' {
     switch (this._state[fileName]?.preload) {
-      case 'auto':
       case true:
+      case 'all':
+        return 'all';
+      case 'auto':
         return 'auto';
       case 'metadata':
         return 'metadata';
@@ -141,8 +148,20 @@ export class MediaPreloader {
     }
   }
 
+  private getPreloadAttr(fileName: string): 'auto' | 'metadata' | 'none' {
+    switch (this.getPreloadStrategy(fileName)) {
+      case 'metadata':
+        return 'metadata';
+      case 'none':
+        return 'none';
+      default:
+        return 'auto';
+    }
+  }
+
   private update() {
     // Remove stale elements
+    let removedCacheState = false;
     for (const [filename, cache] of Object.entries(this._mediaPool)) {
       if (!(filename in this._state)) {
         cache.spare.element.src = '';
@@ -161,15 +180,21 @@ export class MediaPreloader {
           }
         }
         delete this._mediaPool[filename];
+        delete this._fileCacheState.images[filename];
+        delete this._fileCacheState.audio[filename];
+        delete this._fileCacheState.video[filename];
+        removedCacheState = true;
       }
     }
+    if (removedCacheState) {
+      this._onCacheUpdate(this._fileCacheState);
+    }
 
-    // Warm the caches for files that should be preloaded
     const audioUrlsToPreload = Object.entries(this._state)
-      .filter(([filename, fileConfig]) => fileConfig.type === 'audio' && this.getPreloadAttr(filename) !== 'none')
+      .filter(([filename, fileConfig]) => fileConfig.type === 'audio' && this.getPreloadStrategy(filename) === 'all')
       .map(([filename]) => this._constructAssetURL(filename));
     const imageUrlsToPreload = Object.entries(this._state)
-      .filter(([filename, fileConfig]) => fileConfig.type === 'image' && this.getPreloadAttr(filename) !== 'none')
+      .filter(([filename, fileConfig]) => fileConfig.type === 'image' && this.getPreloadStrategy(filename) === 'all')
       .map(([filename]) => this._constructAssetURL(filename));
     Promise.all([this._audioElementCache.preload(audioUrlsToPreload), this._imageElementCache.preload(imageUrlsToPreload)]).then(() => {
       for (const [filename, fileConfig] of Object.entries(this._state)) {
@@ -180,21 +205,40 @@ export class MediaPreloader {
     });
   }
 
+  private trackReadyState(mediaType: keyof MediaCacheState, file: string, element: HTMLMediaElement | HTMLImageElement) {
+    const report = (readyState: CacheState['readyState']) => {
+      this.mergeCacheState(mediaType, file, { readyState });
+      this._onCacheUpdate(this._fileCacheState);
+    };
+    if (element instanceof HTMLMediaElement) {
+      // Audio + Video elements
+      (['loadedmetadata', 'loadeddata', 'canplay', 'canplaythrough'] as const).forEach((event) => {
+        element.addEventListener(event, () => report(element.readyState as CacheState['readyState']));
+      });
+    } else {
+      // Image elements
+      element.addEventListener('load', () => report(HTMLMediaElement.HAVE_ENOUGH_DATA));
+    }
+  }
+
   private createMedia(file: string, type: Media['type']): Media {
     switch (type) {
       case 'image': {
         const element = this._imageElementCache.getElement(this._constructAssetURL(file));
+        this.trackReadyState('images', file, element);
         return { element, type, inUse: false, gainNode: undefined };
       }
       case 'audio': {
         const element = this._audioElementCache.getElement(this._constructAssetURL(file));
         element.preload = this.getPreloadAttr(file);
+        this.trackReadyState('audio', file, element);
         return { element, type, inUse: false, gainNode: undefined };
       }
       case 'video': {
         const element = document.createElement(type);
         element.src = this._constructAssetURL(file);
         element.preload = this.getPreloadAttr(file);
+        this.trackReadyState('video', file, element);
         return { element, type, inUse: false, gainNode: undefined };
       }
     }
