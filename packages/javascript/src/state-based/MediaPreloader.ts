@@ -134,31 +134,6 @@ export class MediaPreloader {
     }
   }
 
-  private getPreloadStrategy(fileName: string): 'all' | 'auto' | 'metadata' | 'none' {
-    switch (this._state[fileName]?.preload) {
-      case true:
-      case 'all':
-        return 'all';
-      case 'auto':
-        return 'auto';
-      case 'metadata':
-        return 'metadata';
-      default:
-        return 'none';
-    }
-  }
-
-  private getPreloadAttr(fileName: string): 'auto' | 'metadata' | 'none' {
-    switch (this.getPreloadStrategy(fileName)) {
-      case 'metadata':
-        return 'metadata';
-      case 'none':
-        return 'none';
-      default:
-        return 'auto';
-    }
-  }
-
   private update() {
     // Remove stale elements
     let removedCacheState = false;
@@ -191,10 +166,10 @@ export class MediaPreloader {
     }
 
     const audioUrlsToPreload = Object.entries(this._state)
-      .filter(([filename, fileConfig]) => fileConfig.type === 'audio' && this.getPreloadStrategy(filename) === 'all')
+      .filter(([, fileConfig]) => fileConfig.type === 'audio' && fileConfig.preload === 'all')
       .map(([filename]) => this._constructAssetURL(filename));
     const imageUrlsToPreload = Object.entries(this._state)
-      .filter(([filename, fileConfig]) => fileConfig.type === 'image' && this.getPreloadStrategy(filename) === 'all')
+      .filter(([, fileConfig]) => fileConfig.type === 'image' && fileConfig.preload === 'all')
       .map(([filename]) => this._constructAssetURL(filename));
     Promise.all([this._audioElementCache.preload(audioUrlsToPreload), this._imageElementCache.preload(imageUrlsToPreload)]).then(() => {
       for (const [filename, fileConfig] of Object.entries(this._state)) {
@@ -230,14 +205,20 @@ export class MediaPreloader {
       }
       case 'audio': {
         const element = this._audioElementCache.getElement(this._constructAssetURL(file));
-        element.preload = this.getPreloadAttr(file);
+        const preload = this._state[file]?.preload;
+        if (preload === 'auto' || preload === 'metadata') {
+          element.preload = preload;
+        }
         this.trackReadyState('audio', file, element);
         return { element, type, inUse: false, gainNode: undefined };
       }
       case 'video': {
         const element = document.createElement(type);
         element.src = this._constructAssetURL(file);
-        element.preload = this.getPreloadAttr(file);
+        const preload = this._state[file]?.preload;
+        if (preload === 'auto' || preload === 'metadata') {
+          element.preload = preload;
+        }
         this.trackReadyState('video', file, element);
         return { element, type, inUse: false, gainNode: undefined };
       }

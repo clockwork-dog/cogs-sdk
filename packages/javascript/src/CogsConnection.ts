@@ -187,29 +187,6 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
                   console.warn(`Invalid COGS version: ${message.version}.  Must be at least${MIN_SUPPORTED_COGS_VERSION}`);
                 }
                 break;
-
-              // From cogs-client@3.0.0 legacy media events are no longer supported.
-              // COGS will continue sending them with an added 'media_strategy' field for backwards compatibility.
-              // If media_strategy is not present, the user is attempting to use a new cogs-client with an old COGS.
-              case 'audio_play':
-              case 'audio_pause':
-              case 'audio_stop':
-              case 'audio_set_clip_volume':
-              case 'video_play':
-              case 'video_pause':
-              case 'video_stop':
-              case 'video_set_volume':
-              case 'video_set_fit':
-              case 'image_show':
-              case 'image_hide':
-              case 'image_set_fit': {
-                const { type } = message;
-                if (!('media_strategy' in message)) {
-                  console.warn(
-                    `Legacy ${type} message received, this is no longer supported.  Please upgrade to COGS 5.10 or downgrade to cogs-client@2.11`,
-                  );
-                }
-              }
             }
 
             this.dispatchEvent(new CogsMessageEvent(message));
