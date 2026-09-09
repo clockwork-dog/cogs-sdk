@@ -3,9 +3,14 @@
 The COGS SDK allows you to create:
 
 - Plugins for extending the functionality of the COGS.
-- Media Master custom content for displaying your content on a Media Master or on the COGS Media app for [Android](https://play.google.com/store/apps/details?id=dog.clockwork.mobile.av) or [iOS](https://apps.apple.com/us/app/cogs-av/id6444409185).
+- Custom content for displaying on a Media Master or on the COGS Media app for [Android](https://play.google.com/store/apps/details?id=dog.clockwork.mobile.av) or [iOS](https://apps.apple.com/us/app/cogs-av/id6444409185).
 
 We have provided a template project to get started or you can manually install and use the [JavaScript COGS SDK](./packages/javascript/README.md) or [React COGS SDK](./packages/react/README.md).
+
+## Versioning
+- COGS SDK Version 4.0.0 - Mimimum COGS version 5.11.0.  
+- For compatibility with older COGS versions see our [releases](https://github.com/clockwork-dog/cogs-sdk/releases).
+
 
 ## Getting started using the template
 
