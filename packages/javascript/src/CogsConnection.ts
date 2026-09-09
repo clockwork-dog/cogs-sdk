@@ -8,12 +8,16 @@ import { DeepReadonly } from './types/utils';
 import DataStore from './DataStore';
 import { createTimeSyncClient, TimeSyncClient, TimeSyncResponseData } from '@clockworkdog/timesync';
 import { CacheState } from './types/cache';
+import { version as SDK_VERSION } from '../package.json';
+import semver from 'semver';
 
 type ReadyState = {
   images: { [file: string]: CacheState };
   audio: { [file: string]: CacheState };
   video: { [file: string]: CacheState };
 };
+
+const MIN_SUPPORTED_COGS_VERSION = '5.11.0';
 
 export default class CogsConnection<Manifest extends CogsPluginManifest, DataT extends { [key: string]: unknown } = Record<never, never>> {
   private websocket: WebSocket | ReconnectingWebSocket;
@@ -91,6 +95,7 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
     this.urlParams.set('screenWidth', window.screen.width.toString());
     this.urlParams.set('screenHeight', window.screen.height.toString());
     this.urlParams.set('screenPixelRatio', window.devicePixelRatio.toString());
+    this.urlParams.set('sdkVersion', SDK_VERSION);
 
     const socketUrl = `ws://${hostname}:${port}${path}?${this.urlParams}`;
     this.websocket = useReconnectingWebsocket ? new ReconnectingWebSocket(socketUrl) : new WebSocket(socketUrl);
@@ -173,6 +178,14 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
                 break;
               case 'data_store_items':
                 this.store.handleDataStoreItemsMessage(message);
+                break;
+
+              case 'cogsVersion':
+                if (semver.valid(message.version) === null) {
+                  console.warn(`Invalide COGS version: ${message.version}`);
+                } else if (semver.lt(message.version, MIN_SUPPORTED_COGS_VERSION)) {
+                  console.warn(`Invalid COGS version: ${message.version}.  Must be at least${MIN_SUPPORTED_COGS_VERSION}`);
+                }
                 break;
 
               // From cogs-client@3.0.0 legacy media events are no longer supported.

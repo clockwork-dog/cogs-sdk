@@ -29,6 +29,11 @@ export interface DataStoreItemsClientMessage {
   items: { [key: string]: unknown };
 }
 
+export interface CogsVersionMessage {
+  type: 'cogsVersion';
+  version: string;
+}
+
 // Media
 export type Media =
   | {
@@ -93,6 +98,7 @@ export type CogsClientMessage<CustomConfig = {}> =
   | TextHintsUpdateMessage
   | (MediaClientConfigMessage & CustomConfig)
   | MediaClientMessage
-  | DataStoreItemsClientMessage;
+  | DataStoreItemsClientMessage
+  | CogsVersionMessage;
 
 export default CogsClientMessage;
