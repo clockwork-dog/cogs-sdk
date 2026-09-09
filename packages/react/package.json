@@ -3,7 +3,7 @@
   "description": "React components and hooks to connect to COGS to build a custom Media Master",
   "author": "Clockwork Dog <info@clockwork.dog>",
   "homepage": "https://github.com/clockwork-dog/cogs-sdk/tree/main/packages/react",
-  "version": "4.x.x",
+  "version": "4",
   "keywords": [],
   "license": "MIT",
   "repository": {

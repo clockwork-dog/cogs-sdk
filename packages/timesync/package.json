@@ -3,7 +3,7 @@
     "description": "A library to synchronize a client's clock to a server's",
     "author": "Clockwork Dog <info@clockwork.dog>",
     "homepage": "https://github.com/clockwork-dog/cogs-sdk/tree/main/packages/timesync",
-    "version": "4.x.x",
+    "version": "4",
     "keywords": [],
     "license": "MIT",
     "repository": {
