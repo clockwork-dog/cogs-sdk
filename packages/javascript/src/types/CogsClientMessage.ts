@@ -1,4 +1,3 @@
-import MediaObjectFit from './MediaObjectFit';
 import { MediaSurfaceState } from './MediaSchema';
 import ShowPhase from './ShowPhase';
 
@@ -29,19 +28,24 @@ export interface DataStoreItemsClientMessage {
   items: { [key: string]: unknown };
 }
 
+export interface CogsVersionMessage {
+  type: 'cogs_version';
+  version: string;
+}
+
 // Media
 export type Media =
   | {
       type: 'image';
-      preload: boolean;
+      preload: 'all' | 'none';
     }
   | {
       type: 'audio';
-      preload: boolean;
+      preload: 'all' | 'auto' | 'metadata' | 'none';
     }
   | {
       type: 'video';
-      preload: boolean | 'auto' | 'metadata' | 'none';
+      preload: 'all' | 'auto' | 'metadata' | 'none';
     };
 
 export interface MediaClientConfigMessage extends MediaClientConfig {
@@ -59,31 +63,7 @@ export interface MediaClientConfig {
   preferOptimizedImages?: boolean;
 }
 
-/**
- * @deprecated Legacy media client events
- *
- * media_strategy: 'events' was added to this interface in @clockworkdog/cogs-client@2.12.0
- *
- * If the media_strategy property is missing, cogs-client can detect that it is connected to an
- * older version of COGS that does not support state-based media client messages.
- */
-type MediaEventClientMessage = { media_strategy: 'events' } & (
-  | { type: 'audio_play'; playId: string; file: string; fade?: number; loop?: true; volume: number }
-  | { type: 'audio_pause'; file: string; fade?: number }
-  | { type: 'audio_stop'; file?: string; fade?: number }
-  | { type: 'audio_set_clip_volume'; file: string; volume: number; fade?: number }
-  | { type: 'video_play'; playId: string; file: string; loop?: true; volume: number; fit: MediaObjectFit }
-  | { type: 'video_pause' }
-  | { type: 'video_stop' }
-  | { type: 'video_set_volume'; volume: number }
-  | { type: 'video_set_fit'; fit: MediaObjectFit }
-  | { type: 'image_show'; file: string; fit: MediaObjectFit; hideOthers?: boolean }
-  | { type: 'image_hide'; file?: string }
-  | { type: 'image_set_fit'; file: string; fit: MediaObjectFit }
-);
 type MediaStateClientMessage = { media_strategy: 'state' } & { type: 'media_state'; state: MediaSurfaceState };
-
-type MediaClientMessage = MediaEventClientMessage | MediaStateClientMessage;
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export type CogsClientMessage<CustomConfig = {}> =
@@ -92,7 +72,8 @@ export type CogsClientMessage<CustomConfig = {}> =
   | AdjustableTimerUpdateMessage
   | TextHintsUpdateMessage
   | (MediaClientConfigMessage & CustomConfig)
-  | MediaClientMessage
-  | DataStoreItemsClientMessage;
+  | MediaStateClientMessage
+  | DataStoreItemsClientMessage
+  | CogsVersionMessage;
 
 export default CogsClientMessage;

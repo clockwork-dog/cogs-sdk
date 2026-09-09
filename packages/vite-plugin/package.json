@@ -3,7 +3,7 @@
   "description": "A Vite plugin to easily setup your project to be a COGS plugin or custom content",
   "author": "Clockwork Dog <info@clockwork.dog>",
   "homepage": "https://github.com/clockwork-dog/cogs-sdk/tree/main/packages/vite-plugin",
-  "version": "0.0.0",
+  "version": "4",
   "keywords": [
     "cogs",
     "vite-plugin"
@@ -35,6 +35,7 @@
   "scripts": {
     "types": "tsc --noEmit",
     "lint": "eslint",
+    "clean": "rm -rf dist",
     "build": "tsup src/index.ts --format cjs,esm --dts --clean",
     "release": "yarn npm publish --access public",
     "prerelease": "yarn npm publish --access public --tag=next"

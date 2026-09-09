@@ -3,3 +3,6 @@ dist
 yarn-error.log
 docs
 cypress/screenshots
+
+# Generated code
+src/version.ts

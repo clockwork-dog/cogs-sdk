@@ -2,6 +2,7 @@ import CogsConnection, { CogsMessageEvent } from '../CogsConnection';
 import { MediaClipState, MediaSurfaceState } from '../types/MediaSchema';
 import { AudioManager, ImageManager, MediaClipManager, VideoManager } from './MediaClipManager';
 import { MediaPreloader } from './MediaPreloader';
+import { throttle } from 'lodash';
 
 export const DATA_CLIP_ID = 'data-clip-id';
 type TaggedElement = HTMLElement & { [DATA_CLIP_ID]?: string };
@@ -123,7 +124,10 @@ export class SurfaceManager {
 
 export function createSurfaceManager(cogsConnection: CogsConnection<any, any>) {
   const constructURL = (url: string) => cogsConnection.getAssetUrl(url);
-  const mediaPreloader = new MediaPreloader(constructURL, (state) => cogsConnection.sendReadyState(state));
+  const mediaPreloader = new MediaPreloader(
+    constructURL,
+    throttle((state) => cogsConnection.sendReadyState(state), 500),
+  );
   const files = cogsConnection.mediaConfig?.files;
   if (files) {
     mediaPreloader.setState(files);

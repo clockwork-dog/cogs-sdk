@@ -8,12 +8,16 @@ import { DeepReadonly } from './types/utils';
 import DataStore from './DataStore';
 import { createTimeSyncClient, TimeSyncClient, TimeSyncResponseData } from '@clockworkdog/timesync';
 import { CacheState } from './types/cache';
+import { SDK_VERSION } from './version';
+import semver from 'semver';
 
 type ReadyState = {
   images: { [file: string]: CacheState };
   audio: { [file: string]: CacheState };
   video: { [file: string]: CacheState };
 };
+
+const MIN_SUPPORTED_COGS_VERSION = '5.11.0';
 
 export default class CogsConnection<Manifest extends CogsPluginManifest, DataT extends { [key: string]: unknown } = Record<never, never>> {
   private websocket: WebSocket | ReconnectingWebSocket;
@@ -91,6 +95,7 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
     this.urlParams.set('screenWidth', window.screen.width.toString());
     this.urlParams.set('screenHeight', window.screen.height.toString());
     this.urlParams.set('screenPixelRatio', window.devicePixelRatio.toString());
+    this.urlParams.set('sdkVersion', SDK_VERSION);
 
     const socketUrl = `ws://${hostname}:${port}${path}?${this.urlParams}`;
     this.websocket = useReconnectingWebsocket ? new ReconnectingWebSocket(socketUrl) : new WebSocket(socketUrl);
@@ -175,28 +180,13 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
                 this.store.handleDataStoreItemsMessage(message);
                 break;
 
-              // From cogs-client@3.0.0 legacy media events are no longer supported.
-              // COGS will continue sending them with an added 'media_strategy' field for backwards compatibility.
-              // If media_strategy is not present, the user is attempting to use a new cogs-client with an old COGS.
-              case 'audio_play':
-              case 'audio_pause':
-              case 'audio_stop':
-              case 'audio_set_clip_volume':
-              case 'video_play':
-              case 'video_pause':
-              case 'video_stop':
-              case 'video_set_volume':
-              case 'video_set_fit':
-              case 'image_show':
-              case 'image_hide':
-              case 'image_set_fit': {
-                const { type } = message;
-                if (!('media_strategy' in message)) {
-                  console.warn(
-                    `Legacy ${type} message received, this is no longer supported.  Please upgrade to COGS 5.10 or downgrade to cogs-client@2.11`,
-                  );
+              case 'cogs_version':
+                if (semver.valid(message.version) === null) {
+                  console.warn(`Invalid COGS version: ${message.version}`);
+                } else if (semver.lt(message.version, MIN_SUPPORTED_COGS_VERSION)) {
+                  console.warn(`Invalid COGS version: ${message.version}. Must be at least ${MIN_SUPPORTED_COGS_VERSION}`);
                 }
-              }
+                break;
             }
 
             this.dispatchEvent(new CogsMessageEvent(message));

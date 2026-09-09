@@ -91,7 +91,14 @@ jobs:
       - name: Install dependencies
         run: yarn install
       - name: Set version from git tag
-        run: yarn workspaces foreach --all version ${GITHUB_REF#refs/tags/}
+        run: |
+          SRC_MAJOR_VERSION=$(node -p "require('./packages/javascript/package.json').version.split('.')[0]")
+          yarn workspaces foreach --all version ${GITHUB_REF#refs/tags/}
+          RELEASE_MAJOR_VERSION=$(node -p "require('./packages/javascript/package.json').version.split('.')[0]")
+          if [ "$SRC_MAJOR_VERSION" != "$RELEASE_MAJOR_VERSION" ]; then
+            echo "Release tag major version ($TAG_MAJOR) does not match SDK_MAJOR_VERSION ($SDK_MAJOR)."
+            exit 1
+          fi
       - name: Build packages
         run: yarn run build
       - name: Publish prerelease

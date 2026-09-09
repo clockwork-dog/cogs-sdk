@@ -3,7 +3,7 @@
   "description": "Utilities for signing and verifying the signature of a .cogsplugin file.",
   "author": "Clockwork Dog <info@clockwork.dog>",
   "homepage": "https://github.com/clockwork-dog/cogs-sdk/tree/main/packages/plugin-verification",
-  "version": "0.0.0",
+  "version": "4",
   "keywords": [],
   "license": "MIT",
   "repository": {
@@ -22,6 +22,7 @@
   "scripts": {
     "test": "yarn lint && vitest",
     "lint": "eslint .",
+    "clean": "rm -rf dist",
     "build": "tsc",
     "release": "yarn npm publish --access public",
     "prerelease": "yarn npm publish --access public"
