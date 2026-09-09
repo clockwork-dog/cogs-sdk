@@ -29,7 +29,7 @@ export interface DataStoreItemsClientMessage {
 }
 
 export interface CogsVersionMessage {
-  type: 'cogsVersion';
+  type: 'cogs_version';
   version: string;
 }
 

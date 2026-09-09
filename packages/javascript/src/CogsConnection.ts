@@ -180,11 +180,11 @@ export default class CogsConnection<Manifest extends CogsPluginManifest, DataT e
                 this.store.handleDataStoreItemsMessage(message);
                 break;
 
-              case 'cogsVersion':
+              case 'cogs_version':
                 if (semver.valid(message.version) === null) {
-                  console.warn(`Invalide COGS version: ${message.version}`);
+                  console.warn(`Invalid COGS version: ${message.version}`);
                 } else if (semver.lt(message.version, MIN_SUPPORTED_COGS_VERSION)) {
-                  console.warn(`Invalid COGS version: ${message.version}.  Must be at least${MIN_SUPPORTED_COGS_VERSION}`);
+                  console.warn(`Invalid COGS version: ${message.version}. Must be at least ${MIN_SUPPORTED_COGS_VERSION}`);
                 }
                 break;
             }

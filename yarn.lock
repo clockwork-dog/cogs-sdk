@@ -78,6 +78,7 @@ __metadata:
     "@cypress/mount-utils": "npm:^4.1.2"
     "@eslint/js": "npm:^9.17.0"
     "@types/jsdom": "npm:^27"
+    "@types/lodash": "npm:^4"
     "@types/node": "npm:^22.10.2"
     "@types/semver": "npm:^7"
     cypress: "npm:^14.5.4"
@@ -86,6 +87,7 @@ __metadata:
     eslint-plugin-prettier: "npm:^5.2.1"
     ip-address: "npm:^10.2.0"
     jsdom: "npm:^27.1.0"
+    lodash: "npm:^4.18.1"
     prettier: "npm:^3.4.2"
     react: "npm:^19.1.1"
     react-dom: "npm:^19.1.1"
@@ -1419,6 +1421,13 @@ __metadata:
   version: 7.0.15
   resolution: "@types/json-schema@npm:7.0.15"
   checksum: 10c0/a996a745e6c5d60292f36731dd41341339d4eeed8180bb09226e5c8d23759067692b1d88e5d91d72ee83dfc00d3aca8e7bd43ea120516c17922cbcb7c3e252db
+  languageName: node
+  linkType: hard
+
+"@types/lodash@npm:^4":
+  version: 4.17.25
+  resolution: "@types/lodash@npm:4.17.25"
+  checksum: 10c0/ca2049f16bf527e04d6e27702e3912a484faaff587de77a5c58e0d243b9292a655e1d7f7e5bdf2ffdf49a76da10673097f8dd4901990679058d47ccd99051877
   languageName: node
   linkType: hard
 
@@ -4751,6 +4760,13 @@ __metadata:
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: 10c0/d8cbea072bb08655bb4c989da418994b073a608dffa608b09ac04b43a791b12aeae7cd7ad919aa4c925f33b48490b5cfe6c1f71d827956071dae2e7bb3a6b74c
+  languageName: node
+  linkType: hard
+
+"lodash@npm:^4.18.1":
+  version: 4.18.1
+  resolution: "lodash@npm:4.18.1"
+  checksum: 10c0/757228fc68805c59789e82185135cf85f05d0b2d3d54631d680ca79ec21944ec8314d4533639a14b8bcfbd97a517e78960933041a5af17ecb693ec6eecb99a27
   languageName: node
   linkType: hard
 
