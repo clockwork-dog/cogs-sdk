@@ -8,7 +8,7 @@ import { DeepReadonly } from './types/utils';
 import DataStore from './DataStore';
 import { createTimeSyncClient, TimeSyncClient, TimeSyncResponseData } from '@clockworkdog/timesync';
 import { CacheState } from './types/cache';
-import { version as SDK_VERSION } from '../package.json';
+import { SDK_VERSION } from './version';
 import semver from 'semver';
 
 type ReadyState = {
