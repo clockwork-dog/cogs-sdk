@@ -35,6 +35,7 @@
   "scripts": {
     "types": "tsc --noEmit",
     "lint": "eslint",
+    "clean": "rm -rf dist",
     "build": "tsup src/index.ts --format cjs,esm --dts --clean",
     "release": "yarn npm publish --access public",
     "prerelease": "yarn npm publish --access public --tag=next"

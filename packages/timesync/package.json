@@ -20,6 +20,7 @@
     "scripts": {
         "test": "yarn lint && vitest",
         "lint": "eslint .",
+        "clean": "rm -rf dist",
         "build": "tsc",
         "release": "yarn npm publish --access public",
         "prerelease": "yarn npm publish --access public --tag=next"

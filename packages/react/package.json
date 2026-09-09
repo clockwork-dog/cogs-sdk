@@ -21,6 +21,7 @@
     "test": "yarn types && yarn lint",
     "types": "tsc --noEmit",
     "lint": "eslint .",
+    "clean": "rm -rf dist",
     "build": "tsc",
     "watch-build": "tsc -w",
     "build-docs": "typedoc --out ../../docs/react --name @clockworkdog/cogs-client-react src/index.ts",
