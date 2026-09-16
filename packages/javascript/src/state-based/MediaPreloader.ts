@@ -1,7 +1,7 @@
 import '../types/AudioContext';
 import { NestedReadyState, READYSTATE, ReadyStateNode } from '../types/ReadyState';
 import { combineReadyState } from '../utils/readyState';
-import { MediaClientConfig } from '../types/CogsClientMessage';
+import { MediaClientConfig, Media as ClientMedia } from '../types/CogsClientMessage';
 import { ElementCache } from './ElementCache';
 
 export type MediaCacheState = {
@@ -182,23 +182,32 @@ export class MediaPreloader {
     });
   }
 
-  private trackReadyState(mediaType: keyof MediaCacheState, file: string, element: HTMLMediaElement | HTMLImageElement) {
+  private trackReadyState(
+    mediaType: keyof MediaCacheState,
+    file: string,
+    element: HTMLMediaElement | HTMLImageElement,
+    targetPreload?: ClientMedia['preload'],
+  ) {
     const report = (readyState: ReadyStateNode) => {
       this.mergeCacheState(mediaType, file, readyState);
       this._onCacheUpdate(this._fileCacheState);
     };
     if (element instanceof HTMLMediaElement) {
       // Audio + Video elements
-      (['loadedmetadata', 'loadeddata', 'canplay', 'canplaythrough'] as const).forEach((event) => {
-        const state: ReadyStateNode =
-          element.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA ? { state: READYSTATE.DONE } : { state: READYSTATE.IN_PROGRESS };
-        element.addEventListener(event, () => report(state));
-      });
-      element.addEventListener('error', () => report({ state: READYSTATE.DONE, errors: ['Failed to load media'] }));
+      switch (targetPreload) {
+        case 'all':
+        case 'auto':
+          element.addEventListener('canplaythrough', () => report({ state: READYSTATE.DONE }));
+          break;
+        case 'metadata':
+          element.addEventListener('canplay', () => report({ state: READYSTATE.DONE }));
+          break;
+      }
+      element.addEventListener('error', (e) => report({ state: READYSTATE.DONE, errors: [`Failed to load media - ${e.message}`] }));
     } else {
       // Image elements
       element.addEventListener('load', () => report({ state: READYSTATE.DONE }));
-      element.addEventListener('error', () => report({ state: READYSTATE.DONE, errors: ['Failed to load media'] }));
+      element.addEventListener('error', (e) => report({ state: READYSTATE.DONE, errors: [`Failed to load media - ${e.message}`] }));
     }
   }
 
@@ -206,7 +215,7 @@ export class MediaPreloader {
     switch (type) {
       case 'image': {
         const element = this._imageElementCache.getElement(this._constructAssetURL(file));
-        this.trackReadyState('images', file, element);
+        this.trackReadyState('images', file, element, 'all');
         return { element, type, inUse: false, gainNode: undefined };
       }
       case 'audio': {
@@ -215,7 +224,7 @@ export class MediaPreloader {
         if (preload === 'auto' || preload === 'metadata') {
           element.preload = preload;
         }
-        this.trackReadyState('audio', file, element);
+        this.trackReadyState('audio', file, element, preload);
         return { element, type, inUse: false, gainNode: undefined };
       }
       case 'video': {
@@ -225,7 +234,7 @@ export class MediaPreloader {
         if (preload === 'auto' || preload === 'metadata') {
           element.preload = preload;
         }
-        this.trackReadyState('video', file, element);
+        this.trackReadyState('video', file, element, preload);
         return { element, type, inUse: false, gainNode: undefined };
       }
     }

@@ -15,7 +15,7 @@ export default tsEslint.config(
       'no-else-return': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-useless-constructor': 'error',
-      '@typescript-eslint/no-unused-vars': 'error',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', ignoreRestSiblings: true }],
       '@typescript-eslint/no-empty-function': 'error',
     },
   },

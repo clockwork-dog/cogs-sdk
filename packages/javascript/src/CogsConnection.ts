@@ -11,11 +11,7 @@ import { SDK_VERSION } from './version';
 import semver from 'semver';
 import { NestedReadyState } from './types/ReadyState';
 
-type ReadyState = {
-  images: { [file: string]: NestedReadyState };
-  audio: { [file: string]: NestedReadyState };
-  video: { [file: string]: NestedReadyState };
-};
+type ReadyState = NestedReadyState;
 
 const MIN_SUPPORTED_COGS_VERSION = '5.11.0';
 

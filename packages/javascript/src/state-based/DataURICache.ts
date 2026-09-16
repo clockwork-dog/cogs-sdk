@@ -26,7 +26,7 @@ function createDataURI(blob: Blob): Promise<string> {
 export class DataURICache {
   private _sizeBytes = 0;
   private _maxSizeBytes: number;
-  private _cache: Record<string, string> = {};
+  private _cache: Record<string, ReadyStateNode & { data?: string }> = {};
   private _abortController: AbortController | null = null;
   private _onCacheUpdate: CacheUpdateHandler;
 
@@ -36,9 +36,8 @@ export class DataURICache {
   }
 
   get cacheState(): NestedReadyState {
-    const urls = Object.keys(this._cache);
     return {
-      items: Object.fromEntries(urls.map((url): [string, ReadyStateNode] => [url, { state: READYSTATE.DONE }])),
+      items: Object.fromEntries(Object.entries(this._cache).map(([file, { data: _, state }]) => [file, { state }])),
     };
   }
 
@@ -50,9 +49,9 @@ export class DataURICache {
     const newURLs = new Set(urls);
     for (const prevURL of Object.keys(this._cache)) {
       if (!newURLs.has(prevURL)) {
-        const staleURI = this._cache[prevURL];
-        if (staleURI) {
-          this._sizeBytes -= staleURI.length;
+        const staleEntry = this._cache[prevURL];
+        if (staleEntry) {
+          this._sizeBytes -= staleEntry.data?.length ?? 0;
           delete this._cache[prevURL];
         }
       }
@@ -62,43 +61,40 @@ export class DataURICache {
 
     for (const url of urls) {
       if (controller.signal.aborted) break;
-      let success = false;
-      try {
-        success = await this.cacheUrl(url, controller.signal);
-      } finally {
-        if (success) {
-          this._onCacheUpdate(this.cacheState);
-        } else {
-          console.warn(`Failed to cache ${url}`);
-        }
-      }
+      await this.cacheUrl(url, controller.signal);
+      this._onCacheUpdate(this.cacheState);
     }
   }
 
-  private async cacheUrl(url: string, signal: AbortSignal): Promise<boolean> {
-    if (signal.aborted) return false;
-    if (url in this._cache) return true;
+  private async cacheUrl(url: string, signal: AbortSignal): Promise<void> {
+    if (url in this._cache) return;
+    this._cache[url] = { state: READYSTATE.IN_PROGRESS };
+
+    if (signal.aborted) return;
 
     let uri: string;
     try {
       const response = await fetch(url, { signal });
-      if (!response.ok) return false;
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
       const blob = await response.blob();
       uri = await createDataURI(blob);
-    } catch {
-      return false;
+    } catch (e) {
+      this._cache[url] = { state: READYSTATE.DONE, errors: [String(e)] };
+      return;
     }
 
-    if (signal.aborted) return false;
-    if (this._sizeBytes + uri.length > this._maxSizeBytes) return false;
+    if (signal.aborted) return;
+    if (this._sizeBytes + uri.length > this._maxSizeBytes) return;
 
-    this._cache[url] = uri;
+    this._cache[url] = { state: READYSTATE.DONE, data: uri };
     this._sizeBytes += uri.length;
-    return true;
+    return;
   }
 
   getURI(url: string): string | undefined {
-    return this._cache[url];
+    return this._cache[url]?.data;
   }
 
   destroy(): void {
