@@ -1,6 +1,6 @@
-import { CacheState } from '../types/cache';
+import { NestedReadyState, READYSTATE, ReadyStateNode } from '../types/ReadyState';
 
-export type CacheUpdateHandler = (cacheState: { [url: string]: CacheState }) => void;
+export type CacheUpdateHandler = (cacheState: NestedReadyState) => void;
 
 export interface DataURICacheOptions {
   maxSizeBytes: number;
@@ -35,13 +35,11 @@ export class DataURICache {
     this._onCacheUpdate = onCacheUpdate;
   }
 
-  get cacheState(): { [url: string]: CacheState } {
-    return Object.fromEntries<CacheState>(
-      Object.entries(this._cache).map(([url, uri]): [string, CacheState] => [
-        url,
-        { readyState: HTMLMediaElement.HAVE_ENOUGH_DATA, cachedBytes: uri.length },
-      ]),
-    );
+  get cacheState(): NestedReadyState {
+    const urls = Object.keys(this._cache);
+    return {
+      items: Object.fromEntries(urls.map((url): [string, ReadyStateNode] => [url, { state: READYSTATE.DONE }])),
+    };
   }
 
   async cache(urls: string[]): Promise<void> {

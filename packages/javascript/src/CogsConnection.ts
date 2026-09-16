@@ -7,14 +7,14 @@ import * as ManifestTypes from './types/ManifestTypes';
 import { DeepReadonly } from './types/utils';
 import DataStore from './DataStore';
 import { createTimeSyncClient, TimeSyncClient, TimeSyncResponseData } from '@clockworkdog/timesync';
-import { CacheState } from './types/cache';
 import { SDK_VERSION } from './version';
 import semver from 'semver';
+import { NestedReadyState } from './types/ReadyState';
 
 type ReadyState = {
-  images: { [file: string]: CacheState };
-  audio: { [file: string]: CacheState };
-  video: { [file: string]: CacheState };
+  images: { [file: string]: NestedReadyState };
+  audio: { [file: string]: NestedReadyState };
+  video: { [file: string]: NestedReadyState };
 };
 
 const MIN_SUPPORTED_COGS_VERSION = '5.11.0';
