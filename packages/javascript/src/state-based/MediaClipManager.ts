@@ -202,10 +202,10 @@ function assertPlaybackRate(mediaElement: HTMLMediaElement, playbackRate: number
 }
 
 type TemporalSyncState =
-  | ({ strategy: SyncStrategy } & {
-      strategy: string;
+  | {
+      strategy: SyncStrategy;
       state: 'idle' | 'finishing';
-    })
+    }
   | {
       strategy: 'none';
       state: 'seeking-ahead' | 'seeked-ahead';

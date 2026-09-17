@@ -1,13 +1,15 @@
 import '../types/AudioContext';
-import { CacheState } from '../types/cache';
-import { MediaClientConfig } from '../types/CogsClientMessage';
+import { NestedReadyState, READY_STATE, ReadyStateNode } from '../types/ReadyState';
+import { combineReadyState } from '../utils/readyState';
+import { MediaClientConfig, Media as ClientMedia } from '../types/CogsClientMessage';
 import { ElementCache } from './ElementCache';
 
 export type MediaCacheState = {
-  images: Record<string, CacheState>;
-  audio: Record<string, CacheState>;
-  video: Record<string, CacheState>;
+  images: Record<string, NestedReadyState>;
+  audio: Record<string, NestedReadyState>;
+  video: Record<string, NestedReadyState>;
 };
+
 export type MediaCacheUpdateHandler = (state: MediaCacheState) => void;
 
 interface Media {
@@ -87,11 +89,11 @@ export class MediaPreloader {
     });
   }
 
-  private mergeCacheState(mediaType: keyof MediaCacheState, filename: string, cacheState: CacheState) {
+  private mergeCacheState(mediaType: keyof MediaCacheState, filename: string, cacheState: ReadyStateNode) {
     const current = this._fileCacheState[mediaType][filename];
-    const readyState = Math.max(current?.readyState ?? 0, cacheState.readyState) as CacheState['readyState'];
-    const cachedBytes = cacheState.cachedBytes ?? current?.cachedBytes;
-    this._fileCacheState[mediaType][filename] = { readyState, cachedBytes };
+    const currentState = current ? combineReadyState(current).state : READY_STATE.NONE;
+    const next = { state: Math.max(cacheState.state, currentState) } as ReadyStateNode;
+    this._fileCacheState[mediaType][filename] = next;
   }
 
   get state() {
@@ -180,19 +182,32 @@ export class MediaPreloader {
     });
   }
 
-  private trackReadyState(mediaType: keyof MediaCacheState, file: string, element: HTMLMediaElement | HTMLImageElement) {
-    const report = (readyState: CacheState['readyState']) => {
-      this.mergeCacheState(mediaType, file, { readyState });
+  private trackReadyState(
+    mediaType: keyof MediaCacheState,
+    file: string,
+    element: HTMLMediaElement | HTMLImageElement,
+    targetPreload?: ClientMedia['preload'],
+  ) {
+    const report = (readyState: ReadyStateNode) => {
+      this.mergeCacheState(mediaType, file, readyState);
       this._onCacheUpdate(this._fileCacheState);
     };
     if (element instanceof HTMLMediaElement) {
       // Audio + Video elements
-      (['loadedmetadata', 'loadeddata', 'canplay', 'canplaythrough'] as const).forEach((event) => {
-        element.addEventListener(event, () => report(element.readyState as CacheState['readyState']));
-      });
+      switch (targetPreload) {
+        case 'all':
+        case 'auto':
+          element.addEventListener('canplaythrough', () => report({ state: READY_STATE.DONE }));
+          break;
+        case 'metadata':
+          element.addEventListener('canplay', () => report({ state: READY_STATE.DONE }));
+          break;
+      }
+      element.addEventListener('error', (e) => report({ state: READY_STATE.DONE, errors: [`Failed to load media - ${e.message}`] }));
     } else {
       // Image elements
-      element.addEventListener('load', () => report(HTMLMediaElement.HAVE_ENOUGH_DATA));
+      element.addEventListener('load', () => report({ state: READY_STATE.DONE }));
+      element.addEventListener('error', (e) => report({ state: READY_STATE.DONE, errors: [`Failed to load media - ${e.message}`] }));
     }
   }
 
@@ -200,7 +215,7 @@ export class MediaPreloader {
     switch (type) {
       case 'image': {
         const element = this._imageElementCache.getElement(this._constructAssetURL(file));
-        this.trackReadyState('images', file, element);
+        this.trackReadyState('images', file, element, 'all');
         return { element, type, inUse: false, gainNode: undefined };
       }
       case 'audio': {
@@ -209,7 +224,7 @@ export class MediaPreloader {
         if (preload === 'auto' || preload === 'metadata') {
           element.preload = preload;
         }
-        this.trackReadyState('audio', file, element);
+        this.trackReadyState('audio', file, element, preload);
         return { element, type, inUse: false, gainNode: undefined };
       }
       case 'video': {
@@ -219,7 +234,7 @@ export class MediaPreloader {
         if (preload === 'auto' || preload === 'metadata') {
           element.preload = preload;
         }
-        this.trackReadyState('video', file, element);
+        this.trackReadyState('video', file, element, preload);
         return { element, type, inUse: false, gainNode: undefined };
       }
     }
