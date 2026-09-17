@@ -1,8 +1,7 @@
 import { ElementCache } from '../../src/state-based/ElementCache';
 import { CacheUpdateHandler } from '../../src/state-based/DataURICache';
-import { CacheState } from '../../src/types/cache';
 import { createTestURL } from '../support/delayedFileServerConfig';
-import { READYSTATE } from '../../src/types/ReadyState';
+import { NestedReadyState, READY_STATE } from '../../src/types/ReadyState';
 
 function playAndMeasureTimeToPlaying(element: HTMLAudioElement): Promise<number> {
   const startedAt = performance.now();
@@ -59,7 +58,7 @@ describe('AudioElementCache', () => {
   });
 
   it('updates cache progress', async () => {
-    const updates: { [url: string]: CacheState }[] = [];
+    const updates: NestedReadyState[] = [];
     const handler: CacheUpdateHandler = (cacheState) => {
       updates.push(cacheState);
     };
@@ -74,7 +73,7 @@ describe('AudioElementCache', () => {
     expect(updates).to.have.length(2);
     expect(updates[0]!).to.deep.equal({ items: {} });
     expect(updates[1]!).to.deep.equal({
-      items: { 'http://localhost:4567/sinwave@440hz.wav': { state: READYSTATE.DONE } },
+      items: { 'http://localhost:4567/sinwave@440hz.wav': { state: READY_STATE.DONE } },
     });
   });
 });

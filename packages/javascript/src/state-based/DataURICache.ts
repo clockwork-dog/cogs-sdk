@@ -1,4 +1,4 @@
-import { NestedReadyState, READYSTATE, ReadyStateNode } from '../types/ReadyState';
+import { NestedReadyState, READY_STATE, ReadyStateNode } from '../types/ReadyState';
 
 export type CacheUpdateHandler = (cacheState: NestedReadyState) => void;
 
@@ -68,7 +68,7 @@ export class DataURICache {
 
   private async cacheUrl(url: string, signal: AbortSignal): Promise<void> {
     if (url in this._cache) return;
-    this._cache[url] = { state: READYSTATE.IN_PROGRESS };
+    this._cache[url] = { state: READY_STATE.IN_PROGRESS };
 
     if (signal.aborted) return;
 
@@ -81,14 +81,14 @@ export class DataURICache {
       const blob = await response.blob();
       uri = await createDataURI(blob);
     } catch (e) {
-      this._cache[url] = { state: READYSTATE.DONE, errors: [String(e)] };
+      this._cache[url] = { state: READY_STATE.DONE, errors: [String(e)] };
       return;
     }
 
     if (signal.aborted) return;
     if (this._sizeBytes + uri.length > this._maxSizeBytes) return;
 
-    this._cache[url] = { state: READYSTATE.DONE, data: uri };
+    this._cache[url] = { state: READY_STATE.DONE, data: uri };
     this._sizeBytes += uri.length;
     return;
   }

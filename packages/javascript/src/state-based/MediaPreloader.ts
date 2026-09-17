@@ -1,5 +1,5 @@
 import '../types/AudioContext';
-import { NestedReadyState, READYSTATE, ReadyStateNode } from '../types/ReadyState';
+import { NestedReadyState, READY_STATE, ReadyStateNode } from '../types/ReadyState';
 import { combineReadyState } from '../utils/readyState';
 import { MediaClientConfig, Media as ClientMedia } from '../types/CogsClientMessage';
 import { ElementCache } from './ElementCache';
@@ -91,7 +91,7 @@ export class MediaPreloader {
 
   private mergeCacheState(mediaType: keyof MediaCacheState, filename: string, cacheState: ReadyStateNode) {
     const current = this._fileCacheState[mediaType][filename];
-    const currentState = current ? combineReadyState(current).state : READYSTATE.NONE;
+    const currentState = current ? combineReadyState(current).state : READY_STATE.NONE;
     const next = { state: Math.max(cacheState.state, currentState) } as ReadyStateNode;
     this._fileCacheState[mediaType][filename] = next;
   }
@@ -197,17 +197,17 @@ export class MediaPreloader {
       switch (targetPreload) {
         case 'all':
         case 'auto':
-          element.addEventListener('canplaythrough', () => report({ state: READYSTATE.DONE }));
+          element.addEventListener('canplaythrough', () => report({ state: READY_STATE.DONE }));
           break;
         case 'metadata':
-          element.addEventListener('canplay', () => report({ state: READYSTATE.DONE }));
+          element.addEventListener('canplay', () => report({ state: READY_STATE.DONE }));
           break;
       }
-      element.addEventListener('error', (e) => report({ state: READYSTATE.DONE, errors: [`Failed to load media - ${e.message}`] }));
+      element.addEventListener('error', (e) => report({ state: READY_STATE.DONE, errors: [`Failed to load media - ${e.message}`] }));
     } else {
       // Image elements
-      element.addEventListener('load', () => report({ state: READYSTATE.DONE }));
-      element.addEventListener('error', (e) => report({ state: READYSTATE.DONE, errors: [`Failed to load media - ${e.message}`] }));
+      element.addEventListener('load', () => report({ state: READY_STATE.DONE }));
+      element.addEventListener('error', (e) => report({ state: READY_STATE.DONE, errors: [`Failed to load media - ${e.message}`] }));
     }
   }
 

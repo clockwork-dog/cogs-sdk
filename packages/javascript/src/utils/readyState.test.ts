@@ -1,54 +1,54 @@
 import { describe, expect, it } from 'vitest';
-import { READYSTATE } from '../types/ReadyState';
+import { READY_STATE } from '../types/ReadyState';
 import { combineReadyState } from './readyState';
 
 describe('combineReadyState()', () => {
   it('detects when a task is done', () => {
-    expect(combineReadyState({ state: READYSTATE.DONE })).toMatchObject({ state: READYSTATE.DONE });
+    expect(combineReadyState({ state: READY_STATE.DONE })).toMatchObject({ state: READY_STATE.DONE });
   });
   it('detects when all tasks are done', () => {
     expect(
       combineReadyState({
         items: {
-          taskA: { state: READYSTATE.DONE },
-          taskB: { state: READYSTATE.DONE },
-          taskC: { state: READYSTATE.DONE },
+          taskA: { state: READY_STATE.DONE },
+          taskB: { state: READY_STATE.DONE },
+          taskC: { state: READY_STATE.DONE },
         },
       }),
-    ).toMatchObject({ state: READYSTATE.DONE });
+    ).toMatchObject({ state: READY_STATE.DONE });
   });
   it('counts no tasks as done', () => {
-    expect(combineReadyState({ items: {} })).toMatchObject({ state: READYSTATE.DONE });
+    expect(combineReadyState({ items: {} })).toMatchObject({ state: READY_STATE.DONE });
   });
   it('is in progress when any tasks are in progress', () => {
     expect(
       combineReadyState({
         items: {
-          taskA: { state: READYSTATE.NONE },
-          taskB: { state: READYSTATE.IN_PROGRESS },
+          taskA: { state: READY_STATE.NONE },
+          taskB: { state: READY_STATE.IN_PROGRESS },
         },
       }),
-    ).toMatchObject({ state: READYSTATE.IN_PROGRESS });
+    ).toMatchObject({ state: READY_STATE.IN_PROGRESS });
     expect(
       combineReadyState({
         items: {
-          taskA: { state: READYSTATE.DONE },
-          taskB: { state: READYSTATE.IN_PROGRESS },
+          taskA: { state: READY_STATE.DONE },
+          taskB: { state: READY_STATE.IN_PROGRESS },
         },
       }),
-    ).toMatchObject({ state: READYSTATE.IN_PROGRESS });
+    ).toMatchObject({ state: READY_STATE.IN_PROGRESS });
   });
   it('collects errors', () => {
     expect(
       combineReadyState({
         items: {
-          taskA: { state: READYSTATE.DONE, errors: ['timeout'] },
-          taskB: { state: READYSTATE.IN_PROGRESS },
-          taskC: { state: READYSTATE.DONE, errors: ['failed'] },
+          taskA: { state: READY_STATE.DONE, errors: ['timeout'] },
+          taskB: { state: READY_STATE.IN_PROGRESS },
+          taskC: { state: READY_STATE.DONE, errors: ['failed'] },
         },
       }),
     ).toMatchObject({
-      state: READYSTATE.IN_PROGRESS,
+      state: READY_STATE.IN_PROGRESS,
       errors: ['taskA: timeout', 'taskC: failed'],
     });
   });
@@ -60,7 +60,7 @@ describe('combineReadyState()', () => {
             items: {
               audio: {
                 items: {
-                  'song.mp3': { state: READYSTATE.DONE, errors: ['Failed to fetch'] },
+                  'song.mp3': { state: READY_STATE.DONE, errors: ['Failed to fetch'] },
                 },
               },
             },
@@ -69,7 +69,7 @@ describe('combineReadyState()', () => {
             items: {
               video: {
                 items: {
-                  'movie.mp4': { state: READYSTATE.DONE, errors: ['Not enough space'] },
+                  'movie.mp4': { state: READY_STATE.DONE, errors: ['Not enough space'] },
                 },
               },
             },
@@ -79,18 +79,18 @@ describe('combineReadyState()', () => {
     ).toMatchObject({ errors: ['memoryCache.audio.song.mp3: Failed to fetch', 'diskCache.video.movie.mp4: Not enough space'] });
   });
   it('reports progress', () => {
-    expect(combineReadyState({ state: READYSTATE.NONE }).progress).toBe(0);
-    expect(combineReadyState({ state: READYSTATE.IN_PROGRESS }).progress).toBe(0);
-    expect(combineReadyState({ state: READYSTATE.DONE }).progress).toBe(1);
+    expect(combineReadyState({ state: READY_STATE.NONE }).progress).toBe(0);
+    expect(combineReadyState({ state: READY_STATE.IN_PROGRESS }).progress).toBe(0);
+    expect(combineReadyState({ state: READY_STATE.DONE }).progress).toBe(1);
   });
   it('sumarises progress', () => {
     expect(
       combineReadyState({
         items: {
-          taskA: { state: READYSTATE.DONE },
-          taskB: { state: READYSTATE.DONE },
-          taskC: { state: READYSTATE.IN_PROGRESS },
-          taskD: { state: READYSTATE.NONE },
+          taskA: { state: READY_STATE.DONE },
+          taskB: { state: READY_STATE.DONE },
+          taskC: { state: READY_STATE.IN_PROGRESS },
+          taskD: { state: READY_STATE.NONE },
         },
       }).progress,
     ).toBeCloseTo(0.5);
@@ -99,10 +99,10 @@ describe('combineReadyState()', () => {
     expect(
       combineReadyState({
         items: {
-          taskA: { state: READYSTATE.IN_PROGRESS, progress: 0.6 },
-          taskB: { state: READYSTATE.IN_PROGRESS, progress: 0.7 },
-          taskC: { state: READYSTATE.IN_PROGRESS, progress: 0.8 },
-          taskD: { state: READYSTATE.IN_PROGRESS, progress: 0.9 },
+          taskA: { state: READY_STATE.IN_PROGRESS, progress: 0.6 },
+          taskB: { state: READY_STATE.IN_PROGRESS, progress: 0.7 },
+          taskC: { state: READY_STATE.IN_PROGRESS, progress: 0.8 },
+          taskD: { state: READY_STATE.IN_PROGRESS, progress: 0.9 },
         },
       }).progress,
     ).toBeCloseTo(0.75);
