@@ -78,33 +78,4 @@ describe('combineReadyState()', () => {
       }),
     ).toMatchObject({ errors: ['memoryCache.audio.song.mp3: Failed to fetch', 'diskCache.video.movie.mp4: Not enough space'] });
   });
-  it('reports progress', () => {
-    expect(combineReadyState({ state: READY_STATE.NONE }).progress).toBe(0);
-    expect(combineReadyState({ state: READY_STATE.IN_PROGRESS }).progress).toBe(0);
-    expect(combineReadyState({ state: READY_STATE.DONE }).progress).toBe(1);
-  });
-  it('sumarises progress', () => {
-    expect(
-      combineReadyState({
-        items: {
-          taskA: { state: READY_STATE.DONE },
-          taskB: { state: READY_STATE.DONE },
-          taskC: { state: READY_STATE.IN_PROGRESS },
-          taskD: { state: READY_STATE.NONE },
-        },
-      }).progress,
-    ).toBeCloseTo(0.5);
-  });
-  it('averages reported progress', () => {
-    expect(
-      combineReadyState({
-        items: {
-          taskA: { state: READY_STATE.IN_PROGRESS, progress: 0.6 },
-          taskB: { state: READY_STATE.IN_PROGRESS, progress: 0.7 },
-          taskC: { state: READY_STATE.IN_PROGRESS, progress: 0.8 },
-          taskD: { state: READY_STATE.IN_PROGRESS, progress: 0.9 },
-        },
-      }).progress,
-    ).toBeCloseTo(0.75);
-  });
 });

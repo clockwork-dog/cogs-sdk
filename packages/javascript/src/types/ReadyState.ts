@@ -20,7 +20,6 @@ export type NestedReadyState =
 
 export type CombinedReadyState = {
   state: (typeof READY_STATE)[keyof typeof READY_STATE];
-  progress: number;
   errors: string[];
 };
 

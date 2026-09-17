@@ -2,11 +2,10 @@ import { CombinedReadyState, NestedReadyState, READY_STATE, ReadyStateNode } fro
 
 export function getProgress(readyStateNode: ReadyStateNode | CombinedReadyState) {
   switch (readyStateNode.state) {
-    case 0:
+    case READY_STATE.NONE:
+    case READY_STATE.IN_PROGRESS:
       return 0;
-    case 1:
-      return readyStateNode.progress ?? 0;
-    case 2:
+    case READY_STATE.DONE:
       return 1;
   }
 }
@@ -19,7 +18,6 @@ function _combineReadyState(readyState: NestedReadyState | CombinedReadyState, p
 
   if ('items' in readyState) {
     let childCount = 0;
-    let cumProgress = 0;
     let childMinState: (typeof READY_STATE)[keyof typeof READY_STATE] = READY_STATE.DONE;
     let childMaxState: (typeof READY_STATE)[keyof typeof READY_STATE] = READY_STATE.NONE;
     const errors: string[] = [];
@@ -29,12 +27,9 @@ function _combineReadyState(readyState: NestedReadyState | CombinedReadyState, p
       const rs = _combineReadyState(step, [...pathArray, key]);
       childMaxState = Math.max(rs.state, childMaxState) as (typeof READY_STATE)[keyof typeof READY_STATE];
       childMinState = Math.min(rs.state, childMinState) as (typeof READY_STATE)[keyof typeof READY_STATE];
-      const p = getProgress(rs);
       errors.push(...rs.errors);
-      cumProgress += p;
     }
 
-    const childAvgProgress = childCount === 0 ? 0 : cumProgress / childCount;
     let state: (typeof READY_STATE)[keyof typeof READY_STATE];
     if (childCount === 0) {
       state = READY_STATE.DONE;
@@ -47,13 +42,12 @@ function _combineReadyState(readyState: NestedReadyState | CombinedReadyState, p
     return {
       state,
       errors,
-      progress: childAvgProgress,
     };
   } else {
     let errors: string[] = [];
     if ('errors' in readyState && readyState.errors?.length) {
       errors = readyState.errors.map((e) => `${path}: ${e}`) as [string, ...string[]];
     }
-    return { ...readyState, progress: getProgress(readyState), errors };
+    return { ...readyState, errors };
   }
 }
